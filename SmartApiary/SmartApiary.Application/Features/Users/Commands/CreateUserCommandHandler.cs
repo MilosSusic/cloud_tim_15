@@ -1,17 +1,26 @@
 ﻿using MediatR;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Domain.Common;
+using SmartApiary.Domain.Models;
 
 namespace SmartApiary.Application.Features.Users.Commands
 {
     public class CreateUserCommandHandler(IUserRepository userRepository)
-        : IRequestHandler<CreateUserCommand, Guid>
+        : IRequestHandler<CreateUserCommand, Result<Guid>>
     {
-        public async Task<Guid> Handle(CreateUserCommand request, CancellationToken ct)
+        public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken ct)
         {
+            var existingUser = await userRepository.GetByEmailAsync(request.Email, ct);
+
+            if (existingUser is not null)
+            {
+                return Result<Guid>.Failure("A user with this email already exists.");
+            }
+
             var activationToken = Guid.NewGuid().ToString();
             var expiresAtUtc = DateTime.UtcNow.AddDays(1);
 
-            var user = SmartApiary.Domain.Models.User.Create(
+            var user = User.Create(
                 request.FirstName,
                 request.LastName,
                 request.Email,
@@ -23,7 +32,7 @@ namespace SmartApiary.Application.Features.Users.Commands
             await userRepository.AddAsync(user, ct);
             await userRepository.SaveChangesAsync(ct);
 
-            return user.Id;
+            return Result<Guid>.Success(user.Id);
         }
     }
 }

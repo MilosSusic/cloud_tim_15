@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Enums;
 
 namespace SmartApiary.Application.Features.Users.Commands
@@ -8,5 +9,5 @@ namespace SmartApiary.Application.Features.Users.Commands
         string LastName,
         string Email,
         UserRole Role
-    ) : IRequest<Guid>;
+    ) : IRequest<Result<Guid>>;
 }
