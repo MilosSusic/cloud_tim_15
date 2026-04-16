@@ -26,5 +26,9 @@ namespace SmartApiary.Infrastructure.Repositories
         {
             await dbContext.SaveChangesAsync(ct);
         }
+        public async Task<User?> GetByResetPasswordTokenAsync(string resetPasswordToken, CancellationToken ct = default)
+        {
+            return await dbContext.Users.FirstOrDefaultAsync(x => x.ResetPasswordToken == resetPasswordToken, ct);
+        }
     }
 }

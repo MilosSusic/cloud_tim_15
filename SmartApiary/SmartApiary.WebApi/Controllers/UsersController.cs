@@ -1,11 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SmartApiary.Application.Features.Users.Commands;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SmartApiary.WebApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class UsersController(IMediator mediator) : ControllerBase
     {
         [HttpPost]

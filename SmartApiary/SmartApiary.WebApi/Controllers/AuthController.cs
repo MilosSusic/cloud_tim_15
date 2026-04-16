@@ -34,5 +34,31 @@ namespace SmartApiary.WebApi.Controllers
 
             return Ok(result.Value);
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordCommand command, CancellationToken ct)
+        {
+            var result = await mediator.Send(command, ct);
+
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+
+            return Ok();
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordCommand command, CancellationToken ct)
+        {
+            var result = await mediator.Send(command, ct);
+
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+
+            return Ok();
+        }
     }
 }

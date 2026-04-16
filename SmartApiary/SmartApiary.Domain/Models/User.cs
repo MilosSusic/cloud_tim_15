@@ -14,6 +14,8 @@ namespace SmartApiary.Domain.Models
         public bool IsActive { get; private set; }
         public string? ActivationToken { get; private set; }
         public DateTime? ActivationTokenExpiresAtUtc { get; private set; }
+        public string? ResetPasswordToken { get; private set; }
+        public DateTime? ResetPasswordTokenExpiresAtUtc { get; private set; }
 
         private User() { }
 
@@ -44,6 +46,19 @@ namespace SmartApiary.Domain.Models
             IsActive = true;
             ActivationToken = null;
             ActivationTokenExpiresAtUtc = null;
+        }
+
+        public void GenerateResetPasswordToken()
+        {
+            ResetPasswordToken = Guid.NewGuid().ToString();
+            ResetPasswordTokenExpiresAtUtc = DateTime.UtcNow.AddHours(1);
+        }
+
+        public void ResetPassword(string passwordHash)
+        {
+            PasswordHash = passwordHash;
+            ResetPasswordToken = null;
+            ResetPasswordTokenExpiresAtUtc = null;
         }
     }
 }

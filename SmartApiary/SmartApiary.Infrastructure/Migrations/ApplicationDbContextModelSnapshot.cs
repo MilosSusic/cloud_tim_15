@@ -58,6 +58,13 @@ namespace SmartApiary.Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
+                    b.Property<string>("ResetPasswordToken")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("ResetPasswordTokenExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Role")
                         .HasColumnType("int");
 

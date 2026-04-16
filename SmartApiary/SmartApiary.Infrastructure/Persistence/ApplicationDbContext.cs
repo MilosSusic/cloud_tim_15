@@ -49,6 +49,11 @@ namespace SmartApiary.Infrastructure.Persistence
                     .HasMaxLength(256);
 
                 entity.Property(x => x.ActivationTokenExpiresAtUtc);
+
+                entity.Property(x => x.ResetPasswordToken)
+                    .HasMaxLength(256);
+
+                entity.Property(x => x.ResetPasswordTokenExpiresAtUtc);
             });
 
             base.OnModelCreating(modelBuilder);
