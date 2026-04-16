@@ -1,13 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartApiary.Application.Interfaces.Authentication;
+using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Security;
+using SmartApiary.Infrastructure.Authentication;
 using SmartApiary.Infrastructure.Persistence;
 using SmartApiary.Infrastructure.Repositories;
-using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Infrastructure.Services;
-using SmartApiary.Application.Interfaces.Authentication;
-using SmartApiary.Infrastructure.Authentication;
+using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
 
 namespace SmartApiary.Infrastructure
 {
@@ -25,6 +27,10 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+            services.AddScoped<IQueueService, AzureQueueService>();
+
+            services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
             return services;
         }

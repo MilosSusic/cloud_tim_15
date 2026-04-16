@@ -1,10 +1,11 @@
 ﻿using MediatR;
+using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Application.Features.Users.Commands
 {
-    public class ForgotPasswordCommandHandler(IUserRepository userRepository)
+    public class ForgotPasswordCommandHandler(IUserRepository userRepository, IResetPasswordQueueService queueService)
         : IRequestHandler<ForgotPasswordCommand, Result>
     {
         public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken ct)
@@ -19,6 +20,11 @@ namespace SmartApiary.Application.Features.Users.Commands
             user.GenerateResetPasswordToken();
 
             await userRepository.SaveChangesAsync(ct);
+
+            await queueService.SendResetPasswordAsync(
+                user.Email,
+                user.ResetPasswordToken!,
+                ct);
 
             return Result.Success();
         }
