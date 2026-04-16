@@ -1,10 +1,13 @@
 ﻿using MediatR;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Application.Features.Users.Queries
 {
-    public class LoginQueryHandler(IUserRepository userRepository)
+    public class LoginQueryHandler(
+        IUserRepository userRepository,
+        IPasswordHasher passwordHasher)
         : IRequestHandler<LoginQuery, Result<string>>
     {
         public async Task<Result<string>> Handle(LoginQuery request, CancellationToken ct)
@@ -21,7 +24,7 @@ namespace SmartApiary.Application.Features.Users.Queries
                 return Result<string>.Failure("Account is not activated.");
             }
 
-            if (user.PasswordHash != request.Password)
+            if (!passwordHasher.Verify(request.Password, user.PasswordHash))
             {
                 return Result<string>.Failure("Invalid email or password.");
             }
