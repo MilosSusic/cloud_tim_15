@@ -6,6 +6,8 @@ using SmartApiary.Infrastructure.Persistence;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Infrastructure.Services;
+using SmartApiary.Application.Interfaces.Authentication;
+using SmartApiary.Infrastructure.Authentication;
 
 namespace SmartApiary.Infrastructure
 {
@@ -21,6 +23,8 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
+
+            services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
             return services;
         }
