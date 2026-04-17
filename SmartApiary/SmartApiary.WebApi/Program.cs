@@ -6,6 +6,15 @@ using SmartApiary.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtIssuer = builder.Configuration["JwtOptions:Issuer"]
+    ?? throw new InvalidOperationException("JwtOptions:Issuer is not configured.");
+
+var jwtAudience = builder.Configuration["JwtOptions:Audience"]
+    ?? throw new InvalidOperationException("JwtOptions:Audience is not configured.");
+
+var jwtKey = builder.Configuration["JwtOptions:Key"]
+    ?? throw new InvalidOperationException("JwtOptions:Key is not configured.");
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -17,7 +26,7 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Enter 'Bearer' [space] and then your valid token.\n\nExample: Bearer eyJhbGciOiJIUzI1NiIs..."
+        Description = "Enter your JWT token."
     });
 
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
@@ -31,7 +40,7 @@ builder.Services.AddSwaggerGen(options =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
@@ -50,10 +59,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "SmartApiary",
-            ValidAudience = "SmartApiary",
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("super-secret-key-1234567890-1234567890"))
+                Encoding.UTF8.GetBytes(jwtKey))
         };
     });
 
