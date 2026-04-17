@@ -10,6 +10,7 @@ using SmartApiary.Infrastructure.Persistence;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Infrastructure.Services;
 using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
+using SmartApiary.Infrastructure.Services.Email;
 
 namespace SmartApiary.Infrastructure
 {
@@ -33,6 +34,8 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
             services.AddScoped<IActivationQueueService, ActivationQueueService>();
+
+            services.AddScoped<IEmailService, SendGridEmailService>();
 
             return services;
         }
