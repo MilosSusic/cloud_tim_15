@@ -29,8 +29,6 @@ namespace SmartApiary.Infrastructure
 
             services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
-            services.AddScoped<IQueueService, AzureQueueService>();
-
             services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
             services.AddScoped<IActivationQueueService, ActivationQueueService>();

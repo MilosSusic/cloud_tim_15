@@ -45,6 +45,12 @@ namespace SmartApiary.Infrastructure.Persistence
                 entity.Property(x => x.IsActive)
                     .IsRequired();
 
+                entity.Property(x => x.IsSuspended)
+                    .IsRequired();
+
+                entity.Property(x => x.IsDeleted)
+                    .IsRequired();
+
                 entity.Property(x => x.ActivationToken)
                     .HasMaxLength(256);
 

@@ -16,7 +16,8 @@ namespace SmartApiary.Domain.Models
         public DateTime? ActivationTokenExpiresAtUtc { get; private set; }
         public string? ResetPasswordToken { get; private set; }
         public DateTime? ResetPasswordTokenExpiresAtUtc { get; private set; }
-
+        public bool IsSuspended { get; private set; }
+        public bool IsDeleted { get; private set; }
         private User() { }
 
         public static User Create(
@@ -59,6 +60,16 @@ namespace SmartApiary.Domain.Models
             PasswordHash = passwordHash;
             ResetPasswordToken = null;
             ResetPasswordTokenExpiresAtUtc = null;
+        }
+
+        public void Suspend()
+        {
+            IsSuspended = true;
+        }
+
+        public void Delete()
+        {
+            IsDeleted = true;
         }
     }
 }

@@ -26,6 +26,11 @@ namespace SmartApiary.Application.Features.Users.Queries
                 return Result<string>.Failure("Account is not activated.");
             }
 
+            if (user.IsSuspended || user.IsDeleted)
+            {
+                return Result<string>.Failure("Account is not available.");
+            }
+
             if (!passwordHasher.Verify(request.Password, user.PasswordHash))
             {
                 return Result<string>.Failure("Invalid email or password.");
