@@ -32,6 +32,8 @@ namespace SmartApiary.Infrastructure
 
             services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
+            services.AddScoped<IActivationQueueService, ActivationQueueService>();
+
             return services;
         }
     }

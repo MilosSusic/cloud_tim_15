@@ -1,11 +1,14 @@
 ﻿using MediatR;
+using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Models;
 
 namespace SmartApiary.Application.Features.Users.Commands
 {
-    public class CreateUserCommandHandler(IUserRepository userRepository)
+    public class CreateUserCommandHandler(
+        IUserRepository userRepository,
+        IActivationQueueService activationQueueService)
         : IRequestHandler<CreateUserCommand, Result<Guid>>
     {
         public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken ct)
@@ -31,6 +34,11 @@ namespace SmartApiary.Application.Features.Users.Commands
 
             await userRepository.AddAsync(user, ct);
             await userRepository.SaveChangesAsync(ct);
+
+            await activationQueueService.SendActivationAsync(
+                user.Email,
+                user.ActivationToken!,
+                ct);
 
             return Result<Guid>.Success(user.Id);
         }
