@@ -3,6 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using SmartApiary.Infrastructure;
+using FluentValidation;
+using SmartApiary.Application.Common.Behaviors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +56,10 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(SmartApiary.Application.Features.Users.Commands.CreateUserCommand).Assembly));
+
+builder.Services.AddValidatorsFromAssembly(typeof(SmartApiary.Application.Features.Users.Commands.CreateUserCommand).Assembly);
+
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
