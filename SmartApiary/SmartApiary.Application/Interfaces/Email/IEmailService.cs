@@ -1,4 +1,4 @@
-﻿namespace SmartApiary.Infrastructure.Services.Email
+﻿namespace SmartApiary.Application.Interfaces.Email
 {
     public interface IEmailService
     {

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using SendGrid;
 using SendGrid.Helpers.Mail;
+using SmartApiary.Application.Interfaces.Email;
 
 namespace SmartApiary.Infrastructure.Services.Email
 {

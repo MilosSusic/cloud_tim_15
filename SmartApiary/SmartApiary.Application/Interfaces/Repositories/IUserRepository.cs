@@ -9,5 +9,6 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task<User?> GetByActivationTokenAsync(string activationToken, CancellationToken ct = default);
         Task SaveChangesAsync(CancellationToken ct = default);
         Task<User?> GetByResetPasswordTokenAsync(string resetPasswordToken, CancellationToken ct = default);
+        Task<List<User>> GetAllAsync(CancellationToken ct = default);
     }
 }

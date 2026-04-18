@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartApiary.Application.Features.Users.Commands;
+using SmartApiary.Application.Features.Users.Queries;
 
 namespace SmartApiary.WebApi.Controllers
 {
@@ -17,18 +18,23 @@ namespace SmartApiary.WebApi.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAll(CancellationToken ct)
+        {
+            var result = await _mediator.Send(new GetAllUsersQuery(), ct);
+            if (result.IsFailure)
+                return BadRequest(result.Error);
+            return Ok(result.Value);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(
             [FromBody] CreateUserCommand command,
             CancellationToken ct)
         {
             var result = await _mediator.Send(command, ct);
-
             if (result.IsFailure)
-            {
                 return BadRequest(result.Error);
-            }
-
             return Ok(result.Value);
         }
 
@@ -38,12 +44,8 @@ namespace SmartApiary.WebApi.Controllers
             CancellationToken ct)
         {
             var result = await _mediator.Send(command, ct);
-
             if (!result.IsSuccess)
-            {
                 return BadRequest(result.Error);
-            }
-
             return Ok();
         }
 
@@ -53,12 +55,8 @@ namespace SmartApiary.WebApi.Controllers
             CancellationToken ct)
         {
             var result = await _mediator.Send(command, ct);
-
             if (!result.IsSuccess)
-            {
                 return BadRequest(result.Error);
-            }
-
             return Ok();
         }
     }

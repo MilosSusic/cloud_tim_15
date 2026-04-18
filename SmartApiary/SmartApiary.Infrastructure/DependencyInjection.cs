@@ -1,15 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using SmartApiary.Application.Interfaces.Authentication;
+using SmartApiary.Application.Interfaces.Email;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
+
 using SmartApiary.Infrastructure.Authentication;
 using SmartApiary.Infrastructure.Persistence;
+using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Infrastructure.Services;
-using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
 using SmartApiary.Infrastructure.Services.Email;
 
 namespace SmartApiary.Infrastructure

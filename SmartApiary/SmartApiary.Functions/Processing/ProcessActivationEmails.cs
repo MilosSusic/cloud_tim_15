@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using SmartApiary.Infrastructure.Services.Email;
+using SmartApiary.Application.Interfaces.Email;
 using System.Text.Json;
 using SmartApiary.Infrastructure.Persistence.AzureQueue.Messages;
 

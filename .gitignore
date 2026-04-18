@@ -10,3 +10,18 @@
 *.suo
 *.db
 *.log
+
+# Azurite
+queuestorage/
+__queuestorage__/
+__blobstorage__/
+__azurite_db_blob__.json
+__azurite_db_blob_extent__.json
+__azurite_db_queue__.json
+__azurite_db_queue_extent__.json
+__azurite_db_table__.json
+AzuriteConfig
+
+# Node / Vite
+client/node_modules/
+client/dist/

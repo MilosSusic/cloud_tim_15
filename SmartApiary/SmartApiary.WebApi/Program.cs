@@ -8,12 +8,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 var jwtIssuer = builder.Configuration["JwtOptions:Issuer"]
     ?? throw new InvalidOperationException("JwtOptions:Issuer is not configured.");
-
 var jwtAudience = builder.Configuration["JwtOptions:Audience"]
     ?? throw new InvalidOperationException("JwtOptions:Audience is not configured.");
-
 var jwtKey = builder.Configuration["JwtOptions:Key"]
     ?? throw new InvalidOperationException("JwtOptions:Key is not configured.");
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "https://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -28,7 +36,6 @@ builder.Services.AddSwaggerGen(options =>
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
         Description = "Enter your JWT token."
     });
-
     options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -76,11 +83,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
+app.UseCors("ReactApp");
+//app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
