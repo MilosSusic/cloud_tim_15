@@ -25,9 +25,18 @@ namespace SmartApiary.Functions.Processing
                 return;
             }
 
-            var body =
-                $"Activation token: {payload.ActivationToken}\n" +
-                $"Later this should be a frontend activation link.";
+            var activationLink = $"http://localhost:5173/activate?token={payload.ActivationToken}";
+
+            var body = $@"
+                <h3>Dobrodošli u SmartApiary!</h3>
+                <p>Kako biste aktivirali Vaš nalog, molimo Vas da kliknete na link ispod:</p>
+                <p><a href=""{activationLink}"" style=""padding: 10px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; display: inline-block;"">Aktiviraj nalog</a></p>
+                <br/>
+                <p>Ukoliko dugme ne radi, iskopirajte ovaj link u Vaš pretraživač:</p>
+                <p>{activationLink}</p>
+                <br/>
+                <p>SmartApiary Tim</p>
+            ";
 
             await emailService.SendEmailAsync(
                 payload.Email,

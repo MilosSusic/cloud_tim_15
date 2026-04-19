@@ -9,6 +9,8 @@ namespace SmartApiary.Infrastructure.Services.Email
     public class SendGridEmailService : IEmailService
     {
         private readonly string? _apiKey;
+        private readonly string _fromEmail;
+        private readonly string _fromName;
         private readonly ILogger<SendGridEmailService> _logger;
 
         public SendGridEmailService(
@@ -16,6 +18,8 @@ namespace SmartApiary.Infrastructure.Services.Email
             ILogger<SendGridEmailService> logger)
         {
             _apiKey = configuration["SendGrid:ApiKey"];
+            _fromEmail = configuration["SendGrid:FromEmail"] ?? "test@smartapiary.com";
+            _fromName = configuration["SendGrid:FromName"] ?? "SmartApiary";
             _logger = logger;
         }
 
@@ -31,7 +35,7 @@ namespace SmartApiary.Infrastructure.Services.Email
 
             var client = new SendGridClient(_apiKey);
 
-            var from = new EmailAddress("test@smartapiary.com", "SmartApiary");
+            var from = new EmailAddress(_fromEmail, _fromName);
             var toEmail = new EmailAddress(to);
 
             var msg = MailHelper.CreateSingleEmail(

@@ -70,6 +70,7 @@ namespace SmartApiary.Domain.Models
         public void Delete()
         {
             IsDeleted = true;
+            Email = $"{Email}_deleted_{Id}";
         }
     }
 }
