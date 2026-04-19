@@ -1,0 +1,10 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "AzureQueueOptions:ResetPasswordQueue": "reset-password-queue",
+    "AzureQueueOptions:ActivationQueue": "activation-queue",
+    "SendGrid:ApiKey": ""
+  }
+}

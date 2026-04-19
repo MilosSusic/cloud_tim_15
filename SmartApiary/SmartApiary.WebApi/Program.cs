@@ -1,10 +1,15 @@
 using System.Text;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SmartApiary.Infrastructure;
-using FluentValidation;
 using SmartApiary.Application.Common.Behaviors;
+using SmartApiary.Application.Interfaces.Security;
+using SmartApiary.Domain.Enums;
+using SmartApiary.Domain.Models;
+using SmartApiary.Infrastructure;
+using SmartApiary.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,6 +87,32 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+
+    var adminEmail = "admin@test.com";
+
+    var existingAdmin = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == adminEmail);
+
+    if (existingAdmin is null)
+    {
+        var admin = User.Create(
+            "Admin",
+            "Test",
+            adminEmail,
+            UserRole.Admin,
+            Guid.NewGuid().ToString(),
+            DateTime.UtcNow.AddDays(1));
+
+        admin.Activate(passwordHasher.Hash("Admin123!"));
+
+        dbContext.Users.Add(admin);
+        await dbContext.SaveChangesAsync();
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {
