@@ -1,38 +1,49 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
-import { getUserRoleFromToken, login } from '../api/authApi';
+import { activateAccount } from '../api/authApi';
 
-export default function LoginPage() {
+export default function ActivatePage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
+
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setError('');
+  const handleActivate = async () => {
+    setMessage('');
+
+    if (!token) {
+      setMessage('Activation token is missing. Please use the activation link from your email.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await login({ email, password });
-      localStorage.setItem('token', response.data);
+      await activateAccount({
+        activationToken: token,
+        password,
+        confirmPassword,
+      });
 
-      const role = getUserRoleFromToken();
+      setIsSuccess(true);
+      setMessage('Account activated successfully. Redirecting to login...');
 
-      if (role === 'Admin') {
-        navigate('/admin/users');
-      } else {
-        navigate('/access-denied');
-      }
+      setTimeout(() => navigate('/login'), 2500);
     } catch (error) {
-      let message = 'Login failed. Please try again.';
+      let apiMessage = 'Activation failed. Please try again.';
 
       if (axios.isAxiosError(error) && typeof error.response?.data === 'string') {
-        message = error.response.data;
+        apiMessage = error.response.data;
       }
 
-      setError(message);
+      setMessage(apiMessage);
+      setIsSuccess(false);
     } finally {
       setLoading(false);
     }
@@ -43,57 +54,60 @@ export default function LoginPage() {
       <div style={styles.card}>
         <div style={styles.logoRow}>
           <svg width="48" height="48" viewBox="0 0 75 75" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="37.5,5 67,20 67,55 37.5,70 8,55 8,20" fill="#ffb300" stroke="#e65100" strokeWidth="2" />
-            <text x="37.5" y="45" textAnchor="middle" fontSize="22" fill="#333" fontWeight="bold">🐝</text>
+            <polygon
+              points="37.5,5 67,20 67,55 37.5,70 8,55 8,20"
+              fill="#ffb300"
+              stroke="#e65100"
+              strokeWidth="2"
+            />
+            <text x="37.5" y="45" textAnchor="middle" fontSize="22" fill="#333" fontWeight="bold">
+              🐝
+            </text>
           </svg>
           <span style={styles.logoText}>Smart Apiary</span>
         </div>
-
-        <h2 style={styles.title}>Welcome back</h2>
-        <p style={styles.subtitle}>Sign in to your account</p>
-
-        {error && <div style={styles.error}>{error}</div>}
-
+        <h2 style={styles.title}>Activate Account</h2>
+        <p style={styles.subtitle}>Set your password to activate your account</p>
+        {!token && (
+          <div style={styles.info}>
+            Open this page using the activation link that contains your token.
+          </div>
+        )}
+        {message && (
+          <div style={isSuccess ? styles.success : styles.error}>
+            {message}
+          </div>
+        )}
         <div style={styles.field}>
-          <label style={styles.label}>Email Address</label>
-          <input
-            style={styles.input}
-            type="email"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-          />
-        </div>
-
-        <div style={styles.field}>
-          <label style={styles.label}>Password</label>
+          <label style={styles.label}>New Password</label>
           <input
             style={styles.input}
             type="password"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
           />
         </div>
-
-        <div style={styles.links}>
-          <span style={styles.link} onClick={() => navigate('/forgot-password')}>
-            Forgot Password?
-          </span>
-          <span style={styles.link} onClick={() => navigate('/activate')}>
-            Activate account
-          </span>
+        <div style={styles.field}>
+          <label style={styles.label}>Confirm Password</label>
+          <input
+            style={styles.input}
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
         </div>
-
         <button
           style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
-          onClick={handleLogin}
+          onClick={handleActivate}
           disabled={loading}
         >
-          {loading ? 'Signing in...' : 'Login'}
+          {loading ? 'Activating...' : 'Activate Account'}
         </button>
+        <p style={styles.backLink} onClick={() => navigate('/login')}>
+          ← Back to Login
+        </p>
       </div>
     </div>
   );
@@ -144,6 +158,15 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'center',
     margin: '0 0 28px 0',
   },
+  info: {
+    background: 'rgba(255,179,0,0.12)',
+    border: '1px solid rgba(255,179,0,0.35)',
+    borderRadius: '10px',
+    color: '#ffd166',
+    padding: '12px 16px',
+    fontSize: '14px',
+    marginBottom: '20px',
+  },
   error: {
     background: 'rgba(255,80,80,0.15)',
     border: '1px solid rgba(255,80,80,0.4)',
@@ -151,6 +174,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#ff6b6b',
     padding: '12px 16px',
     fontSize: '14px',
+    marginBottom: '20px',
+  },
+  success: {
+    background: 'rgba(80,255,120,0.15)',
+    border: '1px solid rgba(80,255,120,0.4)',
+    borderRadius: '10px',
+    color: '#6bffa0',
+    padding: '16px',
+    fontSize: '15px',
+    textAlign: 'center',
     marginBottom: '20px',
   },
   field: {
@@ -174,18 +207,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '15px',
     outline: 'none',
     boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-  },
-  links: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginBottom: '24px',
-  },
-  link: {
-    color: '#ffb300',
-    fontSize: '13px',
-    cursor: 'pointer',
-    textDecoration: 'underline',
   },
   button: {
     width: '100%',
@@ -198,6 +219,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '700',
     cursor: 'pointer',
     letterSpacing: '0.5px',
-    transition: 'opacity 0.2s',
+    marginTop: '8px',
+  },
+  backLink: {
+    color: '#ffb300',
+    fontSize: '13px',
+    cursor: 'pointer',
+    textAlign: 'center',
+    marginTop: '20px',
+    textDecoration: 'underline',
   },
 };

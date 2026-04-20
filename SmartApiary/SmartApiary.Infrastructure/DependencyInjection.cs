@@ -27,6 +27,7 @@ namespace SmartApiary.Infrastructure
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IApiaryRepository, ApiaryRepository>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 

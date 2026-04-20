@@ -8,6 +8,12 @@
     "AzureQueueOptions:ActivationQueue": "activation-queue",
     "SendGrid:ApiKey": "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",
     "SendGrid:FromEmail": "bozanabojan@gmail.com",
-    "SendGrid:FromName": "SmartApiary"
+    "SendGrid:FromName": "SmartApiary",
+    "AzureBlob:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureBlob:Container": "apiary-images"
+  },
+  "Host": {
+    "CORS": "http://localhost:5173",
+    "CORS_AllowedOrigins": "http://localhost:5173"
   }
 }

@@ -22,6 +22,10 @@ namespace SmartApiary.Application.Features.Users.Commands
             RuleFor(x => x.Role)
                 .Must(role => Enum.IsDefined(typeof(UserRole), role))
                 .WithMessage("Invalid role.");
+
+            RuleFor(x => x.PhoneNumber)
+                .MaximumLength(32)
+                .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
         }
     }
 }

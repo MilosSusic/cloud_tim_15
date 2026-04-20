@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import type { User, CreateUserForm } from '../types/User';
 
 const api = axios.create({ baseURL: 'https://localhost:7159/api' });
 api.interceptors.request.use((config) => {
@@ -8,24 +9,6 @@ api.interceptors.request.use((config) => {
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  isSuspended: boolean;
-  isDeleted: boolean;
-}
-
-interface CreateUserForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: number;
-}
 
 export default function UserManagementPage() {
   const navigate = useNavigate();
@@ -41,6 +24,7 @@ export default function UserManagementPage() {
     lastName: '',
     email: '',
     role: 2,
+    phoneNumber: '',
   });
 
   useEffect(() => {
@@ -48,7 +32,7 @@ export default function UserManagementPage() {
       try {
         const response = await api.get<User[]>('/users');
         setUsers(response.data);
-      } catch {
+      } catch (err) {
         setError('Failed to load users.');
       } finally {
         setLoading(false);
@@ -73,7 +57,7 @@ export default function UserManagementPage() {
       await api.post('/users', form);
       setSuccess('User created! Activation email sent.');
       setShowModal(false);
-      setForm({ firstName: '', lastName: '', email: '', role: 2 });
+      setForm({ firstName: '', lastName: '', email: '', role: 2, phoneNumber: '' });
       fetchUsers();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: unknown) {
@@ -138,17 +122,16 @@ export default function UserManagementPage() {
   };
 
   const getStatusBadge = (user: User): { label: string; color: string } => {
-    if (user.isDeleted) return { label: 'Deleted', color: '#ff4444' };
     if (user.isSuspended) return { label: 'Suspended', color: '#ff9800' };
     if (!user.isActive) return { label: 'Pending', color: '#9e9e9e' };
     return { label: 'Active', color: '#4caf50' };
   };
 
-  const filteredUsers = users.filter(u => !u.isDeleted && (
+  const filteredUsers = users.filter(u =>
     u.firstName.toLowerCase().includes(search.toLowerCase()) ||
     u.lastName.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
-  ));
+  );
 
   return (
     <div style={styles.bg}>
@@ -211,7 +194,7 @@ export default function UserManagementPage() {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  {['First Name', 'Last Name', 'Email', 'Role', 'Status', 'Suspend', 'Delete'].map((h) => (
+                  {['First Name', 'Last Name', 'Email', 'Phone Number', 'Role', 'Status', 'Suspend', 'Delete'].map((h) => (
                     <th key={h} style={styles.th}>{h}</th>
                   ))}
                 </tr>
@@ -231,8 +214,11 @@ export default function UserManagementPage() {
                         <span style={styles.userEmail}>{user.email}</span>
                       </td>
                       <td style={styles.td}>
-                        <span style={getRoleStyle(user.role)}>
-                          {getRoleName(user.role)}
+                        <span style={styles.userEmail}>{user.phoneNumber}</span>
+                      </td>
+                      <td style={styles.td}>
+                        <span style={getRoleStyle(String(user.role))}>
+                          {getRoleName(String(user.role))}
                         </span>
                       </td>
                       <td style={styles.td}>
@@ -286,9 +272,7 @@ export default function UserManagementPage() {
               <h2 style={styles.modalTitle}>Add New User</h2>
               <button style={styles.closeBtn} onClick={() => setShowModal(false)}>✕</button>
             </div>
-
             {error && <div style={styles.errorMsg}>{error}</div>}
-
             <div style={styles.field}>
               <label style={styles.label}>First Name</label>
               <input
@@ -320,6 +304,17 @@ export default function UserManagementPage() {
               />
             </div>
             <div style={styles.field}>
+              <label style={styles.label}>Phone Number</label>
+              <input
+                style={styles.input}
+                type="text"
+                placeholder="061234567"
+                maxLength={32}
+                value={form.phoneNumber}
+                onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
+              />
+            </div>
+            <div style={styles.field}>
               <label style={styles.label}>Role</label>
               <select
                 style={styles.select}
@@ -331,7 +326,6 @@ export default function UserManagementPage() {
                 <option value={1} style={{ background: '#1a1a2e', color: '#ffffff' }}>Admin</option>
               </select>
             </div>
-
             <div style={styles.modalActions}>
               <button style={styles.cancelBtn} onClick={() => setShowModal(false)}>
                 Cancel
@@ -501,94 +495,94 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderCollapse: 'collapse',
   },
   th: {
-    padding: '14px 18px',
-    textAlign: 'left' as const,
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: '11px',
+    color: '#ffb300',
     fontWeight: '700',
-    letterSpacing: '0.8px',
-    textTransform: 'uppercase' as const,
+    fontSize: '14px',
+    padding: '16px 8px',
+    background: 'rgba(255,255,255,0.03)',
     borderBottom: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.02)',
+    textAlign: 'left' as const,
   },
   tr: {
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    borderBottom: '1px solid rgba(255,255,255,0.06)',
   },
   td: {
-    padding: '14px 18px',
-    verticalAlign: 'middle' as const,
+    color: '#fff',
+    fontSize: '14px',
+    padding: '14px 8px',
+    verticalAlign: 'middle',
   },
   userName: {
-    color: '#ffffff',
-    fontSize: '14px',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#fff',
   },
   userEmail: {
-    color: 'rgba(255,255,255,0.55)',
+    color: '#ffd166',
     fontSize: '13px',
   },
   roleBadge: {
+    display: 'inline-block',
     padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
+    borderRadius: '8px',
     fontWeight: '600',
+    fontSize: '13px',
+    marginRight: '4px',
   },
   statusBadge: {
+    display: 'inline-block',
     padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
+    borderRadius: '8px',
     fontWeight: '600',
+    fontSize: '13px',
+    marginRight: '4px',
   },
   iconBtn: {
-    background: 'rgba(255,152,0,0.12)',
-    border: '1px solid rgba(255,152,0,0.3)',
-    borderRadius: '8px',
-    padding: '6px 10px',
-    fontSize: '16px',
+    background: 'none',
+    border: 'none',
+    color: '#ffb300',
+    fontSize: '18px',
     cursor: 'pointer',
-    color: '#ffb74d',
+    padding: '4px 8px',
+    borderRadius: '6px',
+    transition: 'background 0.2s',
   },
   deleteIconBtn: {
-    background: 'rgba(255,80,80,0.12)',
-    border: '1px solid rgba(255,80,80,0.3)',
-    color: '#ff6b6b',
+    color: '#ff4444',
   },
   disabledIcon: {
-    opacity: 0.2,
-    fontSize: '16px',
-    padding: '6px 10px',
-    display: 'inline-block',
+    color: '#aaa',
+    fontSize: '18px',
+    padding: '4px 8px',
   },
   modalOverlay: {
-    position: 'fixed',
+    position: 'fixed' as const,
     top: 0,
     left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.75)',
-    backdropFilter: 'blur(8px)',
+    width: '100vw',
+    height: '100vh',
+    background: 'rgba(0,0,0,0.45)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1000,
   },
   modal: {
-    background: '#16213e',
-    border: '1px solid rgba(255,183,0,0.25)',
-    borderRadius: '20px',
-    padding: '36px',
-    width: '100%',
-    maxWidth: '460px',
-    boxShadow: '0 30px 70px rgba(0,0,0,0.7)',
+    background: '#23234b',
+    borderRadius: '16px',
+    padding: '32px 28px',
+    minWidth: '340px',
+    maxWidth: '95vw',
+    boxShadow: '0 8px 32px 0 rgba(31,38,135,0.37)',
+    position: 'relative' as const,
   },
   modalHeader: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '28px',
+    justifyContent: 'space-between',
+    marginBottom: '18px',
   },
   modalTitle: {
-    color: '#ffffff',
+    color: '#fff',
     fontSize: '20px',
     fontWeight: '700',
     margin: 0,
@@ -596,63 +590,64 @@ const styles: { [key: string]: React.CSSProperties } = {
   closeBtn: {
     background: 'none',
     border: 'none',
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: '18px',
+    color: '#ffb300',
+    fontSize: '20px',
     cursor: 'pointer',
+    padding: '2px 8px',
+    borderRadius: '6px',
   },
   field: {
-    marginBottom: '16px',
+    marginBottom: '18px',
   },
   label: {
     display: 'block',
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: '12px',
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: '13px',
     fontWeight: '600',
     marginBottom: '8px',
     letterSpacing: '0.3px',
   },
   input: {
     width: '100%',
-    padding: '11px 14px',
-    background: 'rgba(255,255,255,0.07)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    padding: '12px 16px',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.15)',
     borderRadius: '10px',
     color: '#ffffff',
-    fontSize: '14px',
+    fontSize: '15px',
     outline: 'none',
     boxSizing: 'border-box',
   },
   select: {
     width: '100%',
-    padding: '11px 14px',
-    background: '#1a1a2e',
-    border: '1px solid rgba(255,255,255,0.12)',
+    padding: '12px 16px',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.15)',
     borderRadius: '10px',
     color: '#ffffff',
-    fontSize: '14px',
+    fontSize: '15px',
     outline: 'none',
-    boxSizing: 'border-box' as const,
-    cursor: 'pointer',
+    boxSizing: 'border-box',
+    appearance: 'none',
   },
   modalActions: {
     display: 'flex',
+    justifyContent: 'flex-end',
     gap: '12px',
-    marginTop: '28px',
+    marginTop: '18px',
   },
   cancelBtn: {
-    flex: 1,
-    padding: '12px',
-    background: 'rgba(255,255,255,0.07)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    padding: '10px 22px',
+    background: 'rgba(255,255,255,0.08)',
+    border: '1px solid rgba(255,255,255,0.15)',
     borderRadius: '10px',
-    color: 'rgba(255,255,255,0.6)',
+    color: '#fff',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
   },
   createBtn: {
-    flex: 1,
-    padding: '12px',
+    padding: '10px 22px',
     background: 'linear-gradient(135deg, #ffb300, #e65100)',
     border: 'none',
     borderRadius: '10px',

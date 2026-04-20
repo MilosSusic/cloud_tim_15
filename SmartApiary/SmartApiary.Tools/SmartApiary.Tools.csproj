@@ -11,4 +11,8 @@
     <PackageReference Include="Azure.Storage.Queues" Version="12.18.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SmartApiary.Infrastructure\SmartApiary.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

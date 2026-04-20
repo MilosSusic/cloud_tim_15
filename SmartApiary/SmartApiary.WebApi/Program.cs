@@ -20,6 +20,7 @@ var jwtAudience = builder.Configuration["JwtOptions:Audience"]
 var jwtKey = builder.Configuration["JwtOptions:Key"]
     ?? throw new InvalidOperationException("JwtOptions:Key is not configured.");
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>

@@ -6,6 +6,9 @@ namespace SmartApiary.Infrastructure.Persistence
     public class ApplicationDbContext : DbContext
     {
         public DbSet<User> Users => Set<User>();
+        public DbSet<Apiary> Apiaries => Set<Apiary>();
+        public DbSet<Hive> Hives => Set<Hive>();
+        public DbSet<HiveLogEntry> HiveLogEntries => Set<HiveLogEntry>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -40,6 +43,7 @@ namespace SmartApiary.Infrastructure.Persistence
                     .HasMaxLength(512);
 
                 entity.Property(x => x.Role)
+                    .HasConversion<string>() // Enum kao string
                     .IsRequired();
 
                 entity.Property(x => x.IsActive)
@@ -48,8 +52,8 @@ namespace SmartApiary.Infrastructure.Persistence
                 entity.Property(x => x.IsSuspended)
                     .IsRequired();
 
-                entity.Property(x => x.IsDeleted)
-                    .IsRequired();
+                entity.Property(x => x.PhoneNumber)
+                    .HasMaxLength(32);
 
                 entity.Property(x => x.ActivationToken)
                     .HasMaxLength(256);
@@ -60,6 +64,101 @@ namespace SmartApiary.Infrastructure.Persistence
                     .HasMaxLength(256);
 
                 entity.Property(x => x.ResetPasswordTokenExpiresAtUtc);
+            });
+
+            modelBuilder.Entity<Apiary>(entity =>
+            {
+                entity.ToTable("Apiaries");
+
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(x => x.Description)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.Latitude)
+                    .IsRequired();
+
+                entity.Property(x => x.Longitude)
+                    .IsRequired();
+
+                entity.Property(x => x.ImageUrl)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.ThumbnailUrl)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.OwnerId)
+                    .IsRequired();
+
+                entity.HasMany(x => x.Hives)
+                    .WithOne()
+                    .HasForeignKey(x => x.ApiaryId);
+            });
+
+            modelBuilder.Entity<Hive>(entity =>
+            {
+                entity.ToTable("Hives");
+
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.Label)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(x => x.Type)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(x => x.Color)
+                    .HasMaxLength(50);
+
+                entity.Property(x => x.QueenAge)
+                    .IsRequired();
+
+                entity.Property(x => x.Note)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.IsDeleted)
+                    .IsRequired();
+
+                entity.HasMany(x => x.LogEntries)
+                    .WithOne()
+                    .HasForeignKey(x => x.HiveId);
+            });
+
+            modelBuilder.Entity<HiveLogEntry>(entity =>
+            {
+                entity.ToTable("HiveLogEntries");
+
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.ReviewDate)
+                    .IsRequired();
+
+                entity.Property(x => x.ReviewType)
+                    .HasMaxLength(100);
+
+                entity.Property(x => x.BottomBoardColor)
+                    .HasMaxLength(50);
+
+                entity.Property(x => x.HoneyFrames)
+                    .IsRequired();
+
+                entity.Property(x => x.HoneyAmountKg)
+                    .IsRequired();
+
+                entity.Property(x => x.BroodFrames)
+                    .IsRequired();
+
+                entity.Property(x => x.QueenPresent)
+                    .IsRequired();
+
+                entity.Property(x => x.Note)
+                    .HasMaxLength(512);
             });
 
             base.OnModelCreating(modelBuilder);

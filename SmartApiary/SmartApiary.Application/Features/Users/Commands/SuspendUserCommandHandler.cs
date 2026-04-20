@@ -11,9 +11,9 @@ namespace SmartApiary.Application.Features.Users.Commands
         {
             var user = await userRepository.GetByEmailAsync(request.Email, ct);
 
-            if (user is null || user.IsDeleted)
+            if (user is null)
             {
-                return Result.Failure("User not found.");
+                return Result.Failure("Korisnik nije pronađen.");
             }
 
             user.Suspend();

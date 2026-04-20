@@ -26,7 +26,7 @@ namespace SmartApiary.Application.Features.Users.Queries
                 return Result<string>.Failure("Account is not activated.");
             }
 
-            if (user.IsSuspended || user.IsDeleted)
+            if (user.IsSuspended)
             {
                 return Result<string>.Failure("Account is not available.");
             }

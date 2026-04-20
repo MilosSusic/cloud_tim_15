@@ -1,4 +1,10 @@
 import axios from 'axios';
+import type {
+  LoginRequest,
+  ActivateAccountRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from '../types/AuthRequests';
 
 const api = axios.create({
   baseURL: 'https://localhost:7159/api',
@@ -11,27 +17,6 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface ActivateAccountRequest {
-  activationToken: string;
-  password: string;
-  confirmPassword: string;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ResetPasswordRequest {
-  resetPasswordToken: string;
-  password: string;
-  confirmPassword: string;
-}
 
 export const login = (data: LoginRequest) =>
   api.post<string>('/auth/login', data);

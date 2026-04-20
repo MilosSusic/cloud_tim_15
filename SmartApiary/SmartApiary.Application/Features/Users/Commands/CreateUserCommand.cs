@@ -8,6 +8,7 @@ namespace SmartApiary.Application.Features.Users.Commands
         string FirstName,
         string LastName,
         string Email,
-        UserRole Role
+        UserRole Role,
+        string? PhoneNumber // Dodato polje
     ) : IRequest<Result<Guid>>;
 }

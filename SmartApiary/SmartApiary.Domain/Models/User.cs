@@ -17,7 +17,7 @@ namespace SmartApiary.Domain.Models
         public string? ResetPasswordToken { get; private set; }
         public DateTime? ResetPasswordTokenExpiresAtUtc { get; private set; }
         public bool IsSuspended { get; private set; }
-        public bool IsDeleted { get; private set; }
+        public string? PhoneNumber { get; private set; } // Dodato polje za broj telefona
         private User() { }
 
         public static User Create(
@@ -26,7 +26,8 @@ namespace SmartApiary.Domain.Models
             string email,
             UserRole role,
             string activationToken,
-            DateTime expiresAtUtc)
+            DateTime expiresAtUtc,
+            string? phoneNumber = null)
         {
             return new User
             {
@@ -37,7 +38,8 @@ namespace SmartApiary.Domain.Models
                 Role = role,
                 IsActive = false,
                 ActivationToken = activationToken,
-                ActivationTokenExpiresAtUtc = expiresAtUtc
+                ActivationTokenExpiresAtUtc = expiresAtUtc,
+                PhoneNumber = phoneNumber
             };
         }
 
@@ -65,12 +67,6 @@ namespace SmartApiary.Domain.Models
         public void Suspend()
         {
             IsSuspended = true;
-        }
-
-        public void Delete()
-        {
-            IsDeleted = true;
-            Email = $"{Email}_deleted_{Id}";
         }
     }
 }

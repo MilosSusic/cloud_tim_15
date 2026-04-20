@@ -1,28 +1,23 @@
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { resetPassword } from '../api/authApi';
+import { useNavigate } from 'react-router-dom';
+import { forgotPassword } from '../api/authApi';
 
-export default function ResetPasswordPage() {
+export default function ForgotPasswordPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get('token') || '';
-
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleReset = async () => {
+  const handleSubmit = async () => {
     setError('');
     setLoading(true);
     try {
-      await resetPassword({ resetPasswordToken: token, password, confirmPassword });
+      await forgotPassword({ email });
       setSuccess(true);
-      setTimeout(() => navigate('/login'), 2500);
     } catch (err: unknown) {
       const error = err as { response?: { data?: string } };
-      setError(error.response?.data || 'Reset failed. Please try again.');
+      setError(error.response?.data || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -38,54 +33,39 @@ export default function ResetPasswordPage() {
           </svg>
           <span style={styles.logoText}>Smart Apiary</span>
         </div>
-
-        <h2 style={styles.title}>Reset Password</h2>
-        <p style={styles.subtitle}>Enter your new password below</p>
-
+        <h2 style={styles.title}>Forgot Password</h2>
+        <p style={styles.subtitle}>
+          Enter your email and we'll send you a reset link
+        </p>
         {success ? (
           <div style={styles.success}>
-            ✅ Password reset successfully! Redirecting to login...
+            ✅ If an account with that email exists, a reset link has been sent.
+            Check your inbox.
+            <p style={styles.backLink} onClick={() => navigate('/login')}>
+              ← Back to Login
+            </p>
           </div>
         ) : (
           <>
             {error && <div style={styles.error}>{error}</div>}
-
-            {!token && (
-              <div style={styles.error}>
-                Invalid or missing reset token.
-              </div>
-            )}
-
             <div style={styles.field}>
-              <label style={styles.label}>New Password</label>
+              <label style={styles.label}>Email Address</label>
               <input
                 style={styles.input}
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
             </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Confirm Password</label>
-              <input
-                style={styles.input}
-                type="password"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-
             <button
-              style={{ ...styles.button, opacity: loading || !token ? 0.7 : 1 }}
-              onClick={handleReset}
-              disabled={loading || !token}
+              style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
+              onClick={handleSubmit}
+              disabled={loading}
             >
-              {loading ? 'Resetting...' : 'Reset Password'}
+              {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
-
             <p style={styles.backLink} onClick={() => navigate('/login')}>
               ← Back to Login
             </p>
@@ -158,6 +138,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '16px',
     fontSize: '15px',
     textAlign: 'center',
+    marginBottom: '20px',
   },
   field: {
     marginBottom: '18px',
@@ -192,7 +173,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '700',
     cursor: 'pointer',
     letterSpacing: '0.5px',
-    marginTop: '8px',
   },
   backLink: {
     color: '#ffb300',

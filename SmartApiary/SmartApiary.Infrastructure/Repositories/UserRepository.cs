@@ -34,5 +34,9 @@ namespace SmartApiary.Infrastructure.Repositories
         {
             return await dbContext.Users.ToListAsync(ct);
         }
+        public void Remove(User user)
+        {
+            dbContext.Users.Remove(user);
+        }
     }
 }

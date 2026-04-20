@@ -29,7 +29,8 @@ namespace SmartApiary.Application.Features.Users.Commands
                 request.Email,
                 request.Role,
                 activationToken,
-                expiresAtUtc
+                expiresAtUtc,
+                request.PhoneNumber // Prosleđeno novo polje
             );
 
             await userRepository.AddAsync(user, ct);

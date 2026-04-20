@@ -22,6 +22,129 @@ namespace SmartApiary.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SmartApiary.Domain.Models.Apiary", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Apiaries", (string)null);
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApiaryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<int>("QueenAge")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApiaryId");
+
+                    b.ToTable("Hives", (string)null);
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.HiveLogEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BottomBoardColor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("BroodFrames")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("HoneyAmountKg")
+                        .HasColumnType("float");
+
+                    b.Property<int>("HoneyFrames")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<bool>("QueenPresent")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ReviewDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HiveId");
+
+                    b.ToTable("HiveLogEntries", (string)null);
+                });
+
             modelBuilder.Entity("SmartApiary.Domain.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -48,9 +171,6 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsSuspended")
                         .HasColumnType("bit");
 
@@ -64,6 +184,10 @@ namespace SmartApiary.Infrastructure.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
                     b.Property<string>("ResetPasswordToken")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -71,8 +195,9 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.Property<DateTime?>("ResetPasswordTokenExpiresAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Role")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -80,6 +205,34 @@ namespace SmartApiary.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
+                {
+                    b.HasOne("SmartApiary.Domain.Models.Apiary", null)
+                        .WithMany("Hives")
+                        .HasForeignKey("ApiaryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.HiveLogEntry", b =>
+                {
+                    b.HasOne("SmartApiary.Domain.Models.Hive", null)
+                        .WithMany("LogEntries")
+                        .HasForeignKey("HiveId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.Apiary", b =>
+                {
+                    b.Navigation("Hives");
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
+                {
+                    b.Navigation("LogEntries");
                 });
 #pragma warning restore 612, 618
         }

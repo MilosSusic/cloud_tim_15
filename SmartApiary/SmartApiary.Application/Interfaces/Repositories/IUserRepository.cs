@@ -10,5 +10,6 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task SaveChangesAsync(CancellationToken ct = default);
         Task<User?> GetByResetPasswordTokenAsync(string resetPasswordToken, CancellationToken ct = default);
         Task<List<User>> GetAllAsync(CancellationToken ct = default);
+        void Remove(User user); // Add this for physical delete
     }
 }
