@@ -35,5 +35,17 @@ namespace SmartApiary.WebApi.Controllers
                 return BadRequest(result.Error);
             return Ok(result.Value);
         }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateApiaryCommand command, CancellationToken ct)
+        {
+            if (id != command.Id)
+                return BadRequest("Route id and body id do not match.");
+
+            var result = await _mediator.Send(command, ct);
+            if (result.IsFailure)
+                return BadRequest(result.Error);
+            return NoContent();
+        }
     }
 }

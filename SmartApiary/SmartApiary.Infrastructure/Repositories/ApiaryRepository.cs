@@ -28,6 +28,11 @@ namespace SmartApiary.Infrastructure.Repositories
             return await _dbContext.Apiaries.Where(a => a.OwnerId == ownerId).ToListAsync(ct);
         }
 
+        public void Update(Apiary apiary)
+        {
+            _dbContext.Apiaries.Update(apiary);
+        }
+
         public async Task SaveChangesAsync(CancellationToken ct = default)
         {
             await _dbContext.SaveChangesAsync(ct);

@@ -8,7 +8,7 @@ import AccessDeniedPage from './features/auth/pages/AccessDeniedPage';
 import PrivateRoute from './features/auth/components/PrivateRoute';
 import { AuthProvider } from './features/auth/context/AuthContext';
 
-import BeehivesPage from './features/apiaries/pages/BeehivesPage';
+import ApiaryPage from './features/apiaries/pages/ApiaryPage';
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
             path="/beekeeper/apiaries"
             element={
               <PrivateRoute requiredRole="Beekeeper">
-                <BeehivesPage />
+                <ApiaryPage />
               </PrivateRoute>
             }
           />

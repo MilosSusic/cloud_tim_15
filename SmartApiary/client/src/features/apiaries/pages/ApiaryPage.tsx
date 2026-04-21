@@ -1,0 +1,490 @@
+import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { getApiaries, createApiary, updateApiary } from "../api/apiaryApi";
+import HivesSection from "../../hives/components/HivesSection";
+
+import "leaflet/dist/leaflet.css";
+import "../layout/ApiaryPage.css";
+
+import type { Apiary } from "../types/Apiary";
+
+const ApiaryPage: React.FC = () => {
+  const [apiaries, setApiaries] = useState<Apiary[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [selectedApiary, setSelectedApiary] = useState<Apiary | null>(null);
+  const [editingApiary, setEditingApiary] = useState<Apiary | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    latitude: "",
+    longitude: "",
+    file: undefined as File | undefined,
+  });
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    latitude: "",
+    longitude: "",
+    file: undefined as File | undefined,
+  });
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchApiaries();
+  }, []);
+
+  const fetchApiaries = async () => {
+    setLoading(true);
+    try {
+      const data = await getApiaries();
+      setApiaries(data);
+      setMessage("Successfully fetched apiaries.");
+    } catch {
+      setMessage("Failed to fetch apiaries.");
+    }
+    setLoading(false);
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, files } = e.target as any;
+    if (name === "file") {
+      const file = files[0];
+      setForm({ ...form, file });
+      if (file) {
+        setImagePreview(URL.createObjectURL(file));
+      } else {
+        setImagePreview(null);
+      }
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await createApiary(form);
+      setShowForm(false);
+      setForm({
+        name: "",
+        description: "",
+        latitude: "",
+        longitude: "",
+        file: undefined,
+      });
+      setImagePreview(null);
+      setMessage("Apiary created successfully.");
+      await fetchApiaries();
+    } catch (err) {
+      setMessage("Failed to create apiary.");
+    }
+    setLoading(false);
+  };
+
+  const openEdit = (apiary: Apiary) => {
+    setEditingApiary(apiary);
+    setEditForm({
+      name: apiary.name,
+      description: apiary.description ?? "",
+      latitude: String(apiary.latitude),
+      longitude: String(apiary.longitude),
+      file: undefined,
+    });
+    setEditImagePreview(null);
+  };
+
+  const closeEdit = () => {
+    setEditingApiary(null);
+    setEditImagePreview(null);
+  };
+
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, files } = e.target as any;
+    if (name === "file") {
+      const file = files[0];
+      setEditForm({ ...editForm, file });
+      setEditImagePreview(file ? URL.createObjectURL(file) : null);
+    } else {
+      setEditForm({ ...editForm, [name]: value });
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingApiary) return;
+    setLoading(true);
+    try {
+      await updateApiary(editingApiary.id, editForm);
+      setMessage("Apiary updated successfully.");
+      closeEdit();
+      const data = await getApiaries();
+      setApiaries(data);
+      const updated = data.find((a: Apiary) => a.id === editingApiary.id);
+      if (updated) setSelectedApiary(updated);
+    } catch {
+      setMessage("Failed to update apiary.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="apiary-page">
+      {/* Header */}
+      <div className="apiary-header">
+        <div>
+          <div className="apiary-header-eyebrow">Smart Apiary</div>
+          <h2>My Apiaries</h2>
+        </div>
+        <button onClick={() => setShowForm(true)} className="add-btn">
+          + Add Apiary
+        </button>
+      </div>
+
+      {/* Toast */}
+      {message && (
+        <div
+          className={`apiary-toast ${
+            message.toLowerCase().includes("success") ? "success-green" : "error"
+          }`}
+        >
+          <span className="apiary-toast-dot"></span>
+          {message}
+        </div>
+      )}
+
+      {/* Three-column layout */}
+      <div className="apiary-grid">
+        {/* ── Left: Apiary list ── */}
+        <aside className="apiary-list-card">
+          <div className="apiary-list-card-header">
+            <h3>Apiaries</h3>
+            <span className="apiary-list-count-badge">{apiaries.length}</span>
+          </div>
+          <ul>
+            {apiaries.length === 0 && (
+              <div className="apiary-list-empty">No apiaries.</div>
+            )}
+            {apiaries.map((apiary) => (
+              <li
+                key={apiary.id}
+                className={selectedApiary?.id === apiary.id ? "active" : ""}
+                onClick={() => setSelectedApiary(apiary)}
+              >
+                <span className="apiary-list-icon">🐝</span>
+                <div className="apiary-list-body">
+                  <div className="apiary-list-name">{apiary.name}</div>
+                  <div className="apiary-list-desc">{apiary.description}</div>
+                  <div className="apiary-list-coords">
+                    {Number(apiary.latitude).toFixed(3)},{" "}
+                    {Number(apiary.longitude).toFixed(3)}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        {/* ── Center: Map ── */}
+        <section className="apiary-map">
+          <div className="map-section">
+            <MapContainer
+              center={[45.25, 19.85]}
+              zoom={6}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {apiaries.map((apiary) => (
+                <Marker
+                  key={apiary.id}
+                  position={[apiary.latitude, apiary.longitude]}
+                  eventHandlers={{ click: () => setSelectedApiary(apiary) }}
+                >
+                  <Popup>
+                    <div className="apiary-popup">
+                      <img
+                        src={apiary.thumbnailUrl || apiary.imageUrl}
+                        alt={apiary.name}
+                      />
+                      <div className="apiary-popup-name">{apiary.name}</div>
+                      <p className="apiary-popup-desc">{apiary.description}</p>
+                      <div className="apiary-popup-coords">
+                        Lat: {apiary.latitude}, Lng: {apiary.longitude}
+                      </div>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+        </section>
+
+        {/* ── Right: Info panel ── */}
+        <aside className="apiary-info-panel">
+          <div className="apiary-info-header">
+            <h3>Apiary Info</h3>
+            {selectedApiary && (
+              <button
+                className="apiary-info-close"
+                onClick={() => setSelectedApiary(null)}
+                aria-label="Close info panel"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {!selectedApiary ? (
+            <div className="apiary-info-empty">
+              Select an apiary from the list or map to see details.
+            </div>
+          ) : (
+            <>
+              {(selectedApiary.thumbnailUrl || selectedApiary.imageUrl) && (
+                <img
+                  className="apiary-info-image"
+                  src={selectedApiary.thumbnailUrl || selectedApiary.imageUrl}
+                  alt={selectedApiary.name}
+                />
+              )}
+              <div className="apiary-info-section">
+                <div className="apiary-info-row">
+                  <span>Name</span>
+                  <strong>{selectedApiary.name}</strong>
+                </div>
+                <div className="apiary-info-row">
+                  <span>Latitude</span>
+                  <strong>{selectedApiary.latitude}</strong>
+                </div>
+                <div className="apiary-info-row">
+                  <span>Longitude</span>
+                  <strong>{selectedApiary.longitude}</strong>
+                </div>
+                {selectedApiary.description && (
+                  <div className="apiary-info-row apiary-info-row-block">
+                    <span>Description</span>
+                    <p>{selectedApiary.description}</p>
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                className="apiary-info-edit-btn"
+                onClick={() => openEdit(selectedApiary)}
+              >
+                Edit Apiary
+              </button>
+
+              <HivesSection
+                apiaryId={selectedApiary.id}
+                onSuccess={(msg) => setMessage(msg)}
+                onError={(msg) => setMessage(msg)}
+              />
+            </>
+          )}
+        </aside>
+      </div>
+
+      {/* Add Apiary modal */}
+      {showForm && (
+        <div
+          className="apiary-modal-backdrop"
+          onClick={() => setShowForm(false)}
+        >
+          <form
+            className="apiary-form"
+            onSubmit={handleSubmit}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="apiary-form-header">
+              <h3 className="apiary-form-title">Add New Apiary</h3>
+              <button
+                type="button"
+                className="apiary-info-close"
+                onClick={() => setShowForm(false)}
+                aria-label="Close form"
+              >
+                ×
+              </button>
+            </div>
+            <div className="apiary-form-grid">
+              <div className="apiary-form-group">
+                <label htmlFor="apiary-name">Name</label>
+                <input
+                  id="apiary-name"
+                  name="name"
+                  placeholder="Apiary name"
+                  value={form.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="apiary-form-group">
+                <label htmlFor="apiary-description">Description</label>
+                <textarea
+                  id="apiary-description"
+                  name="description"
+                  placeholder="Description"
+                  value={form.description}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="apiary-form-group">
+                <label htmlFor="apiary-latitude">Latitude</label>
+                <input
+                  id="apiary-latitude"
+                  name="latitude"
+                  placeholder="Latitude"
+                  value={form.latitude}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="apiary-form-group">
+                <label htmlFor="apiary-longitude">Longitude</label>
+                <input
+                  id="apiary-longitude"
+                  name="longitude"
+                  placeholder="Longitude"
+                  value={form.longitude}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="apiary-form-group apiary-form-file-group">
+                <label htmlFor="apiary-file">Image</label>
+                <input
+                  id="apiary-file"
+                  name="file"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleInputChange}
+                  required
+                />
+                <label htmlFor="apiary-file" className="apiary-form-file-label">
+                  Choose Image
+                </label>
+                {imagePreview && (
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="apiary-form-image-preview"
+                  />
+                )}
+              </div>
+            </div>
+            <button type="submit" disabled={loading}>
+              {loading ? "Saving..." : "Save"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Apiary modal */}
+      {editingApiary && (
+        <div className="apiary-modal-backdrop" onClick={closeEdit}>
+          <form
+            className="apiary-form"
+            onSubmit={handleEditSubmit}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="apiary-form-header">
+              <h3 className="apiary-form-title">Edit Apiary</h3>
+              <button
+                type="button"
+                className="apiary-info-close"
+                onClick={closeEdit}
+                aria-label="Close form"
+              >
+                ×
+              </button>
+            </div>
+            <div className="apiary-form-grid">
+              <div className="apiary-form-group">
+                <label htmlFor="edit-apiary-name">Name</label>
+                <input
+                  id="edit-apiary-name"
+                  name="name"
+                  placeholder="Apiary name"
+                  value={editForm.name}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              <div className="apiary-form-group">
+                <label htmlFor="edit-apiary-description">Description</label>
+                <textarea
+                  id="edit-apiary-description"
+                  name="description"
+                  placeholder="Description"
+                  value={editForm.description}
+                  onChange={handleEditChange}
+                />
+              </div>
+              <div className="apiary-form-group">
+                <label htmlFor="edit-apiary-latitude">Latitude</label>
+                <input
+                  id="edit-apiary-latitude"
+                  name="latitude"
+                  placeholder="Latitude"
+                  value={editForm.latitude}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              <div className="apiary-form-group">
+                <label htmlFor="edit-apiary-longitude">Longitude</label>
+                <input
+                  id="edit-apiary-longitude"
+                  name="longitude"
+                  placeholder="Longitude"
+                  value={editForm.longitude}
+                  onChange={handleEditChange}
+                  required
+                />
+              </div>
+              <div className="apiary-form-group apiary-form-file-group">
+                <label htmlFor="edit-apiary-file">Image (optional)</label>
+                <input
+                  id="edit-apiary-file"
+                  name="file"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditChange}
+                />
+                <label htmlFor="edit-apiary-file" className="apiary-form-file-label">
+                  Choose New Image
+                </label>
+                {(editImagePreview ||
+                  editingApiary.thumbnailUrl ||
+                  editingApiary.imageUrl) && (
+                  <img
+                    src={
+                      editImagePreview ||
+                      editingApiary.thumbnailUrl ||
+                      editingApiary.imageUrl
+                    }
+                    alt="Preview"
+                    className="apiary-form-image-preview"
+                  />
+                )}
+              </div>
+            </div>
+            <button type="submit" disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ApiaryPage;

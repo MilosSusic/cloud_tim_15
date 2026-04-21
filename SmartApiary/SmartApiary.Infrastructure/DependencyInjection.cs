@@ -7,6 +7,7 @@ using SmartApiary.Application.Interfaces.Email;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
+using SmartApiary.Application.Interfaces.Storage;
 
 using SmartApiary.Infrastructure.Authentication;
 using SmartApiary.Infrastructure.Persistence;
@@ -14,6 +15,7 @@ using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Infrastructure.Services;
 using SmartApiary.Infrastructure.Services.Email;
+using SmartApiary.Infrastructure.Services.Storage;
 
 namespace SmartApiary.Infrastructure
 {
@@ -28,6 +30,8 @@ namespace SmartApiary.Infrastructure
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IApiaryRepository, ApiaryRepository>();
+            services.AddScoped<IHiveRepository, HiveRepository>();
+            services.AddScoped<IHiveLogEntryRepository, HiveLogEntryRepository>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
@@ -38,6 +42,15 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IActivationQueueService, ActivationQueueService>();
 
             services.AddScoped<IEmailService, SendGridEmailService>();
+
+            services.AddScoped<IBlobStorageService>(_ =>
+            {
+                var connectionString = configuration["AzureBlob:ConnectionString"]
+                    ?? throw new InvalidOperationException("AzureBlob:ConnectionString is not configured.");
+                var containerName = configuration["AzureBlob:Container"]
+                    ?? throw new InvalidOperationException("AzureBlob:Container is not configured.");
+                return new BlobUploadService(connectionString, containerName);
+            });
 
             return services;
         }

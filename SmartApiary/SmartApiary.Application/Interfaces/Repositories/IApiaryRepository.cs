@@ -7,6 +7,7 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task AddAsync(Apiary apiary, CancellationToken ct = default);
         Task<Apiary?> GetByIdAsync(Guid id, CancellationToken ct = default);
         Task<List<Apiary>> GetByOwnerIdAsync(Guid ownerId, CancellationToken ct = default);
+        void Update(Apiary apiary);
         Task SaveChangesAsync(CancellationToken ct = default);
     }
 }

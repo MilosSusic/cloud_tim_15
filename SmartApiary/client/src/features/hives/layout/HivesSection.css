@@ -1,0 +1,126 @@
+.hives-section {
+  margin-top: 0.5rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.hives-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hives-section-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.hives-count {
+  color: #94a3b8;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.hives-add-btn {
+  background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 0.4rem 0.85rem;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.12s;
+  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.30);
+}
+.hives-add-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+
+.hives-empty {
+  font-size: 13px;
+  color: #64748b;
+  padding: 0.5rem 0.25rem;
+  text-align: center;
+}
+
+.hives-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hives-list-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(148, 163, 184, 0.10);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+}
+
+.hives-list-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.hives-list-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.hives-list-meta {
+  font-size: 12.5px;
+  color: #94a3b8;
+}
+
+.hives-list-note {
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hives-list-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.hives-icon-btn {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.hives-icon-btn:hover {
+  background: rgba(245, 158, 11, 0.10);
+  border-color: rgba(245, 158, 11, 0.30);
+}
+.hives-icon-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.40);
+}
