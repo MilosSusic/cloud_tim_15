@@ -82,9 +82,6 @@ export default function LoginPage() {
           <span style={styles.link} onClick={() => navigate('/forgot-password')}>
             Forgot Password?
           </span>
-          <span style={styles.link} onClick={() => navigate('/activate')}>
-            Activate account
-          </span>
         </div>
         <button
           style={{ ...styles.button, opacity: loading ? 0.7 : 1 }}
@@ -177,7 +174,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   links: {
     display: 'flex',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     marginBottom: '24px',
   },
   link: {
