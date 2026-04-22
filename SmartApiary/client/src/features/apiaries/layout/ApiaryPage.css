@@ -97,9 +97,10 @@
 .apiary-toast.error .apiary-toast-dot { background: #ef4444; }
 
 /* ─── 3-Column Grid ───────────────────────────────────────── */
+
 .apiary-grid {
   display: grid;
-  grid-template-columns: 440px 1fr 480px;
+  grid-template-columns: 220px minmax(400px, 1fr) 260px;
   gap: 1.5rem;
   align-items: stretch;
   min-height: 82vh;
