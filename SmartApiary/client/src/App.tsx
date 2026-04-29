@@ -9,6 +9,7 @@ import PrivateRoute from './features/auth/components/PrivateRoute';
 import { AuthProvider } from './features/auth/context/AuthContext';
 
 import ApiaryPage from './features/apiaries/pages/ApiaryPage';
+import FieldPage from './features/fields/pages/FieldPage';
 
 function App() {
   return (
@@ -30,6 +31,15 @@ function App() {
             }
           />
 
+          <Route
+            path="/farmer/field"
+            element={
+              <PrivateRoute requiredRole="Farmer">
+                <FieldPage />
+              </PrivateRoute>
+            }
+          />
+          
           <Route
             path="/admin/users"
             element={

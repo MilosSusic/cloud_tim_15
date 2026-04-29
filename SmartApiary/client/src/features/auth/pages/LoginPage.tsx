@@ -27,6 +27,8 @@ export default function LoginPage() {
         navigate('/admin/users');
       } else if (newRole === 'Beekeeper') {
         navigate('/beekeeper/apiaries');
+      }else if (newRole === 'Farmer') {
+        navigate('/farmer/field');
       } else {
         navigate('/access-denied');
       }

@@ -9,6 +9,9 @@ namespace SmartApiary.Infrastructure.Persistence
         public DbSet<Apiary> Apiaries => Set<Apiary>();
         public DbSet<Hive> Hives => Set<Hive>();
         public DbSet<HiveLogEntry> HiveLogEntries => Set<HiveLogEntry>();
+        public DbSet<Field> Fields => Set<Field>();
+        public DbSet<SpraySchedule> SpraySchedules => Set<SpraySchedule>();
+        public DbSet<Crop> Crops => Set<Crop>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -159,6 +162,86 @@ namespace SmartApiary.Infrastructure.Persistence
 
                 entity.Property(x => x.Note)
                     .HasMaxLength(512);
+            });
+            modelBuilder.Entity<Field>(entity =>
+            {
+                entity.ToTable("Fields");
+
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.FieldName)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(x => x.Description)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.Latitude)
+                    .IsRequired();
+
+                entity.Property(x => x.Longitude)
+                    .IsRequired();
+
+                entity.Property(x => x.ImageUrl)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.ThumbnailUrl)
+                    .HasMaxLength(512);
+
+                entity.Property(x => x.OwnerId)
+                    .IsRequired();
+
+                entity.HasMany(x => x.Crops)
+                    .WithOne()
+                    .HasForeignKey(x => x.FieldId);
+                entity.HasMany(x => x.LogEntries)
+                    .WithOne()
+                    .HasForeignKey(x => x.FieldId);
+                entity.HasMany(x => x.SpraySchedules)
+                   .WithOne()
+                   .HasForeignKey(x => x.FieldId);
+            });
+            modelBuilder.Entity<SpraySchedule>(entity =>
+            {
+                entity.ToTable("SpraySchedules");
+
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.FieldId)
+                    .IsRequired();
+
+                entity.Property(x => x.StartDateTime)
+                    .IsRequired();
+
+                entity.Property(x => x.DurationHours)
+                    .IsRequired();
+
+                entity.Property(x => x.PesticideType)
+                    .HasMaxLength(100);
+                entity.Property(x => x.Status)
+                    .HasConversion<string>() 
+                    .IsRequired();
+            });
+
+            modelBuilder.Entity<Crop>(entity =>
+            {
+                entity.ToTable("Crop");
+
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.FieldId)
+                    .IsRequired();
+                entity.Property(x=>x.CropName)
+                    .IsRequired()
+                    .HasConversion<string>();
+                entity.Property(x => x.Description)
+                    .HasMaxLength(512);
+                entity.Property(x => x.Note)
+                    .HasMaxLength(512);
+                entity.Property(x => x.IsDeleted)
+                    .IsRequired();
+                entity.Property(x => x.Color)
+                    .HasMaxLength(50);
             });
 
             base.OnModelCreating(modelBuilder);

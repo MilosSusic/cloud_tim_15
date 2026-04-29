@@ -59,6 +59,113 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.ToTable("Apiaries", (string)null);
                 });
 
+            modelBuilder.Entity("SmartApiary.Domain.Models.Crop", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CropName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("FieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FieldId");
+
+                    b.ToTable("Crop");
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.Field", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ThumbnailUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Fields", (string)null);
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.FieldLogEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BottomBoardColor")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("CropId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("FieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ReviewDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReviewType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WeatherConditions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FieldId");
+
+                    b.ToTable("FieldLogEntry");
+                });
+
             modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
                 {
                     b.Property<Guid>("Id")
@@ -145,6 +252,42 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.ToTable("HiveLogEntries", (string)null);
                 });
 
+            modelBuilder.Entity("SmartApiary.Domain.Models.SpraySchedule", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DurationHours")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("FieldId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PesticideType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("StartDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FieldId");
+
+                    b.ToTable("SpraySchedules", (string)null);
+                });
+
             modelBuilder.Entity("SmartApiary.Domain.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -207,6 +350,24 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
+            modelBuilder.Entity("SmartApiary.Domain.Models.Crop", b =>
+                {
+                    b.HasOne("SmartApiary.Domain.Models.Field", null)
+                        .WithMany("Crops")
+                        .HasForeignKey("FieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.FieldLogEntry", b =>
+                {
+                    b.HasOne("SmartApiary.Domain.Models.Field", null)
+                        .WithMany("LogEntries")
+                        .HasForeignKey("FieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
                 {
                     b.HasOne("SmartApiary.Domain.Models.Apiary", null)
@@ -225,9 +386,27 @@ namespace SmartApiary.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SmartApiary.Domain.Models.SpraySchedule", b =>
+                {
+                    b.HasOne("SmartApiary.Domain.Models.Field", null)
+                        .WithMany("SpraySchedules")
+                        .HasForeignKey("FieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SmartApiary.Domain.Models.Apiary", b =>
                 {
                     b.Navigation("Hives");
+                });
+
+            modelBuilder.Entity("SmartApiary.Domain.Models.Field", b =>
+                {
+                    b.Navigation("Crops");
+
+                    b.Navigation("LogEntries");
+
+                    b.Navigation("SpraySchedules");
                 });
 
             modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>

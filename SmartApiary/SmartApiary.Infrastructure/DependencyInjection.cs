@@ -32,6 +32,9 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IApiaryRepository, ApiaryRepository>();
             services.AddScoped<IHiveRepository, HiveRepository>();
             services.AddScoped<IHiveLogEntryRepository, HiveLogEntryRepository>();
+            services.AddScoped<IFieldRepository, FieldRepository>();
+            services.AddScoped<ISprayScheduleRepository, SprayScheduleRepository>();
+            services.AddScoped<ICropsRepository, CropsRepository>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
