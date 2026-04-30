@@ -1,18 +1,55 @@
+// ErrorBoundary komponenta za hvatanje grešaka u MapContainer
+class MapErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  componentDidCatch(error: any, info: any) { console.error('Map error:', error, info); }
+  render() {
+    if (this.state.hasError) return <div style={{color:'red'}}>Greška u prikazu mape.</div>;
+    return this.props.children;
+  }
+}
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+// Custom marker icons
+const orangeIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+const greenIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 import { getApiaries, createApiary, updateApiary } from "../api/apiaryApi";
+import { getNearbyFieldsWithCrops } from "../api/nearbyFieldsApi";
+//import type { NearbyField } from "../types/NearbyField";
 import HivesSection from "../../hives/components/HivesSection";
 
 import "leaflet/dist/leaflet.css";
 import "../layout/ApiaryPage.css";
 
 import type { Apiary } from "../types/Apiary";
+import type { NearbyField } from "../types/NearbyField";
 
 const ApiaryPage: React.FC = () => {
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [nearbyFields, setNearbyFields] = useState<NearbyField[]>([]);
+  const [fieldsLoading, setFieldsLoading] = useState(false);
   const [selectedApiary, setSelectedApiary] = useState<Apiary | null>(null);
   const [editingApiary, setEditingApiary] = useState<Apiary | null>(null);
+  const [selectedField, setSelectedField] = useState<NearbyField | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
@@ -32,9 +69,27 @@ const ApiaryPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
+
   useEffect(() => {
     fetchApiaries();
   }, []);
+
+  useEffect(() => {
+    if (apiaries.length > 0) {
+      fetchNearbyFields();
+    }
+  }, [apiaries]);
+
+  const fetchNearbyFields = async () => {
+    setFieldsLoading(true);
+    try {
+      const data = await getNearbyFieldsWithCrops();
+      setNearbyFields(data);
+    } catch {
+      setNearbyFields([]);
+    }
+    setFieldsLoading(false);
+  };
 
   const fetchApiaries = async () => {
     setLoading(true);
@@ -81,6 +136,7 @@ const ApiaryPage: React.FC = () => {
       setImagePreview(null);
       setMessage("Apiary created successfully.");
       await fetchApiaries();
+      await fetchNearbyFields();
     } catch (err) {
       setMessage("Failed to create apiary.");
     }
@@ -127,6 +183,7 @@ const ApiaryPage: React.FC = () => {
       closeEdit();
       const data = await getApiaries();
       setApiaries(data);
+      await fetchNearbyFields();
       const updated = data.find((a: Apiary) => a.id === editingApiary.id);
       if (updated) setSelectedApiary(updated);
     } catch {
@@ -195,45 +252,94 @@ const ApiaryPage: React.FC = () => {
         {/* ── Center: Map ── */}
         <section className="apiary-map">
           <div className="map-section">
-            <MapContainer
-              center={[45.25, 19.85]}
-              zoom={6}
-              style={{ height: "100%", width: "100%" }}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              {apiaries.map((apiary) => (
-                <Marker
-                  key={apiary.id}
-                  position={[apiary.latitude, apiary.longitude]}
-                  eventHandlers={{ click: () => setSelectedApiary(apiary) }}
-                >
-                  <Popup>
-                    <div className="apiary-popup">
-                      <img
-                        src={apiary.thumbnailUrl || apiary.imageUrl}
-                        alt={apiary.name}
-                      />
-                      <div className="apiary-popup-name">{apiary.name}</div>
-                      <p className="apiary-popup-desc">{apiary.description}</p>
-                      <div className="apiary-popup-coords">
-                        Lat: {apiary.latitude}, Lng: {apiary.longitude}
-                      </div>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
+            <MapErrorBoundary>
+              <MapContainer
+                center={[45.25, 19.85]}
+                zoom={6}
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {apiaries.map((apiary) => (
+                  (typeof apiary.latitude === 'number' && typeof apiary.longitude === 'number') && (
+                    <Marker
+                      key={apiary.id}
+                      position={[apiary.latitude, apiary.longitude]}
+                      icon={orangeIcon}
+                      eventHandlers={{ click: () => { setSelectedApiary(apiary); setSelectedField(null); } }}
+                    >
+                      <Popup>
+                        <div className="apiary-popup">
+                          <img
+                            src={apiary.thumbnailUrl || apiary.imageUrl}
+                            alt={apiary.name}
+                          />
+                          <div className="apiary-popup-name">{apiary.name}</div>
+                          <p className="apiary-popup-desc">{apiary.description}</p>
+                          <div className="apiary-popup-coords">
+                            Lat: {apiary.latitude}, Lng: {apiary.longitude}
+                          </div>
+                        </div>
+                      </Popup>
+                    </Marker>
+                  )
+                ))}
+                {/* Prikaz parcela sa kulturama u radijusu 5km */}
+                {fieldsLoading ? null : (
+                  nearbyFields.length > 0 ? (
+                    nearbyFields.map((field) => (
+                      (typeof field.latitude === 'number' && typeof field.longitude === 'number') && (
+                        <Marker
+                          key={field.fieldId}
+                          position={[field.latitude, field.longitude]}
+                          icon={greenIcon}
+                          eventHandlers={{ click: () => { setSelectedField(field); setSelectedApiary(null); } }}
+                        >
+                          <Popup>
+                            <div className="field-popup" style={{minWidth:220, padding:8}}>
+                              <div className="field-popup-title" style={{fontWeight:'bold', fontSize:16, marginBottom:4}}>{field.fieldName}</div>
+                              <div className="field-popup-owner" style={{marginBottom:4}}>
+                                <span style={{fontWeight:'bold'}}>Owner:</span> {field.owner.firstName} {field.owner.lastName}<br/>
+                                <span style={{fontWeight:'bold'}}>Email:</span> {field.owner.email}<br/>
+                                <span style={{fontWeight:'bold'}}>Phone:</span> {field.owner.phone}
+                              </div>
+                              <div className="field-popup-crops" style={{marginTop:4}}>
+                                <span style={{fontWeight:'bold'}}>Crops:</span>
+                                {field.crops.length === 0 ? (
+                                  <span style={{marginLeft:6, color:'#888'}}>No crops</span>
+                                ) : (
+                                  <ul style={{margin:0, paddingLeft:18}}>
+                                    {field.crops.map((crop: NearbyField["crops"][0], idx: number) => (
+                                      <li key={idx} style={{display:'flex', alignItems:'center', marginBottom:2}}>
+                                        {crop.icon && <img src={crop.icon} alt={crop.name} style={{width:16, height:16, marginRight:4}}/>}
+                                        <span style={{color:'#228B22', fontWeight:500}}>{crop.name}</span>
+                                        <span style={{marginLeft:4, fontSize:12, color:'#666'}}>({crop.floweringPeriod})</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      )
+                    ))
+                  ) : (
+                    <div className="map-fields-empty">No fields nearby.</div>
+                  )
+                )}
+              </MapContainer>
+            </MapErrorBoundary>
           </div>
         </section>
 
         {/* ── Right: Info panel ── */}
         <aside className="apiary-info-panel">
           <div className="apiary-info-header">
-            <h3>Apiary Info</h3>
-            {selectedApiary && (
+            <h3>{selectedApiary ? 'Apiary Info' : selectedField ? 'Field Info' : 'Info'}</h3>
+            {(selectedApiary || selectedField) && (
               <button
                 className="apiary-info-close"
-                onClick={() => setSelectedApiary(null)}
+                onClick={() => { setSelectedApiary(null); setSelectedField(null); }}
                 aria-label="Close info panel"
               >
                 ×
@@ -241,11 +347,11 @@ const ApiaryPage: React.FC = () => {
             )}
           </div>
 
-          {!selectedApiary ? (
+          {!selectedApiary && !selectedField ? (
             <div className="apiary-info-empty">
-              Select an apiary from the list or map to see details.
+              Select an apiary or field from the map to see details.
             </div>
-          ) : (
+          ) : selectedApiary ? (
             <>
               {(selectedApiary.thumbnailUrl || selectedApiary.imageUrl) && (
                 <img
@@ -288,7 +394,36 @@ const ApiaryPage: React.FC = () => {
                 onError={(msg) => setMessage(msg)}
               />
             </>
-          )}
+          ) : selectedField ? (
+            <div className="field-info-panel" style={{padding:16}}>
+              <div style={{fontWeight:'bold', fontSize:18, marginBottom:8}}>{selectedField.fieldName}</div>
+              <div style={{marginBottom:6}}>
+                <span style={{fontWeight:'bold'}}>Owner:</span> {selectedField.owner.firstName} {selectedField.owner.lastName}
+              </div>
+              <div style={{marginBottom:6}}>
+                <span style={{fontWeight:'bold'}}>Email:</span> {selectedField.owner.email}
+              </div>
+              <div style={{marginBottom:6}}>
+                <span style={{fontWeight:'bold'}}>Phone:</span> {selectedField.owner.phone}
+              </div>
+              <div style={{marginTop:10}}>
+                <span style={{fontWeight:'bold'}}>Crops:</span>
+                {selectedField.crops.length === 0 ? (
+                  <span style={{marginLeft:6, color:'#888'}}>No crops</span>
+                ) : (
+                  <ul style={{margin:0, paddingLeft:18}}>
+                    {selectedField.crops.map((crop, idx) => (
+                      <li key={idx} style={{display:'flex', alignItems:'center', marginBottom:2}}>
+                        {crop.icon && <img src={crop.icon} alt={crop.name} style={{width:16, height:16, marginRight:4}}/>}
+                        <span style={{color:'#228B22', fontWeight:500}}>{crop.name}</span>
+                        <span style={{marginLeft:4, fontSize:12, color:'#666'}}>({crop.floweringPeriod})</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
 

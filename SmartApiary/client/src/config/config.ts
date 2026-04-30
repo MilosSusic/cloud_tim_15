@@ -16,4 +16,5 @@ export const CONFIG = {
   FIELD_URL: `${API_BASE_URL}${FIELD_PATH}`,
   CROP_URL: `${API_BASE_URL}${CROP_PATH}`,
   SPRAY_URL: `${API_BASE_URL}${SPRAY_PATH}`,
+  NEARBY_FIELDS_WITH_CROPS_URL: `${API_BASE_URL}/api/beekeeper/nearby-fields-with-crops`,
 };

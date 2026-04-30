@@ -12,6 +12,7 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task AddAsync(Field field, CancellationToken ct = default);
         Task<Field?> GetByIdAsync(Guid id, CancellationToken ct = default);
         Task<List<Field>> GetByOwnerIdAsync(Guid ownerId, CancellationToken ct = default);
+        Task<List<Field>> GetAllWithCropsAsync(CancellationToken ct = default);
         void Update(Field field);
         Task SaveChangesAsync(CancellationToken ct = default);
     }
