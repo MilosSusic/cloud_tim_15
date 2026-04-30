@@ -29,6 +29,11 @@ namespace SmartApiary.Infrastructure.Repositories
             return await _dbContext.Fields.Where(f => f.OwnerId == ownerId).ToListAsync(ct);
         }
 
+        public async Task<List<Field>> GetAllWithCropsAsync(CancellationToken ct = default)
+        {
+            return await _dbContext.Fields.Include(f => f.Crops).ToListAsync(ct);
+        }
+
         public void Update(Field field)
         {
             _dbContext.Fields.Update(field);

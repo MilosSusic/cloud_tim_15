@@ -38,5 +38,9 @@ namespace SmartApiary.Infrastructure.Repositories
         {
             dbContext.Users.Remove(user);
         }
+        public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            return await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
+        }
     }
 }
