@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../layout/Spray.css"
 
-interface SprayScheduleFormData {
+export interface SprayScheduleFormData {
   fieldId: string;
   startDateTime: string;
   durationHours: number;

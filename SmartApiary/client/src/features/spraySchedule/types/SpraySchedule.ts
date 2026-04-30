@@ -8,3 +8,4 @@ export interface SpraySchedule{
     createdAt : string,
     updatedAt : string | null
 }
+

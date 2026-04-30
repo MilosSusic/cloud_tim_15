@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { getFields, createField } from "../api/fieldApi";
 import { createCrop, getCropsByField } from "../../crops/api/cropApi"; 
-import { createSpray, getSprayByField, updateSpray } from "../../spraySchedule/api/sprayScheduleApi";
+import { changeSprayStatus, createSpray, getSprayByField, rescheduleSpray, updateSpray } from "../../spraySchedule/api/sprayScheduleApi";
 import AddFieldModal from "../modals/AddFieldModal";
 import AddCropModal from "../../crops/modals/AddCropModal";
 import SprayScheduleModal from "../../spraySchedule/modals/SprayScheduleModal";
@@ -13,10 +13,12 @@ import "leaflet/dist/leaflet.css";
 
 import type { Field } from "../types/Field";
 import type { FieldFormData } from "../modals/AddFieldModal";
-import type { CropFormData } from "../../modals/AddCropModal";
+import type { CropFormData } from "../../crops/modals/AddCropModal";
 import type { SprayScheduleFormData } from "../../spraySchedule/modals/SprayScheduleModal";
 import type { UpdateSprayScheduleFormData } from "../../spraySchedule/modals/UpdateSprayScheduleModal";
-import { CropType } from "../../crops/types/CropType"; 
+import SprayCard from "../../spraySchedule/modals/SprayCard";
+import { SprayStatus } from "../../spraySchedule/types/SprayStatus";
+
 
 
 const FieldPage: React.FC = () => {
@@ -32,6 +34,16 @@ const FieldPage: React.FC = () => {
   const [sprayToUpdate, setSprayToUpdate] = useState<UpdateSprayScheduleFormData | null>(null);
   const [activeTab, setActiveTab] = useState<"crops" | "sprays">("crops");
 
+  const cropNames: Record<number, string> = {
+    1: "Wheat",
+    2: "Rice",
+    3: "Barley",
+    4: "Oats",
+    5: "Corn",
+    6: "Sorghum",
+    7: "Buckwheat",
+    8: "Chia",
+  };
 
   const fetchFields = async () => {
     setLoading(true);
@@ -60,10 +72,48 @@ const FieldPage: React.FC = () => {
     setLoading(false);
   };
 
+  const handleRescheduleSpray = async (id: string, newDate: string) => {
+    try {
+      await rescheduleSpray(id.toString(), newDate);
+      setMessage("Spray schedule rescheduled successfully.");
+      
+      if (selectedField) {
+        fetchSprays(selectedField.id);
+      } 
+    } catch (error) {
+      console.error("Error rescheduling spray:", error);
+    }
+  };
+
+  const handleCompleteSpray = async (id: string) => {
+  try {
+    console.log(`Completing spray with ID: ${id}`);
+    await changeSprayStatus(id, SprayStatus.Completed);
+      if (selectedField) {
+        fetchSprays(selectedField.id);
+      } 
+    } catch (error) {
+      console.error("Error completing spray:", error);
+    }
+  };
+
+  const handleCancelSpray = async (id: string) => {
+  try {
+    console.log(`Cancelling spray with ID: ${id}`);
+    await changeSprayStatus(id, SprayStatus.Cancelled);
+      if (selectedField) {
+        fetchSprays(selectedField.id);
+      } 
+    } catch (error) {
+      console.error("Error cancelling spray:", error);
+    }
+  };
+    
+
   const fetchSprays = async (fieldId: string | number) => {
     setLoading(true);
     try {
-        const data = await getSprayByField(fieldId.toString()); // napravi API funkciju
+        const data = await getSprayByField(fieldId.toString());
         console.log("Fetched sprays:", data);
         setSprays(data);
         setMessage("Successfully fetched sprays.");
@@ -119,6 +169,9 @@ const FieldPage: React.FC = () => {
       await createSpray(payload);
       setShowSprayModal(false);
       setMessage("Spray schedule created successfully.");
+      if (selectedField) {
+        await fetchSprays(selectedField.id);
+      }
     } catch (err) {
       console.error("Error creating spray schedule:", err);
       setMessage("Failed to create spray schedule.");
@@ -285,7 +338,7 @@ const FieldPage: React.FC = () => {
                 <ul className="sidebar-list">
                   {crops.map((crop) => (
                     <li key={crop.id}>
-                      <strong>{CropType[crop.cropName]}</strong>
+                      <strong>{cropNames[crop.cropName]}</strong>
                       <div>{crop.description}</div>
                       <div style={{ color: crop.color }}>
                         Color: {crop.color}
@@ -319,25 +372,22 @@ const FieldPage: React.FC = () => {
                 />
               )}
               {sprays.length > 0 ? (
-                <ul className="sidebar-list">
+                <div className="sidebar-list">
                   {sprays.map((spray) => (
-                    <li key={spray.id}>
-                      <strong>{spray.pesticideType}</strong>
-                      <div>
-                        Start:{" "}
-                        {new Date(spray.startDateTime).toLocaleString()}
-                      </div>
-                      <div>Duration: {spray.durationHours}h</div>
-                      <div>Status: {spray.status}</div>
-                      <button className="action-btn" onClick={() => setSprayToUpdate(spray)}>Update</button>
-                    </li>
+                    <SprayCard
+                      key={spray.id}
+                      spray={spray}
+                      onCancel={(id) => handleCancelSpray(id)}
+                      onComplete={(id) => handleCompleteSpray(id)}
+                      onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
+                    />
                   ))}
-                </ul>
+                </div>
               ) : (
                 <p>No spray schedules for this field.</p>
               )}
             </>
-          )}
+          )}  
         </aside>
       )}
     </section>

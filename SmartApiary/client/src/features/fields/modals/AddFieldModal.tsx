@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../layout/Field.css"
 
-interface FieldFormData {
+export interface FieldFormData {
   fieldName: string;
   description: string;
   latitude: number;

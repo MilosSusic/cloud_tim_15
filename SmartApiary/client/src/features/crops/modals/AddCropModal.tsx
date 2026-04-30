@@ -2,15 +2,15 @@ import React, { useState } from "react";
 import "../layout/Crop.css"
 import { CropType } from "../types/CropType";
 
-interface CropFormData {
-  fieldId: number;
+export interface CropFormData {
+  fieldId: string;
   cropName: CropType;
   description: string;
   note?: string;
   color?: string;
 }
 
-const AddCropModal: React.FC<{ fieldId: number; onClose: () => void; onSave: (data: CropFormData) => void }> = ({ fieldId, onClose, onSave }) => {
+const AddCropModal: React.FC<{ fieldId: string; onClose: () => void; onSave: (data: CropFormData) => void }> = ({ fieldId, onClose, onSave }) => {
   const [formData, setFormData] = useState<CropFormData>({
     fieldId,
     cropName: CropType.None,
@@ -42,7 +42,7 @@ const AddCropModal: React.FC<{ fieldId: number; onClose: () => void; onSave: (da
           Crop Name:
           <select name="cropName" value={formData.cropName} onChange={handleChange}>
             {Object.entries(CropType)
-              .filter(([key, val]) => typeof val === "number") // uzmi samo numeric vrednosti
+              .filter(([, val]) => typeof val === "number") // uzmi samo numeric vrednosti
               .map(([key, val]) => (
                 <option key={val} value={val}>
                   {key}

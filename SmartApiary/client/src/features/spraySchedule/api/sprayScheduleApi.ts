@@ -1,6 +1,7 @@
 import { getToken } from '../../auth/api/authApi';
 import { CONFIG } from '../../../config/config';
 import type {SpraySchedule} from '../types/SpraySchedule'
+import type { SprayStatus } from '../types/SprayStatus';
 
 const authHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
@@ -26,6 +27,7 @@ export async function createSpray(form: any) {
         },
         body: JSON.stringify(sprayData)
     });
+    console.log('Response status:', resp.status);
 }
 export async function updateSpray(id: string, form: any) {
   const token = getToken();
@@ -37,7 +39,7 @@ export async function updateSpray(id: string, form: any) {
     pesticideType : form.pesticideType,
     status : form.status
   };
-  console.log(payload.dstatus);
+  console.log(payload.status);
   const resp = await fetch(`${CONFIG.SPRAY_URL}/${id}`, {
     method: 'PUT',
     headers: {
@@ -65,4 +67,53 @@ export async function getSprayByField(fieldId: string): Promise<SpraySchedule[]>
   }
   const data: SpraySchedule[] = await resp.json();
   return data;
+}
+
+export async function rescheduleSpray(id: string, startDateTime: string){
+  const token = getToken();
+
+  const payload = {
+    id,
+    startDateTime
+  };
+
+  const resp = await fetch(`${CONFIG.SPRAY_URL}/reschedule/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const errorText = await resp.text();
+    console.error("Backend error:", errorText);
+    throw new Error("Error with rescheduling spray.");
+  }
+}
+
+export async function changeSprayStatus(id: string, status: SprayStatus) {
+  const token = getToken();
+
+  const payload = {
+    id,
+    newStatus: status
+  };
+
+  const resp = await fetch(`${CONFIG.SPRAY_URL}/status/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!resp.ok) {
+    const errorText = await resp.text();
+    console.error("Backend error:", errorText);
+    throw new Error("Error with changing spray status.");
+  }
+
 }

@@ -49,5 +49,27 @@ namespace SmartApiary.WebApi.Controllers
                 return BadRequest(result.Error);
             return NoContent();
         }
+        [HttpPut("reschedule/{id:guid}")]
+        public async Task<IActionResult> Reschedule(Guid id, [FromBody] RescheduleSprayCommand command, CancellationToken ct)
+        {
+            var enrichedCommand = command with { Id = id };
+
+            var result = await _mediator.Send(command, ct);
+            if (result.IsFailure)
+                return BadRequest(result.Error);
+            return NoContent();
+        }
+
+        [HttpPut("status/{id:guid}")]
+        public async Task<IActionResult> ChangeStatus(Guid id, [FromBody] ChangeSprayStatusCommand command, CancellationToken ct)
+        {
+            var enrichedCommand = command with { Id = id };
+
+            var result = await _mediator.Send(command, ct);
+            if (result.IsFailure)
+                return BadRequest(result.Error);
+            return NoContent();
+        }
+
     }
 }
