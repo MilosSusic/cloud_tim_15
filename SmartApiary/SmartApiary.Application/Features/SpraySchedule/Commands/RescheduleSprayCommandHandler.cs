@@ -1,23 +1,23 @@
 ﻿using MediatR;
+using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Enums;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.SpraySchedule.Commands
 {
     public class RescheduleSprayCommandHandler : IRequestHandler<RescheduleSprayCommand, Result>
     {
         private readonly ISprayScheduleRepository _sprayScheduleRepository;
+        private readonly ISprayNotificationQueueService _sprayNotificationQueueService;
 
-        public RescheduleSprayCommandHandler(ISprayScheduleRepository sprayScheduleRepository)
+        public RescheduleSprayCommandHandler(
+            ISprayScheduleRepository sprayScheduleRepository,
+            ISprayNotificationQueueService sprayNotificationQueueService)
         {
             _sprayScheduleRepository = sprayScheduleRepository;
+            _sprayNotificationQueueService = sprayNotificationQueueService;
         }
 
         public async Task<Result> Handle(RescheduleSprayCommand request, CancellationToken cancellationToken)
@@ -29,13 +29,22 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
             var parsedDateTime = DateTime.Parse(request.StartDateTime, CultureInfo.InvariantCulture);
             spraySchedule.StartDateTime = parsedDateTime;
             spraySchedule.Status = SprayStatus.Rescheduled;
-            spraySchedule.UpdatedAt = DateTime.Now;
+            spraySchedule.UpdatedAt = DateTime.UtcNow;
 
             _sprayScheduleRepository.Update(spraySchedule);
             await _sprayScheduleRepository.SaveChangesAsync(cancellationToken);
 
+            await _sprayNotificationQueueService.SendAsync(
+                new SprayNotificationMessage(
+                    spraySchedule.Id,
+                    spraySchedule.FieldId,
+                    "Rescheduled",
+                    spraySchedule.StartDateTime,
+                    spraySchedule.DurationHours,
+                    spraySchedule.PesticideType),
+                cancellationToken);
+
             return Result.Success();
         }
-
     }
 }

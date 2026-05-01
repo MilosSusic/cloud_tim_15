@@ -36,7 +36,8 @@ static async Task InitializeQueuesAsync(IServiceProvider services, IConfiguratio
     var queueNames = new[]
     {
         configuration["AzureQueueOptions:ResetPasswordQueue"],
-        configuration["AzureQueueOptions:ActivationQueue"]
+        configuration["AzureQueueOptions:ActivationQueue"],
+        configuration["AzureQueueOptions:SprayNotificationQueue"]
     }
     .Where(name => !string.IsNullOrWhiteSpace(name))
     .Select(name => name!)

@@ -1,4 +1,374 @@
-/* ─── Modal Overlay ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.field-page {
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+  width: 100vw;
+  min-height: 100vh;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 1.75rem 4vw 2.25rem;
+  color: #e7ecf3;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(56, 189, 88, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 88% 88%, rgba(132, 204, 22, 0.14) 0%, transparent 42%),
+    linear-gradient(140deg, #09131d 0%, #102436 50%, #0f1f2f 100%);
+  box-sizing: border-box;
+}
+
+.field-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.field-header-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #86efac;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.field-header h2 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #f8fbff;
+}
+
+.field-toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0.75rem 1rem;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 1.1rem;
+  animation: slideIn 0.2s ease;
+}
+
+.field-toast.success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #9bf4c0;
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.field-toast.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fcb1b1;
+  border-color: rgba(239, 68, 68, 0.32);
+}
+
+.field-toast-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.field-toast.success .field-toast-dot {
+  background: #22c55e;
+}
+
+.field-toast.error .field-toast-dot {
+  background: #ef4444;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 0.9fr) minmax(360px, 430px);
+  gap: 1rem;
+  min-height: calc(100vh - 190px);
+  max-height: calc(100vh - 190px);
+}
+
+.field-list-card,
+.field-map-card,
+.field-side-panel {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 18px;
+  overflow: hidden;
+  backdrop-filter: blur(3px);
+}
+
+.field-list-card,
+.field-side-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.field-list-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.field-list-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #b5f4ca;
+  font-weight: 700;
+}
+
+.field-list-count-badge {
+  min-width: 28px;
+  text-align: center;
+  padding: 0.2rem 0.5rem;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  color: #d9ffe8;
+  background: rgba(34, 197, 94, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.field-list-empty,
+.field-panel-empty,
+.field-side-empty {
+  padding: 1rem;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.field-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.field-list-item {
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 12px;
+  padding: 0.8rem 0.85rem;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.field-list-item:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 222, 128, 0.45);
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.field-list-item.active {
+  border-color: rgba(34, 197, 94, 0.65);
+  background: rgba(34, 197, 94, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.2);
+}
+
+.field-list-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f1f6ff;
+}
+
+.field-list-desc {
+  margin-top: 3px;
+  font-size: 13px;
+  color: #c6d1df;
+}
+
+.field-list-meta {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #7fa2be;
+}
+
+.field-map-card {
+  min-height: 0;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+}
+
+.field-popup {
+  width: 180px;
+}
+
+.field-popup img {
+  width: 100%;
+  height: 92px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.field-popup-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.field-popup-desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #334155;
+}
+
+.field-popup-coords {
+  margin-top: 5px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.field-side-panel {
+  padding: 1rem;
+  overflow: hidden;
+  gap: 0.9rem;
+}
+
+.field-side-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding-right: 0.2rem;
+}
+
+.field-side-image {
+  width: 100%;
+  height: 135px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.field-side-details {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 12px;
+  padding: 0.8rem;
+}
+
+.field-side-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f5f9ff;
+}
+
+.field-side-coords {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #9bb4cc;
+}
+
+.field-side-description {
+  margin: 0.55rem 0 0;
+  font-size: 13px;
+  color: #d2dfeb;
+  line-height: 1.45;
+}
+
+.sidebar-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sidebar-tabs button {
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: #d0dced;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s, border-color 0.15s, background 0.15s;
+}
+
+.sidebar-tabs button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(74, 222, 128, 0.55);
+}
+
+.sidebar-tabs button.active {
+  border-color: rgba(34, 197, 94, 0.85);
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.9) 0%, rgba(22, 163, 74, 0.9) 100%);
+  color: #ffffff;
+}
+
+.sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.field-crop-item {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0.75rem 0.8rem;
+}
+
+.field-crop-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fbff;
+}
+
+.field-crop-desc,
+.field-crop-note {
+  margin-top: 4px;
+  font-size: 12.5px;
+  color: #c7d6e6;
+}
+
+.field-crop-color {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.action-btn {
+  padding: 0.7rem 1.3rem;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.12s, box-shadow 0.18s;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+}
+
+.action-btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+}
+
+.action-btn.secondary {
+  background: rgba(148, 163, 184, 0.25);
+  color: #e2e8f0;
+  box-shadow: none;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -12,10 +382,9 @@
   animation: fadeIn 0.18s ease;
 }
 
-/* ─── Modal Content ─────────────────────────────── */
 .modal-content {
   background: #131a2c;
-  border: 1px solid rgba(34, 197, 94, 0.35); /* zelena ivica */
+  border: 1px solid rgba(34, 197, 94, 0.35);
   border-radius: 20px;
   padding: 2rem 2.25rem 2.25rem;
   width: 100%;
@@ -28,7 +397,7 @@
 .modal-content h2 {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #22c55e; /* zelena */
+  color: #22c55e;
   margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
@@ -36,11 +405,10 @@
 }
 
 .modal-content h2::before {
-  content: "🌱"; /* ikonica farmera/poljoprivrede */
+  content: "🌱";
   font-size: 1.4rem;
 }
 
-/* ─── Form Elements ─────────────────────────────── */
 .modal-content label {
   display: flex;
   flex-direction: column;
@@ -80,7 +448,24 @@
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
 }
 
-/* ─── Buttons ─────────────────────────────── */
+.image-preview {
+  margin-top: 0.9rem;
+}
+
+.image-preview p {
+  margin: 0 0 0.4rem;
+  color: #cbd5e1;
+  font-size: 13px;
+}
+
+.image-preview img {
+  width: 100%;
+  max-height: 170px;
+  object-fit: cover;
+  border-radius: 11px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -108,194 +493,73 @@
   box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
 }
 
-.modal-actions button:active {
-  transform: translateY(0);
-}
-
 .modal-actions button:last-child {
   background: rgba(148, 163, 184, 0.25);
   color: #e2e8f0;
   box-shadow: none;
 }
 
-.field-map {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 0;
-  padding: 1rem;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.map-section {
-  flex: 1;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-  min-height: 82vh;
-  width: 100%;
-  background: #0f172a; /* tamna pozadina iza mape */
-}
-/* ─── Field List (leva strana) ─────────────────────────────── */
-.field-list {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 18px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 85vh;
-  overflow-y: auto;
-  color: #f1f5f9;
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.field-list header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+@media (max-width: 1300px) {
+  .field-grid {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr) minmax(320px, 380px);
+  }
 }
 
-.field-list h3 {
-  margin: 0;
-  font-size: 17px;
-  font-weight: 700;
-  color: #22c55e; /* zelena */
+@media (max-width: 1080px) {
+  .field-grid {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .field-map-card {
+    min-height: 420px;
+  }
+
+  .field-list-card,
+  .field-side-panel {
+    max-height: 360px;
+  }
 }
 
-.field-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
+@media (max-width: 600px) {
+  .field-page {
+    padding: 1rem 0.9rem 1.25rem;
+  }
 
-.field-list li {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 12px;
-  transition: background 0.15s;
-  cursor: pointer;
-}
+  .field-header h2 {
+    font-size: 1.8rem;
+  }
 
-.field-list li:hover {
-  background: rgba(34, 197, 94, 0.08);
-}
+  .action-btn {
+    width: 100%;
+  }
 
-.field-list li.active {
-  background: rgba(34, 197, 94, 0.15);
-  border-left: 3px solid #22c55e;
-  padding-left: calc(1rem - 3px);
-}
+  .modal-content {
+    padding: 1.2rem 1rem 1.1rem;
+  }
 
-/* ─── Crop/Spray Sidebar (desna strana) ────────────────────── */
-.crop-list {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 18px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  max-height: 85vh;
-  overflow-y: auto;
-  color: #f1f5f9;
+  .modal-actions {
+    flex-direction: column;
+  }
 }
-
-.sidebar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebar-header h4 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: #22c55e;
-}
-
-.sidebar-tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.sidebar-tabs button {
-  padding: 0.5rem 1rem;
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.35);
-  border-radius: 8px;
-  color: #22c55e;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.12s;
-}
-
-.sidebar-tabs button.active {
-  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-  color: #fff;
-}
-
-.sidebar-tabs button:hover {
-  background: rgba(34, 197, 94, 0.25);
-  transform: translateY(-1px);
-}
-
-/* ─── List Items ─────────────────────────────── */
-.sidebar-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.sidebar-list li {
-  padding: 0.85rem 1rem;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-  border-radius: 12px;
-  transition: background 0.15s;
-}
-
-.sidebar-list li:hover {
-  background: rgba(34, 197, 94, 0.08);
-}
-
-.sidebar-list strong {
-  color: #f1f5f9;
-  font-weight: 700;
-}
-/* ─── Action Buttons (Add / Update) ─────────────────────────────── */
-.action-btn {
-  padding: 0.65rem 1.4rem;
-  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 14.5px;
-  cursor: pointer;
-  transition: opacity 0.18s, transform 0.12s, box-shadow 0.18s;
-  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
-}
-
-.action-btn:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
-}
-
-.action-btn:active {
-  transform: translateY(0);
-}
-
-/* Neutral secondary button (Cancel ili slično) */
-.action-btn.secondary {
-  background: rgba(148, 163, 184, 0.25);
-  color: #e2e8f0;
-  box-shadow: none;
-}
-
-.action-btn.secondary:hover {
-  background: rgba(148, 163, 184, 0.35);
-}
-
-

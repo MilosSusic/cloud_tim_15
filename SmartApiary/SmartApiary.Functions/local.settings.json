@@ -3,9 +3,11 @@
   "Values": {
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ConnectionStrings:DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=SmartApiaryDb;Trusted_Connection=True;",
     "AzureQueueOptions:ConnectionString": "UseDevelopmentStorage=true",
     "AzureQueueOptions:ResetPasswordQueue": "reset-password-queue",
     "AzureQueueOptions:ActivationQueue": "activation-queue",
+    "AzureQueueOptions:SprayNotificationQueue": "spray-notification-queue",
     "SendGrid:ApiKey": "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",
     "SendGrid:FromEmail": "milossusic22@gmail.com",
     "SendGrid:FromName": "SmartApiary",

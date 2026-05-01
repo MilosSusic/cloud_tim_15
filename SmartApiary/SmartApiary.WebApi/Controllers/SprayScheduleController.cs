@@ -54,7 +54,7 @@ namespace SmartApiary.WebApi.Controllers
         {
             var enrichedCommand = command with { Id = id };
 
-            var result = await _mediator.Send(command, ct);
+            var result = await _mediator.Send(enrichedCommand, ct);
             if (result.IsFailure)
                 return BadRequest(result.Error);
             return NoContent();
@@ -65,7 +65,7 @@ namespace SmartApiary.WebApi.Controllers
         {
             var enrichedCommand = command with { Id = id };
 
-            var result = await _mediator.Send(command, ct);
+            var result = await _mediator.Send(enrichedCommand, ct);
             if (result.IsFailure)
                 return BadRequest(result.Error);
             return NoContent();

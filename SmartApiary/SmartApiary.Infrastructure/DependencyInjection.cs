@@ -43,6 +43,7 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IResetPasswordQueueService, ResetPasswordQueueService>();
 
             services.AddScoped<IActivationQueueService, ActivationQueueService>();
+            services.AddScoped<ISprayNotificationQueueService, SprayNotificationQueueService>();
 
             services.AddScoped<IEmailService, SendGridEmailService>();
 
