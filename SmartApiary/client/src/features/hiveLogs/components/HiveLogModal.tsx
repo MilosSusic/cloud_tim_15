@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import {
   getLogsByHive,
   createLogEntry,
@@ -10,6 +10,8 @@ import type {
   HiveLogFormState,
 } from "../types/HiveLogEntry";
 import { useHiveLogValidation } from "../hooks/useHiveLogValidation";
+import HiveLogForm from "./HiveLogForm";
+import HiveLogItem from "./HiveLogItem";
 import "../layout/HiveLogModal.css";
 
 interface Props {
@@ -219,7 +221,7 @@ const HiveLogModal: React.FC<Props> = ({
           disabled={page <= 1 || loading}
           onClick={() => loadPage(page - 1)}
         >
-          ‹ Prev
+          â€¹ Prev
         </button>
         {pages.map((p) => (
           <button
@@ -238,7 +240,7 @@ const HiveLogModal: React.FC<Props> = ({
           disabled={page >= totalPages || loading}
           onClick={() => loadPage(page + 1)}
         >
-          Next ›
+          Next â€º
         </button>
       </div>
     );
@@ -272,7 +274,7 @@ const HiveLogModal: React.FC<Props> = ({
               onClick={onClose}
               aria-label="Close"
             >
-              ×
+              Ã—
             </button>
           </div>
         </div>
@@ -286,210 +288,29 @@ const HiveLogModal: React.FC<Props> = ({
           )}
           <ul className="hivelog-list">
             {items.map((entry) => (
-              <li key={entry.id} className="hivelog-item">
-                <div className="hivelog-item-head">
-                  <div className="hivelog-item-date">
-                    {new Date(entry.reviewDate).toLocaleString()}
-                  </div>
-                  <div className="hivelog-item-actions">
-                    <button
-                      type="button"
-                      className="hives-icon-btn"
-                      onClick={() => openEdit(entry)}
-                      title="Edit"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      type="button"
-                      className="hives-icon-btn hives-icon-btn-danger"
-                      onClick={() => handleDelete(entry)}
-                      title="Delete"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-                <div className="hivelog-item-type">{entry.reviewType}</div>
-                <div className="hivelog-item-stats">
-                  <span>
-                    Honey: <strong>{entry.honeyAmountKg} kg</strong> (
-                    {entry.honeyFrames} frames)
-                  </span>
-                  <span>
-                    Brood: <strong>{entry.broodFrames}</strong> frames
-                  </span>
-                  <span>
-                    Queen:{" "}
-                    <strong>{entry.queenPresent ? "Yes" : "No"}</strong>
-                  </span>
-                  {entry.bottomBoardColor && (
-                    <span>
-                      Bottom board: <strong>{entry.bottomBoardColor}</strong>
-                    </span>
-                  )}
-                </div>
-                {entry.note && (
-                  <div className="hivelog-item-note">{entry.note}</div>
-                )}
-              </li>
+              <HiveLogItem
+                key={entry.id}
+                entry={entry}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
             ))}
           </ul>
           {renderPagination()}
         </div>
 
         {showForm && (
-          <div
-            className="apiary-modal-backdrop hivelog-form-backdrop"
-            onClick={closeForm}
-          >
-            <form
-              className="apiary-form"
-              onSubmit={handleSubmit}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="apiary-form-header">
-                <h3 className="apiary-form-title">
-                  {editingId ? "Edit log entry" : "New log entry"}
-                </h3>
-                <button
-                  type="button"
-                  className="apiary-info-close"
-                  onClick={closeForm}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="apiary-form-grid">
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-date">Review date</label>
-                  <input
-                    id="hl-date"
-                    name="reviewDate"
-                    type="datetime-local"
-                    max={maxAllowedDatetimeLocal()}
-                    value={form.reviewDate}
-                    onChange={handleChange}
-                  />
-                  {validation.errors.reviewDate && shouldShowError("reviewDate") && (
-                    <span className="apiary-form-error">{validation.errors.reviewDate}</span>
-                  )}
-                </div>
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-type">Review type</label>
-                  <input
-                    id="hl-type"
-                    name="reviewType"
-                    value={form.reviewType}
-                    onChange={handleChange}
-                    maxLength={100}
-                  />
-                  {validation.errors.reviewType && shouldShowError("reviewType") && (
-                    <span className="apiary-form-error">{validation.errors.reviewType}</span>
-                  )}
-                </div>
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-color">Bottom board color</label>
-                  <input
-                    id="hl-color"
-                    name="bottomBoardColor"
-                    value={form.bottomBoardColor}
-                    onChange={handleChange}
-                    maxLength={50}
-                  />
-                  {validation.errors.bottomBoardColor &&
-                    shouldShowError("bottomBoardColor") && (
-                      <span className="apiary-form-error">{validation.errors.bottomBoardColor}</span>
-                    )}
-                </div>
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-honey-frames">Honey frames</label>
-                  <input
-                    id="hl-honey-frames"
-                    name="honeyFrames"
-                    type="number"
-                    min={0}
-                    value={form.honeyFrames}
-                    onChange={handleChange}
-                  />
-                  {validation.errors.honeyFrames && shouldShowError("honeyFrames") && (
-                    <span className="apiary-form-error">{validation.errors.honeyFrames}</span>
-                  )}
-                </div>
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-honey-kg">Honey amount (kg)</label>
-                  <input
-                    id="hl-honey-kg"
-                    name="honeyAmountKg"
-                    type="number"
-                    min={0}
-                    step="0.1"
-                    value={form.honeyAmountKg}
-                    onChange={handleChange}
-                  />
-                  {validation.errors.honeyAmountKg && shouldShowError("honeyAmountKg") && (
-                    <span className="apiary-form-error">{validation.errors.honeyAmountKg}</span>
-                  )}
-                </div>
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-brood">Brood frames</label>
-                  <input
-                    id="hl-brood"
-                    name="broodFrames"
-                    type="number"
-                    min={0}
-                    value={form.broodFrames}
-                    onChange={handleChange}
-                  />
-                  {validation.errors.broodFrames && shouldShowError("broodFrames") && (
-                    <span className="apiary-form-error">{validation.errors.broodFrames}</span>
-                  )}
-                </div>
-                <div className="apiary-form-group">
-                  <label className="hivelog-checkbox-label">
-                    <input
-                      name="queenPresent"
-                      type="checkbox"
-                      checked={form.queenPresent}
-                      onChange={handleChange}
-                    />
-                    Queen present
-                  </label>
-                </div>
-                <div className="apiary-form-group">
-                  <label htmlFor="hl-note">Note</label>
-                  <textarea
-                    id="hl-note"
-                    name="note"
-                    value={form.note}
-                    onChange={handleChange}
-                    maxLength={512}
-                    placeholder="Free text..."
-                  />
-                  {validation.errors.note && shouldShowError("note") && (
-                    <span className="apiary-form-error">{validation.errors.note}</span>
-                  )}
-                </div>
-              </div>
-              <div className="apiary-form-actions">
-                <button
-                  type="button"
-                  className="apiary-form-cancel"
-                  onClick={closeForm}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="add-btn"
-                  disabled={loading}
-                >
-                  {editingId ? "Save" : "Add"}
-                </button>
-              </div>
-            </form>
-          </div>
+          <HiveLogForm
+            editingId={editingId}
+            form={form}
+            loading={loading}
+            errors={validation.errors}
+            maxDatetime={maxAllowedDatetimeLocal()}
+            shouldShowError={shouldShowError}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+            onClose={closeForm}
+          />
         )}
       </div>
     </div>

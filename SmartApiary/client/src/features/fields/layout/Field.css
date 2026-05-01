@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+.leaflet-tile {
+  border: 1px solid transparent;
+}
+
 .field-page {
   font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
   width: 100vw;
@@ -95,8 +99,12 @@
   background: rgba(15, 23, 42, 0.5);
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 18px;
-  overflow: hidden;
   backdrop-filter: blur(3px);
+}
+
+.field-list-card,
+.field-map-card {
+  overflow: hidden;
 }
 
 .field-list-card,
@@ -232,6 +240,7 @@
   overflow-x: hidden;
   gap: 0.9rem;
   min-width: 0;
+  max-height: calc(100vh - 190px);
 }
 
 .field-side-scroll {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import {
   getHivesByApiary,
   createHive,
@@ -8,6 +8,8 @@ import {
 import type { Hive, HiveFormState } from "../types/Hive";
 import { useHiveValidation } from "../hooks/useHiveValidation";
 import HiveLogModal from "../../hiveLogs/components/HiveLogModal";
+import HiveForm from "./HiveForm";
+import HiveListItem from "./HiveListItem";
 import "../layout/HivesSection.css";
 
 interface Props {
@@ -158,12 +160,8 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   return (
     <div className="hives-section">
       <div className="hives-section-header">
-        <h4>
-          Hives <span className="hives-count">({hives.length})</span>
-        </h4>
-        <button type="button" className="hives-add-btn" onClick={openCreate}>
-          + Add
-        </button>
+        <h4>Hives <span className="hives-count">({hives.length})</span></h4>
+        <button type="button" className="hives-add-btn" onClick={openCreate}>+ Add</button>
       </div>
 
       {hives.length === 0 && !loading && (
@@ -172,141 +170,27 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
 
       <ul className="hives-list">
         {hives.map((hive) => (
-          <li key={hive.id} className="hives-list-item">
-            <div className="hives-list-main">
-              <div className="hives-list-label">{hive.label}</div>
-              <div className="hives-list-meta">
-                {hive.type} · {hive.color} · queen {hive.queenAge}y
-              </div>
-              {hive.note && <div className="hives-list-note">{hive.note}</div>}
-            </div>
-            <div className="hives-list-actions">
-              <button
-                type="button"
-                className="hives-icon-btn"
-                onClick={() => setLogHive(hive)}
-                aria-label="Open hive log"
-                title="Log"
-              >
-                📓
-              </button>
-              <button
-                type="button"
-                className="hives-icon-btn"
-                onClick={() => openEdit(hive)}
-                aria-label="Edit hive"
-                title="Edit"
-              >
-                ✏️
-              </button>
-              <button
-                type="button"
-                className="hives-icon-btn hives-icon-btn-danger"
-                onClick={() => handleDelete(hive)}
-                aria-label="Delete hive"
-                title="Delete"
-              >
-                🗑️
-              </button>
-            </div>
-          </li>
+          <HiveListItem
+            key={hive.id}
+            hive={hive}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            onOpenLog={setLogHive}
+          />
         ))}
       </ul>
 
       {showForm && (
-        <div className="apiary-modal-backdrop" onClick={closeForm}>
-          <form
-            className="apiary-form"
-            onSubmit={handleSubmit}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="apiary-form-header">
-              <h3 className="apiary-form-title">
-                {editingHive ? "Edit Hive" : "Add Hive"}
-              </h3>
-              <button
-                type="button"
-                className="apiary-info-close"
-                onClick={closeForm}
-                aria-label="Close form"
-              >
-                ×
-              </button>
-            </div>
-            <div className="apiary-form-grid">
-              <div className="apiary-form-group">
-                <label htmlFor="hive-label">Label</label>
-                <input
-                  id="hive-label"
-                  name="label"
-                  placeholder="K1"
-                  value={form.label}
-                  onChange={handleChange}
-                />
-                {hiveValidation.errors.label && shouldShowError("label") && (
-                  <span className="apiary-form-error">{hiveValidation.errors.label}</span>
-                )}
-              </div>
-              <div className="apiary-form-group">
-                <label htmlFor="hive-type">Type</label>
-                <input
-                  id="hive-type"
-                  name="type"
-                  placeholder="LR / DB / Položka"
-                  value={form.type}
-                  onChange={handleChange}
-                />
-                {hiveValidation.errors.type && shouldShowError("type") && (
-                  <span className="apiary-form-error">{hiveValidation.errors.type}</span>
-                )}
-              </div>
-              <div className="apiary-form-group">
-                <label htmlFor="hive-color">Color</label>
-                <input
-                  id="hive-color"
-                  name="color"
-                  placeholder="Yellow"
-                  value={form.color}
-                  onChange={handleChange}
-                />
-                {hiveValidation.errors.color && shouldShowError("color") && (
-                  <span className="apiary-form-error">{hiveValidation.errors.color}</span>
-                )}
-              </div>
-              <div className="apiary-form-group">
-                <label htmlFor="hive-queenAge">Queen age (years)</label>
-                <input
-                  id="hive-queenAge"
-                  name="queenAge"
-                  type="number"
-                  min={0}
-                  max={10}
-                  value={form.queenAge}
-                  onChange={handleChange}
-                />
-                {hiveValidation.errors.queenAge && shouldShowError("queenAge") && (
-                  <span className="apiary-form-error">{hiveValidation.errors.queenAge}</span>
-                )}
-              </div>
-              <div className="apiary-form-group apiary-form-file-group">
-                <label htmlFor="hive-note">Note</label>
-                <textarea
-                  id="hive-note"
-                  name="note"
-                  placeholder="Optional note"
-                  value={form.note}
-                  onChange={handleChange}
-                />
-                {hiveValidation.errors.note && shouldShowError("note") && (
-                  <span className="apiary-form-error">{hiveValidation.errors.note}</span>
-                )}
-              </div>
-            </div>
-            <button type="submit" disabled={loading}>
-              {loading ? "Saving..." : editingHive ? "Save Changes" : "Create"}
-            </button>
-          </form>
-        </div>
+        <HiveForm
+          editingHive={editingHive}
+          form={form}
+          loading={loading}
+          errors={hiveValidation.errors}
+          shouldShowError={shouldShowError}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+          onClose={closeForm}
+        />
       )}
 
       {logHive && (
