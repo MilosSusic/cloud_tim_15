@@ -6,6 +6,7 @@ import {
   deleteHive,
 } from "../api/hiveApi";
 import type { Hive, HiveFormState } from "../types/Hive";
+import { useHiveValidation } from "../hooks/useHiveValidation";
 import HiveLogModal from "../../hiveLogs/components/HiveLogModal";
 import "../layout/HivesSection.css";
 
@@ -30,6 +31,19 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   const [editingHive, setEditingHive] = useState<Hive | null>(null);
   const [form, setForm] = useState<HiveFormState>(emptyForm);
   const [logHive, setLogHive] = useState<Hive | null>(null);
+  const createEmptyHiveTouched = () => ({
+    label: false,
+    type: false,
+    color: false,
+    queenAge: false,
+    note: false,
+  });
+  const [touched, setTouched] = useState(createEmptyHiveTouched());
+  const [submitted, setSubmitted] = useState(false);
+
+  const hiveValidation = useHiveValidation(form);
+  const shouldShowError = (field: keyof typeof touched) =>
+    submitted || touched[field];
 
   const loadHives = async () => {
     setLoading(true);
@@ -50,6 +64,8 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   const openCreate = () => {
     setEditingHive(null);
     setForm(emptyForm);
+    setTouched(createEmptyHiveTouched());
+    setSubmitted(false);
     setShowForm(true);
   };
 
@@ -62,6 +78,8 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
       queenAge: String(hive.queenAge),
       note: hive.note ?? "",
     });
+    setTouched(createEmptyHiveTouched());
+    setSubmitted(false);
     setShowForm(true);
   };
 
@@ -69,6 +87,8 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
     setShowForm(false);
     setEditingHive(null);
     setForm(emptyForm);
+    setTouched(createEmptyHiveTouched());
+    setSubmitted(false);
   };
 
   const handleChange = (
@@ -76,10 +96,21 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   ) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
+    if (
+      name === "label" ||
+      name === "type" ||
+      name === "color" ||
+      name === "queenAge" ||
+      name === "note"
+    ) {
+      setTouched({ ...touched, [name]: true });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
+    if (!hiveValidation.isValid) return;
     setLoading(true);
     try {
       if (editingHive) {
@@ -211,8 +242,10 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
                   placeholder="K1"
                   value={form.label}
                   onChange={handleChange}
-                  required
                 />
+                {hiveValidation.errors.label && shouldShowError("label") && (
+                  <span className="apiary-form-error">{hiveValidation.errors.label}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="hive-type">Type</label>
@@ -222,8 +255,10 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
                   placeholder="LR / DB / Položka"
                   value={form.type}
                   onChange={handleChange}
-                  required
                 />
+                {hiveValidation.errors.type && shouldShowError("type") && (
+                  <span className="apiary-form-error">{hiveValidation.errors.type}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="hive-color">Color</label>
@@ -233,8 +268,10 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
                   placeholder="Yellow"
                   value={form.color}
                   onChange={handleChange}
-                  required
                 />
+                {hiveValidation.errors.color && shouldShowError("color") && (
+                  <span className="apiary-form-error">{hiveValidation.errors.color}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="hive-queenAge">Queen age (years)</label>
@@ -243,10 +280,13 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
                   name="queenAge"
                   type="number"
                   min={0}
+                  max={10}
                   value={form.queenAge}
                   onChange={handleChange}
-                  required
                 />
+                {hiveValidation.errors.queenAge && shouldShowError("queenAge") && (
+                  <span className="apiary-form-error">{hiveValidation.errors.queenAge}</span>
+                )}
               </div>
               <div className="apiary-form-group apiary-form-file-group">
                 <label htmlFor="hive-note">Note</label>
@@ -257,6 +297,9 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
                   value={form.note}
                   onChange={handleChange}
                 />
+                {hiveValidation.errors.note && shouldShowError("note") && (
+                  <span className="apiary-form-error">{hiveValidation.errors.note}</span>
+                )}
               </div>
             </div>
             <button type="submit" disabled={loading}>

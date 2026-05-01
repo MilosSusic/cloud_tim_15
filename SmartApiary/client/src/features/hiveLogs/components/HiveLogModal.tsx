@@ -9,6 +9,7 @@ import type {
   HiveLogEntryDto,
   HiveLogFormState,
 } from "../types/HiveLogEntry";
+import { useHiveLogValidation } from "../hooks/useHiveLogValidation";
 import "../layout/HiveLogModal.css";
 
 interface Props {
@@ -29,6 +30,8 @@ const toDatetimeLocal = (iso: string) => {
 };
 
 const nowDatetimeLocal = () => toDatetimeLocal(new Date().toISOString());
+const maxAllowedDatetimeLocal = () =>
+  toDatetimeLocal(new Date(Date.now() + 5 * 60 * 1000).toISOString());
 
 const emptyForm = (): HiveLogFormState => ({
   reviewDate: nowDatetimeLocal(),
@@ -57,6 +60,21 @@ const HiveLogModal: React.FC<Props> = ({
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<HiveLogFormState>(emptyForm());
+  const createEmptyTouched = () => ({
+    reviewDate: false,
+    reviewType: false,
+    bottomBoardColor: false,
+    honeyFrames: false,
+    honeyAmountKg: false,
+    broodFrames: false,
+    note: false,
+  });
+  const [touched, setTouched] = useState(createEmptyTouched());
+  const [submitted, setSubmitted] = useState(false);
+
+  const validation = useHiveLogValidation(form, hiveId, editingId);
+  const shouldShowError = (field: keyof typeof touched) =>
+    submitted || touched[field];
 
   const loadPage = async (p: number) => {
     setLoading(true);
@@ -80,6 +98,8 @@ const HiveLogModal: React.FC<Props> = ({
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm());
+    setTouched(createEmptyTouched());
+    setSubmitted(false);
     setShowForm(true);
   };
 
@@ -95,6 +115,8 @@ const HiveLogModal: React.FC<Props> = ({
       queenPresent: entry.queenPresent,
       note: entry.note ?? "",
     });
+    setTouched(createEmptyTouched());
+    setSubmitted(false);
     setShowForm(true);
   };
 
@@ -102,6 +124,8 @@ const HiveLogModal: React.FC<Props> = ({
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm());
+    setTouched(createEmptyTouched());
+    setSubmitted(false);
   };
 
   const handleChange = (
@@ -117,11 +141,29 @@ const HiveLogModal: React.FC<Props> = ({
       });
     } else {
       setForm({ ...form, [name]: value });
+      if (
+        name === "reviewDate" ||
+        name === "reviewType" ||
+        name === "bottomBoardColor" ||
+        name === "honeyFrames" ||
+        name === "honeyAmountKg" ||
+        name === "broodFrames" ||
+        name === "note"
+      ) {
+        setTouched({ ...touched, [name]: true });
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitted(true);
+    if (!validation.isValid) {
+      if (validation.errors.form) {
+        onError?.(validation.errors.form);
+      }
+      return;
+    }
     setLoading(true);
     try {
       const isoDate = new Date(form.reviewDate).toISOString();
@@ -326,10 +368,13 @@ const HiveLogModal: React.FC<Props> = ({
                     id="hl-date"
                     name="reviewDate"
                     type="datetime-local"
+                    max={maxAllowedDatetimeLocal()}
                     value={form.reviewDate}
                     onChange={handleChange}
-                    required
                   />
+                  {validation.errors.reviewDate && shouldShowError("reviewDate") && (
+                    <span className="apiary-form-error">{validation.errors.reviewDate}</span>
+                  )}
                 </div>
                 <div className="apiary-form-group">
                   <label htmlFor="hl-type">Review type</label>
@@ -339,8 +384,10 @@ const HiveLogModal: React.FC<Props> = ({
                     value={form.reviewType}
                     onChange={handleChange}
                     maxLength={100}
-                    required
                   />
+                  {validation.errors.reviewType && shouldShowError("reviewType") && (
+                    <span className="apiary-form-error">{validation.errors.reviewType}</span>
+                  )}
                 </div>
                 <div className="apiary-form-group">
                   <label htmlFor="hl-color">Bottom board color</label>
@@ -351,6 +398,10 @@ const HiveLogModal: React.FC<Props> = ({
                     onChange={handleChange}
                     maxLength={50}
                   />
+                  {validation.errors.bottomBoardColor &&
+                    shouldShowError("bottomBoardColor") && (
+                      <span className="apiary-form-error">{validation.errors.bottomBoardColor}</span>
+                    )}
                 </div>
                 <div className="apiary-form-group">
                   <label htmlFor="hl-honey-frames">Honey frames</label>
@@ -362,6 +413,9 @@ const HiveLogModal: React.FC<Props> = ({
                     value={form.honeyFrames}
                     onChange={handleChange}
                   />
+                  {validation.errors.honeyFrames && shouldShowError("honeyFrames") && (
+                    <span className="apiary-form-error">{validation.errors.honeyFrames}</span>
+                  )}
                 </div>
                 <div className="apiary-form-group">
                   <label htmlFor="hl-honey-kg">Honey amount (kg)</label>
@@ -374,6 +428,9 @@ const HiveLogModal: React.FC<Props> = ({
                     value={form.honeyAmountKg}
                     onChange={handleChange}
                   />
+                  {validation.errors.honeyAmountKg && shouldShowError("honeyAmountKg") && (
+                    <span className="apiary-form-error">{validation.errors.honeyAmountKg}</span>
+                  )}
                 </div>
                 <div className="apiary-form-group">
                   <label htmlFor="hl-brood">Brood frames</label>
@@ -385,6 +442,9 @@ const HiveLogModal: React.FC<Props> = ({
                     value={form.broodFrames}
                     onChange={handleChange}
                   />
+                  {validation.errors.broodFrames && shouldShowError("broodFrames") && (
+                    <span className="apiary-form-error">{validation.errors.broodFrames}</span>
+                  )}
                 </div>
                 <div className="apiary-form-group">
                   <label className="hivelog-checkbox-label">
@@ -407,6 +467,9 @@ const HiveLogModal: React.FC<Props> = ({
                     maxLength={512}
                     placeholder="Free text..."
                   />
+                  {validation.errors.note && shouldShowError("note") && (
+                    <span className="apiary-form-error">{validation.errors.note}</span>
+                  )}
                 </div>
               </div>
               <div className="apiary-form-actions">

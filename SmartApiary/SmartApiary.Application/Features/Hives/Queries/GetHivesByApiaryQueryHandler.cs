@@ -1,7 +1,6 @@
-using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Application.Features.Hives.Queries
@@ -10,29 +9,29 @@ namespace SmartApiary.Application.Features.Hives.Queries
     {
         private readonly IHiveRepository _hiveRepository;
         private readonly IApiaryRepository _apiaryRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
 
         public GetHivesByApiaryQueryHandler(
             IHiveRepository hiveRepository,
             IApiaryRepository apiaryRepository,
-            IHttpContextAccessor httpContextAccessor)
+            ICurrentUserService currentUserService)
         {
             _hiveRepository = hiveRepository;
             _apiaryRepository = apiaryRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<List<HiveDto>>> Handle(GetHivesByApiaryQuery request, CancellationToken cancellationToken)
         {
-            var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdStr, out var userId))
+            var userId = _currentUserService.UserId;
+            if (userId is null)
                 return Result<List<HiveDto>>.Failure("Invalid user id.");
 
             var apiary = await _apiaryRepository.GetByIdAsync(request.ApiaryId, cancellationToken);
             if (apiary is null)
                 return Result<List<HiveDto>>.Failure("Apiary not found.");
 
-            if (apiary.OwnerId != userId)
+            if (apiary.OwnerId != userId.Value)
                 return Result<List<HiveDto>>.Failure("You do not have access to this apiary.");
 
             var hives = await _hiveRepository.GetByApiaryIdAsync(request.ApiaryId, cancellationToken);

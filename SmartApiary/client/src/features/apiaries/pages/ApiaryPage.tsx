@@ -13,6 +13,7 @@ class MapErrorBoundary extends React.Component<{children: React.ReactNode}, {has
 }
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useApiaryValidation } from "../hooks/useApiaryValidation";
 import L from "leaflet";
 // Custom marker icons
 const orangeIcon = new L.Icon({
@@ -68,7 +69,33 @@ const ApiaryPage: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const createEmptyApiaryTouched = () => ({
+    name: false,
+    description: false,
+    latitude: false,
+    longitude: false,
+  });
+  const [createTouched, setCreateTouched] = useState(createEmptyApiaryTouched());
+  const [editTouched, setEditTouched] = useState(createEmptyApiaryTouched());
+  const [createSubmitted, setCreateSubmitted] = useState(false);
+  const [editSubmitted, setEditSubmitted] = useState(false);
 
+  const createValidation = useApiaryValidation(form);
+  const editValidation = useApiaryValidation(editForm);
+
+  const isErrorMessage = (text: string) => {
+    const normalized = text.toLowerCase();
+    return (
+      normalized.includes("fail") ||
+      normalized.includes("error") ||
+      normalized.includes("gre")
+    );
+  };
+
+  const shouldShowCreateError = (field: keyof typeof createTouched) =>
+    createSubmitted || createTouched[field];
+  const shouldShowEditError = (field: keyof typeof editTouched) =>
+    editSubmitted || editTouched[field];
 
   useEffect(() => {
     fetchApiaries();
@@ -117,15 +144,37 @@ const ApiaryPage: React.FC = () => {
       }
     } else {
       setForm({ ...form, [name]: value });
+      if (
+        name === "name" ||
+        name === "description" ||
+        name === "latitude" ||
+        name === "longitude"
+      ) {
+        setCreateTouched({ ...createTouched, [name]: true });
+      }
     }
+  };
+
+  const openCreate = () => {
+    setCreateTouched(createEmptyApiaryTouched());
+    setCreateSubmitted(false);
+    setShowForm(true);
+  };
+
+  const closeCreate = () => {
+    setCreateTouched(createEmptyApiaryTouched());
+    setCreateSubmitted(false);
+    setShowForm(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setCreateSubmitted(true);
+    if (!createValidation.isValid) return;
     setLoading(true);
     try {
       await createApiary(form);
-      setShowForm(false);
+      closeCreate();
       setForm({
         name: "",
         description: "",
@@ -145,6 +194,8 @@ const ApiaryPage: React.FC = () => {
 
   const openEdit = (apiary: Apiary) => {
     setEditingApiary(apiary);
+    setEditTouched(createEmptyApiaryTouched());
+    setEditSubmitted(false);
     setEditForm({
       name: apiary.name,
       description: apiary.description ?? "",
@@ -158,6 +209,8 @@ const ApiaryPage: React.FC = () => {
   const closeEdit = () => {
     setEditingApiary(null);
     setEditImagePreview(null);
+    setEditTouched(createEmptyApiaryTouched());
+    setEditSubmitted(false);
   };
 
   const handleEditChange = (
@@ -170,12 +223,22 @@ const ApiaryPage: React.FC = () => {
       setEditImagePreview(file ? URL.createObjectURL(file) : null);
     } else {
       setEditForm({ ...editForm, [name]: value });
+      if (
+        name === "name" ||
+        name === "description" ||
+        name === "latitude" ||
+        name === "longitude"
+      ) {
+        setEditTouched({ ...editTouched, [name]: true });
+      }
     }
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingApiary) return;
+    setEditSubmitted(true);
+    if (!editValidation.isValid) return;
     setLoading(true);
     try {
       await updateApiary(editingApiary.id, editForm);
@@ -200,7 +263,7 @@ const ApiaryPage: React.FC = () => {
           <div className="apiary-header-eyebrow">Smart Apiary</div>
           <h2>My Apiaries</h2>
         </div>
-        <button onClick={() => setShowForm(true)} className="add-btn">
+        <button onClick={openCreate} className="add-btn">
           + Add Apiary
         </button>
       </div>
@@ -209,7 +272,7 @@ const ApiaryPage: React.FC = () => {
       {message && (
         <div
           className={`apiary-toast ${
-            message.toLowerCase().includes("success") ? "success-green" : "error"
+            isErrorMessage(message) ? "error" : "success-green"
           }`}
         >
           <span className="apiary-toast-dot"></span>
@@ -431,7 +494,7 @@ const ApiaryPage: React.FC = () => {
       {showForm && (
         <div
           className="apiary-modal-backdrop"
-          onClick={() => setShowForm(false)}
+          onClick={closeCreate}
         >
           <form
             className="apiary-form"
@@ -443,7 +506,7 @@ const ApiaryPage: React.FC = () => {
               <button
                 type="button"
                 className="apiary-info-close"
-                onClick={() => setShowForm(false)}
+                onClick={closeCreate}
                 aria-label="Close form"
               >
                 ×
@@ -458,8 +521,10 @@ const ApiaryPage: React.FC = () => {
                   placeholder="Apiary name"
                   value={form.name}
                   onChange={handleInputChange}
-                  required
                 />
+                {createValidation.errors.name && shouldShowCreateError("name") && (
+                  <span className="apiary-form-error">{createValidation.errors.name}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="apiary-description">Description</label>
@@ -470,28 +535,43 @@ const ApiaryPage: React.FC = () => {
                   value={form.description}
                   onChange={handleInputChange}
                 />
+                {createValidation.errors.description && shouldShowCreateError("description") && (
+                  <span className="apiary-form-error">{createValidation.errors.description}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="apiary-latitude">Latitude</label>
                 <input
                   id="apiary-latitude"
                   name="latitude"
+                  type="number"
+                  min={-90}
+                  max={90}
+                  step="any"
                   placeholder="Latitude"
                   value={form.latitude}
                   onChange={handleInputChange}
-                  required
                 />
+                {createValidation.errors.latitude && shouldShowCreateError("latitude") && (
+                  <span className="apiary-form-error">{createValidation.errors.latitude}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="apiary-longitude">Longitude</label>
                 <input
                   id="apiary-longitude"
                   name="longitude"
+                  type="number"
+                  min={-180}
+                  max={180}
+                  step="any"
                   placeholder="Longitude"
                   value={form.longitude}
                   onChange={handleInputChange}
-                  required
                 />
+                {createValidation.errors.longitude && shouldShowCreateError("longitude") && (
+                  <span className="apiary-form-error">{createValidation.errors.longitude}</span>
+                )}
               </div>
               <div className="apiary-form-group apiary-form-file-group">
                 <label htmlFor="apiary-file">Image</label>
@@ -550,8 +630,10 @@ const ApiaryPage: React.FC = () => {
                   placeholder="Apiary name"
                   value={editForm.name}
                   onChange={handleEditChange}
-                  required
                 />
+                {editValidation.errors.name && shouldShowEditError("name") && (
+                  <span className="apiary-form-error">{editValidation.errors.name}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="edit-apiary-description">Description</label>
@@ -562,28 +644,43 @@ const ApiaryPage: React.FC = () => {
                   value={editForm.description}
                   onChange={handleEditChange}
                 />
+                {editValidation.errors.description && shouldShowEditError("description") && (
+                  <span className="apiary-form-error">{editValidation.errors.description}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="edit-apiary-latitude">Latitude</label>
                 <input
                   id="edit-apiary-latitude"
                   name="latitude"
+                  type="number"
+                  min={-90}
+                  max={90}
+                  step="any"
                   placeholder="Latitude"
                   value={editForm.latitude}
                   onChange={handleEditChange}
-                  required
                 />
+                {editValidation.errors.latitude && shouldShowEditError("latitude") && (
+                  <span className="apiary-form-error">{editValidation.errors.latitude}</span>
+                )}
               </div>
               <div className="apiary-form-group">
                 <label htmlFor="edit-apiary-longitude">Longitude</label>
                 <input
                   id="edit-apiary-longitude"
                   name="longitude"
+                  type="number"
+                  min={-180}
+                  max={180}
+                  step="any"
                   placeholder="Longitude"
                   value={editForm.longitude}
                   onChange={handleEditChange}
-                  required
                 />
+                {editValidation.errors.longitude && shouldShowEditError("longitude") && (
+                  <span className="apiary-form-error">{editValidation.errors.longitude}</span>
+                )}
               </div>
               <div className="apiary-form-group apiary-form-file-group">
                 <label htmlFor="edit-apiary-file">Image (optional)</label>

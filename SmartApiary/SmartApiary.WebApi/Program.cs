@@ -10,6 +10,7 @@ using SmartApiary.Domain.Enums;
 using SmartApiary.Domain.Models;
 using SmartApiary.Infrastructure;
 using SmartApiary.Infrastructure.Persistence;
+using SmartApiary.WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,8 @@ var jwtKey = builder.Configuration["JwtOptions:Key"]
     ?? throw new InvalidOperationException("JwtOptions:Key is not configured.");
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ReactApp", policy =>

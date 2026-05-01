@@ -1,7 +1,6 @@
-using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Application.Features.HiveLogEntries.Queries
@@ -12,26 +11,26 @@ namespace SmartApiary.Application.Features.HiveLogEntries.Queries
         private readonly IHiveLogEntryRepository _logRepository;
         private readonly IHiveRepository _hiveRepository;
         private readonly IApiaryRepository _apiaryRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
 
         public GetHiveLogEntriesByHiveQueryHandler(
             IHiveLogEntryRepository logRepository,
             IHiveRepository hiveRepository,
             IApiaryRepository apiaryRepository,
-            IHttpContextAccessor httpContextAccessor)
+            ICurrentUserService currentUserService)
         {
             _logRepository = logRepository;
             _hiveRepository = hiveRepository;
             _apiaryRepository = apiaryRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<PagedResult<HiveLogEntryDto>>> Handle(
             GetHiveLogEntriesByHiveQuery request,
             CancellationToken cancellationToken)
         {
-            var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdStr, out var userId))
+            var userId = _currentUserService.UserId;
+            if (userId is null)
                 return Result<PagedResult<HiveLogEntryDto>>.Failure("Invalid user id.");
 
             var hive = await _hiveRepository.GetByIdAsync(request.HiveId, cancellationToken);
@@ -39,7 +38,7 @@ namespace SmartApiary.Application.Features.HiveLogEntries.Queries
                 return Result<PagedResult<HiveLogEntryDto>>.Failure("Hive not found.");
 
             var apiary = await _apiaryRepository.GetByIdAsync(hive.ApiaryId, cancellationToken);
-            if (apiary is null || apiary.OwnerId != userId)
+            if (apiary is null || apiary.OwnerId != userId.Value)
                 return Result<PagedResult<HiveLogEntryDto>>.Failure("You do not have access to this hive.");
 
             var page = request.Page < 1 ? 1 : request.Page;
@@ -67,3 +66,4 @@ namespace SmartApiary.Application.Features.HiveLogEntries.Queries
         }
     }
 }
+
