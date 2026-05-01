@@ -7,7 +7,7 @@ export async function getApiaries() {
   const resp = await fetch(CONFIG.APIARIES_URL, {
     headers: { 'Authorization': `Bearer ${token}` }
   });
-  if (!resp.ok) throw new Error('Greška pri dohvatanju pčelinjaka');
+  if (!resp.ok) throw new Error('Failed to fetch apiaries');
   return resp.json();
 }
 
@@ -17,11 +17,11 @@ export async function createApiary(form: any) {
   const formData = new FormData();
   formData.append('file', form.file);
   const uploadResp = await fetch(CONFIG.UPLOAD_URL, { method: 'POST', body: formData });
-  if (!uploadResp.ok) throw new Error('Greška pri uploadu slike');
+  if (!uploadResp.ok) throw new Error('Failed to upload image');
   const uploadJson = await uploadResp.clone().json();
   console.log('Upload response:', uploadJson);
   const url = Array.isArray(uploadJson.urls) ? uploadJson.urls[0] : undefined;
-  console.log('Dobijen url:', url);
+  console.log('Uploaded image URL:', url);
 
   // 2. Create apiary
   const apiaryData = {
@@ -31,9 +31,9 @@ export async function createApiary(form: any) {
     longitude: parseFloat(form.longitude),
     imageUrl: url,
     thumbnailUrl: url,
-    // ownerId: ... // Dodaj ownerId ako je potrebno
+    // ownerId: ... // Add ownerId if needed
   };
-  console.log('Payload za backend:', apiaryData);
+  console.log('Backend payload:', apiaryData);
   const resp = await fetch(CONFIG.APIARIES_URL, {
     method: 'POST',
     headers: {
@@ -42,7 +42,7 @@ export async function createApiary(form: any) {
     },
     body: JSON.stringify(apiaryData)
   });
-  if (!resp.ok) throw new Error('Greška pri kreiranju pčelinjaka');
+  if (!resp.ok) throw new Error('Failed to create apiary');
   return resp.json();
 }
 
@@ -56,7 +56,7 @@ export async function updateApiary(id: string, form: any) {
     const formData = new FormData();
     formData.append('file', form.file);
     const uploadResp = await fetch(CONFIG.UPLOAD_URL, { method: 'POST', body: formData });
-    if (!uploadResp.ok) throw new Error('Greška pri uploadu slike');
+    if (!uploadResp.ok) throw new Error('Failed to upload image');
     const uploadJson = await uploadResp.json();
     const url = Array.isArray(uploadJson.urls) ? uploadJson.urls[0] : undefined;
     imageUrl = url ?? null;
@@ -81,7 +81,7 @@ export async function updateApiary(id: string, form: any) {
     },
     body: JSON.stringify(payload),
   });
-  if (!resp.ok) throw new Error('Greška pri izmjeni pčelinjaka');
+  if (!resp.ok) throw new Error('Failed to update apiary');
   // Some PUT endpoints return 204 No Content
   const text = await resp.text();
   return text ? JSON.parse(text) : null;

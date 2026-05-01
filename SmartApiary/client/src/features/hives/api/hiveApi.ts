@@ -15,7 +15,7 @@ export async function getHivesByApiary(apiaryId: string): Promise<Hive[]> {
   const resp = await fetch(`${CONFIG.HIVES_URL}/by-apiary/${apiaryId}`, {
     headers: authHeaders(),
   });
-  if (!resp.ok) throw new Error('Greška pri dohvatanju košnica');
+  if (!resp.ok) throw new Error('Failed to fetch hives');
   return resp.json();
 }
 
@@ -34,7 +34,7 @@ export async function createHive(payload: {
   });
   if (!resp.ok) {
     const err = await resp.text();
-    throw new Error(err || 'Greška pri kreiranju košnice');
+    throw new Error(err || 'Failed to create hive');
   }
   const text = await resp.text();
   return text ? JSON.parse(text) : '';
@@ -58,7 +58,7 @@ export async function updateHive(
   });
   if (!resp.ok) {
     const err = await resp.text();
-    throw new Error(err || 'Greška pri izmeni košnice');
+    throw new Error(err || 'Failed to update hive');
   }
 }
 
@@ -69,6 +69,6 @@ export async function deleteHive(id: string): Promise<void> {
   });
   if (!resp.ok) {
     const err = await resp.text();
-    throw new Error(err || 'Greška pri brisanju košnice');
+    throw new Error(err || 'Failed to delete hive');
   }
 }

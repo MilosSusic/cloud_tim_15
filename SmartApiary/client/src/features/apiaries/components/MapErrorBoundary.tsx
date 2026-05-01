@@ -11,7 +11,7 @@ class MapErrorBoundary extends React.Component<Props, State> {
   static getDerivedStateFromError() { return { hasError: true }; }
   componentDidCatch(error: unknown, info: unknown) { console.error("Map error:", error, info); }
   render() {
-    if (this.state.hasError) return <div style={{ color: "red" }}>Greška u prikazu mape.</div>;
+    if (this.state.hasError) return <div style={{ color: "red" }}>Error rendering map.</div>;
     return this.props.children;
   }
 }

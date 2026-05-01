@@ -35,7 +35,7 @@ const HiveForm: React.FC<Props> = ({ editingHive, form, loading, errors, shouldS
         </div>
         <div className="apiary-form-group">
           <label htmlFor="hive-type">Type</label>
-          <input id="hive-type" name="type" placeholder="LR / DB / Položka" value={form.type} onChange={onChange} />
+          <input id="hive-type" name="type" placeholder="LR / DB / Langstroth" value={form.type} onChange={onChange} />
           {errors.type && shouldShowError("type") && <span className="apiary-form-error">{errors.type}</span>}
         </div>
         <div className="apiary-form-group">

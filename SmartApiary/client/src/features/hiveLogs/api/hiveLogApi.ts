@@ -68,6 +68,6 @@ export async function deleteLogEntry(id: string): Promise<void> {
   });
   if (!resp.ok) {
     const err = await resp.text();
-    throw new Error(err || 'Greška pri brisanju zapisa.');
+    throw new Error(err || 'Failed to delete log entry.');
   }
 }
