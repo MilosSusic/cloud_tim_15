@@ -5,6 +5,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SmartApiary.Application.Interfaces.Services;
+using SmartApiary.Application.Services;
 using SmartApiary.Infrastructure;
 
 var builder = FunctionsApplication.CreateBuilder(args);
@@ -15,6 +17,7 @@ builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
 
+builder.Services.AddScoped<ISprayNotificationOrchestrator, SprayNotificationOrchestrator>();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();

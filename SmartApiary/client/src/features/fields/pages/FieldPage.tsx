@@ -216,6 +216,42 @@ const FieldPage: React.FC = () => {
     }
   }, [selectedField]);
 
+  const sprayPriority = (status: number) => {
+    switch (status) {
+      case SprayStatus.Scheduled:
+        return 0;
+      case SprayStatus.Rescheduled:
+        return 1;
+      case SprayStatus.Cancelled:
+        return 2;
+      case SprayStatus.Completed:
+        return 3;
+      default:
+        return 4;
+    }
+  };
+
+  const sortedSprays = [...sprays].sort((left, right) => {
+    const priorityDiff = sprayPriority(left.status) - sprayPriority(right.status);
+    if (priorityDiff !== 0) {
+      return priorityDiff;
+    }
+
+    return (
+      new Date(left.startDateTime).getTime() - new Date(right.startDateTime).getTime()
+    );
+  });
+
+  const visibleSprays = sortedSprays.filter(
+    (spray) => spray.status !== SprayStatus.Completed
+  );
+  const completedSprays = sortedSprays
+    .filter((spray) => spray.status === SprayStatus.Completed)
+    .sort(
+      (left, right) =>
+        new Date(right.startDateTime).getTime() - new Date(left.startDateTime).getTime()
+    );
+
   return (
     <div className="field-page">
       <div className="field-header">
@@ -334,22 +370,24 @@ const FieldPage: React.FC = () => {
                     <button className="action-btn" onClick={() => setShowCropModal(true)}>
                       + Add Crop
                     </button>
-                    {crops.length > 0 ? (
-                      <ul className="sidebar-list">
-                        {crops.map((crop) => (
-                          <li key={crop.id} className="field-crop-item">
-                            <div className="field-crop-name">{cropNames[crop.cropName] || "Unknown Crop"}</div>
-                            <div className="field-crop-desc">{crop.description || "No description"}</div>
-                            <div className="field-crop-color" style={{ color: crop.color }}>
-                              Color: {crop.color}
-                            </div>
-                            {crop.note && <div className="field-crop-note">Note: {crop.note}</div>}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="field-panel-empty">No crops for this field.</p>
-                    )}
+                    <div className="field-side-list-scroll">
+                      {crops.length > 0 ? (
+                        <ul className="sidebar-list">
+                          {crops.map((crop) => (
+                            <li key={crop.id} className="field-crop-item">
+                              <div className="field-crop-name">{cropNames[crop.cropName] || "Unknown Crop"}</div>
+                              <div className="field-crop-desc">{crop.description || "No description"}</div>
+                              <div className="field-crop-color" style={{ color: crop.color }}>
+                                Color: {crop.color}
+                              </div>
+                              {crop.note && <div className="field-crop-note">Note: {crop.note}</div>}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="field-panel-empty">No crops for this field.</p>
+                      )}
+                    </div>
                   </>
                 )}
 
@@ -358,21 +396,49 @@ const FieldPage: React.FC = () => {
                     <button className="action-btn" onClick={() => setShowSprayModal(true)}>
                       + Schedule Spray
                     </button>
-                    {sprays.length > 0 ? (
-                      <div className="sidebar-list">
-                        {sprays.map((spray) => (
-                          <SprayCard
-                            key={spray.id}
-                            spray={spray}
-                            onCancel={(id) => handleCancelSpray(id)}
-                            onComplete={(id) => handleCompleteSpray(id)}
-                            onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="field-panel-empty">No spray schedules for this field.</p>
-                    )}
+                    <div className="field-side-list-scroll">
+                      {sprays.length > 0 ? (
+                        <div className="sidebar-list">
+                          {visibleSprays.length > 0 && (
+                            <div className="field-spray-group">
+                              <div className="field-spray-group-title">
+                                Active and scheduled
+                                <span>{visibleSprays.length}</span>
+                              </div>
+                              {visibleSprays.map((spray) => (
+                                <SprayCard
+                                  key={spray.id}
+                                  spray={spray}
+                                  onCancel={(id) => handleCancelSpray(id)}
+                                  onComplete={(id) => handleCompleteSpray(id)}
+                                  onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                          {completedSprays.length > 0 && (
+                            <div className="field-spray-group field-spray-group-completed">
+                              <div className="field-spray-group-title">
+                                Completed
+                                <span>{completedSprays.length}</span>
+                              </div>
+                              {completedSprays.map((spray) => (
+                                <SprayCard
+                                  key={spray.id}
+                                  spray={spray}
+                                  onCancel={(id) => handleCancelSpray(id)}
+                                  onComplete={(id) => handleCompleteSpray(id)}
+                                  onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="field-panel-empty">No spray schedules for this field.</p>
+                      )}
+                    </div>
                   </>
                 )}
               </div>

@@ -29,7 +29,11 @@ namespace SmartApiary.Tools
             var queues = new[]
             {
                 "reset-password-queue",
-                "activation-queue"
+                "activation-queue",
+                "spray-notification-queue",
+                "reset-password-queue-poison",
+                "activation-queue-poison",
+                "spray-notification-queue-poison"
             };
 
             var queueServiceClient = new QueueServiceClient(queueConnectionString);

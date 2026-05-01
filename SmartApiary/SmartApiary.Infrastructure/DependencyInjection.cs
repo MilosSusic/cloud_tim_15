@@ -35,6 +35,7 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<IFieldRepository, FieldRepository>();
             services.AddScoped<ISprayScheduleRepository, SprayScheduleRepository>();
             services.AddScoped<ICropsRepository, CropsRepository>();
+            services.AddScoped<ISprayNotificationRepository, SprayNotificationRepository>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 
@@ -46,6 +47,7 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<ISprayNotificationQueueService, SprayNotificationQueueService>();
 
             services.AddScoped<IEmailService, SendGridEmailService>();
+            services.AddScoped<ISprayNotificationEmailService, SprayNotificationEmailService>();
 
             services.AddScoped<IBlobStorageService>(_ =>
             {

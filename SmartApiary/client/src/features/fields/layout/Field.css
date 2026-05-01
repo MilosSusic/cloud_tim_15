@@ -228,17 +228,22 @@
 
 .field-side-panel {
   padding: 1rem;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .field-side-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  min-width: 0;
+}
+
+.field-side-list-scroll {
+  min-width: 0;
+  overflow-x: hidden;
   padding-right: 0.2rem;
 }
 
@@ -311,6 +316,52 @@
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.field-spray-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.field-spray-group + .field-spray-group {
+  margin-top: 0.8rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.field-spray-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9bd7b0;
+}
+
+.field-spray-group-title span {
+  min-width: 24px;
+  text-align: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #d8ffdf;
+  font-size: 11px;
+}
+
+.field-spray-group-completed .field-spray-group-title {
+  color: #a7b9ca;
+}
+
+.field-spray-group-completed .field-spray-group-title span {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.24);
+  color: #d7e2ec;
 }
 
 .field-crop-item {
