@@ -27,8 +27,8 @@ namespace SmartApiary.Application.Features.Crops.Commands
                 FieldId = request.FieldId,
                 CropName = request.CropName,
                 Description = request.Description,
-                Note = request.Note,
-                Color = request.Color,
+                FloweringPeriodStart = request.FloweringPeriodStart,
+                FloweringPeriodEnd = request.FloweringPeriodEnd,
                 IsDeleted = false
             };
 

@@ -13,8 +13,8 @@ export async function createCrop(form: any) {
         fieldId: form.fieldId,
         description: form.description,
         cropName: form.cropName,
-        note: form.note,
-        color: form.color
+        FloweringPeriodStart: form.FloweringPeriodStart,
+        FloweringPeriodEnd: form.FloweringPeriodEnd
     };
     console.log('Payload:', cropData);
     const resp = await fetch(CONFIG.CROP_URL, {
@@ -43,4 +43,15 @@ export async function getCropsByField(fieldId: string): Promise<Crop[]> {
   }
   const data: Crop[] = await resp.json();
   return data;
+}
+export async function harvestCrop(cropId: string) {
+  const resp = await fetch(`${CONFIG.CROP_URL}/${cropId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!resp.ok) {
+    const errorText = await resp.text();
+    console.error("Backend error:", errorText);
+    throw new Error("Error with harvesting crop.");
+  }
 }

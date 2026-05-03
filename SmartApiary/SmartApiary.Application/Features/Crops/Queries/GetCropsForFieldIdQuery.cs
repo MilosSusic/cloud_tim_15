@@ -17,7 +17,9 @@ namespace SmartApiary.Application.Features.Crops.Queries
         public Guid Id { get; set; }
         public CropType CropName { get; set; } = CropType.None;
         public string? Description { get; set; }
-        public string? Note { get; set; }
-        public string Color { get; set; } = string.Empty;
+        public DateTime FloweringPeriodStart { get; set; }
+        public DateTime FloweringPeriodEnd { get; set; }
+        public bool IsDeleted { get; set; }
+
     }
 }

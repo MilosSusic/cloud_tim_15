@@ -58,6 +58,15 @@ namespace SmartApiary.Infrastructure
                 return new BlobUploadService(connectionString, containerName);
             });
 
+            services.AddScoped<IFieldBlobStorageService>(_ =>
+            {
+                var connectionString = configuration["AzureBlob:FieldConnectionString"]
+                    ?? throw new InvalidOperationException("AzureBlob:FieldConnectionString is not configured.");
+                var containerName = configuration["AzureBlob:FieldContainer"]
+                    ?? throw new InvalidOperationException("AzureBlob:FieldContainer is not configured.");
+                return new FieldBlobUploadService(connectionString, containerName);
+            });
+
             return services;
         }
     }

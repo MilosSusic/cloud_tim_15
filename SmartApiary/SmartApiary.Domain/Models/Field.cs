@@ -17,7 +17,6 @@ namespace SmartApiary.Domain.Models
         public string? ImageUrl { get; set; }
         public string? ThumbnailUrl { get; set; }
         public List<Crop> Crops { get; set; } = new();
-        public List<FieldLogEntry> LogEntries { get; set; } = new();
         public List<SpraySchedule> SpraySchedules { get; set; } = new();
     }
 }

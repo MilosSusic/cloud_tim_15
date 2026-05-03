@@ -1,0 +1,109 @@
+.crop-details-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.crop-details-card {
+  background: #1e293b;
+  color: #f1f5f9;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 700px;        /* veći modal */
+  max-width: 90%;      /* prilagodljiv ekranu */
+  max-height: 80vh;    /* da ne pređe visinu ekrana */
+  overflow-y: auto;    /* skrol ako ima puno sadržaja */
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  position: relative;
+  animation: fadeIn 0.25s ease;
+}
+
+.crop-details-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #22c55e;
+  margin-bottom: 1rem;
+}
+
+.crop-details-body {
+  margin-top: 1rem;
+}
+
+.crop-details-body p {
+  margin: 0.75rem 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.crop-card-period {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.crop-details-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.harvest-btn {
+  background-color: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;   /* smanjeno */
+  font-size: 1rem;          /* smanjeno */
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s;
+}
+
+.harvest-btn:hover {
+  background-color: #b91c1c;
+  transform: translateY(-2px);
+}
+
+.harvest-btn:active {
+  transform: translateY(0);
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  color: #f1f5f9;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: #22c55e;
+}
+
+.crop-card-status {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #22c55e; /* zelena za planted */
+}
+
+.crop-card-status strong {
+  color: #facc15; /* žuta ili promeni po želji */
+}
+
+.harvest-btn:disabled {
+  background-color: #9ca3af; /* siva kad je disabled */
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

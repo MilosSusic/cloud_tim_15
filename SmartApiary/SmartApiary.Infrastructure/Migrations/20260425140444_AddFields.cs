@@ -35,10 +35,10 @@ namespace SmartApiary.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FieldId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CropName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CropName = table.Column<int>(type: "int", nullable: false),
+                    FloweringPeriodStart = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    FloweringPeriodEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
@@ -46,30 +46,6 @@ namespace SmartApiary.Infrastructure.Migrations
                     table.PrimaryKey("PK_Crop", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Crop_Fields_FieldId",
-                        column: x => x.FieldId,
-                        principalTable: "Fields",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "FieldLogEntry",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FieldId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReviewDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CropId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReviewType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    WeatherConditions = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Note = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BottomBoardColor = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_FieldLogEntry", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_FieldLogEntry_Fields_FieldId",
                         column: x => x.FieldId,
                         principalTable: "Fields",
                         principalColumn: "Id",
@@ -106,11 +82,6 @@ namespace SmartApiary.Infrastructure.Migrations
                 column: "FieldId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_FieldLogEntry_FieldId",
-                table: "FieldLogEntry",
-                column: "FieldId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_SpraySchedule_FieldId",
                 table: "SpraySchedule",
                 column: "FieldId");
@@ -121,9 +92,6 @@ namespace SmartApiary.Infrastructure.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Crop");
-
-            migrationBuilder.DropTable(
-                name: "FieldLogEntry");
 
             migrationBuilder.DropTable(
                 name: "SpraySchedule");

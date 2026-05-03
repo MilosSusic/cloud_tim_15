@@ -65,31 +65,31 @@ namespace SmartApiary.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Color")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CropName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<Guid>("FieldId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("FloweringPeriodEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FloweringPeriodStart")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FieldId");
 
-                    b.ToTable("Crop");
+                    b.ToTable("Crop", (string)null);
                 });
 
             modelBuilder.Entity("SmartApiary.Domain.Models.Field", b =>
@@ -129,42 +129,6 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.ToTable("Fields", (string)null);
                 });
 
-            modelBuilder.Entity("SmartApiary.Domain.Models.FieldLogEntry", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("BottomBoardColor")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("CropId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("FieldId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("ReviewDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReviewType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("WeatherConditions")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FieldId");
-
-                    b.ToTable("FieldLogEntry");
-                });
 
             modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
                 {

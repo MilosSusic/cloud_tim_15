@@ -17,5 +17,6 @@ namespace SmartApiary.Domain.Enums
         Sorghum = 6,
         Buckwheat = 7,
         Chia = 8,
+        Sunflower = 9,
     }
 }

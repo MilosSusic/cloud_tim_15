@@ -25,15 +25,16 @@ namespace SmartApiary.Application.Features.Crops.Queries
         {
             var crops = await _cropsRepository.GetByFieldIdAsync(request.FieldId, cancellationToken);
             var dtos = crops
-                .Where(c => !c.IsDeleted)
                 .Select(c => new CropListItemDto
             {
                 Id = c.Id,
                 CropName = c.CropName,
                 Description = c.Description,
-                Note = c.Note,
-                Color = c.Color
-            }).ToList();
+                FloweringPeriodStart = c.FloweringPeriodStart,
+                FloweringPeriodEnd = c.FloweringPeriodEnd,
+                IsDeleted = c.IsDeleted
+
+                }).ToList();
             return Result<List<CropListItemDto>>.Success(dtos);
         }
     }

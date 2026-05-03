@@ -8,6 +8,7 @@ export const CropType ={
   Sorghum: 6,
   Buckwheat: 7,
   Chia: 8,
+  Sunflower: 9,
 } as const;
 
 export type CropType = typeof CropType[keyof typeof CropType];

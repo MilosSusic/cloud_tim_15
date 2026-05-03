@@ -8,10 +8,10 @@ namespace SmartApiary.Infrastructure.Persistence
         public DbSet<User> Users => Set<User>();
         public DbSet<Apiary> Apiaries => Set<Apiary>();
         public DbSet<Hive> Hives => Set<Hive>();
-        public DbSet<HiveLogEntry> HiveLogEntries => Set<HiveLogEntry>();
         public DbSet<Field> Fields => Set<Field>();
         public DbSet<SpraySchedule> SpraySchedules => Set<SpraySchedule>();
         public DbSet<Crop> Crops => Set<Crop>();
+        public DbSet<HiveLogEntry> HiveLogEntries => Set<HiveLogEntry>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -133,36 +133,6 @@ namespace SmartApiary.Infrastructure.Persistence
                     .HasForeignKey(x => x.HiveId);
             });
 
-            modelBuilder.Entity<HiveLogEntry>(entity =>
-            {
-                entity.ToTable("HiveLogEntries");
-
-                entity.HasKey(x => x.Id);
-
-                entity.Property(x => x.ReviewDate)
-                    .IsRequired();
-
-                entity.Property(x => x.ReviewType)
-                    .HasMaxLength(100);
-
-                entity.Property(x => x.BottomBoardColor)
-                    .HasMaxLength(50);
-
-                entity.Property(x => x.HoneyFrames)
-                    .IsRequired();
-
-                entity.Property(x => x.HoneyAmountKg)
-                    .IsRequired();
-
-                entity.Property(x => x.BroodFrames)
-                    .IsRequired();
-
-                entity.Property(x => x.QueenPresent)
-                    .IsRequired();
-
-                entity.Property(x => x.Note)
-                    .HasMaxLength(512);
-            });
             modelBuilder.Entity<Field>(entity =>
             {
                 entity.ToTable("Fields");
@@ -192,9 +162,6 @@ namespace SmartApiary.Infrastructure.Persistence
                     .IsRequired();
 
                 entity.HasMany(x => x.Crops)
-                    .WithOne()
-                    .HasForeignKey(x => x.FieldId);
-                entity.HasMany(x => x.LogEntries)
                     .WithOne()
                     .HasForeignKey(x => x.FieldId);
                 entity.HasMany(x => x.SpraySchedules)
@@ -231,17 +198,16 @@ namespace SmartApiary.Infrastructure.Persistence
 
                 entity.Property(x => x.FieldId)
                     .IsRequired();
-                entity.Property(x=>x.CropName)
-                    .IsRequired()
-                    .HasConversion<string>();
+                entity.Property(x => x.CropName)
+                    .IsRequired(); // store as int (enum)
                 entity.Property(x => x.Description)
                     .HasMaxLength(512);
-                entity.Property(x => x.Note)
-                    .HasMaxLength(512);
+                entity.Property(x => x.FloweringPeriodStart)
+                    .IsRequired();
+                entity.Property(x => x.FloweringPeriodEnd)
+                    .IsRequired();
                 entity.Property(x => x.IsDeleted)
                     .IsRequired();
-                entity.Property(x => x.Color)
-                    .HasMaxLength(50);
             });
 
             base.OnModelCreating(modelBuilder);

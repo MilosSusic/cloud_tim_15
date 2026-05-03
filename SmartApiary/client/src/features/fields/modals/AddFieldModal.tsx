@@ -6,7 +6,6 @@ export interface FieldFormData {
   description: string;
   latitude: number;
   longitude: number;
-  file?: File;
 }
 
 const AddFieldModal: React.FC<{ onClose: () => void; onSave: (data: FieldFormData) => void }> = ({ onClose, onSave }) => {
@@ -15,9 +14,7 @@ const AddFieldModal: React.FC<{ onClose: () => void; onSave: (data: FieldFormDat
     description: "",
     latitude: 0,
     longitude: 0,
-    file: undefined,
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -25,14 +22,6 @@ const AddFieldModal: React.FC<{ onClose: () => void; onSave: (data: FieldFormDat
       ...prev,
       [name]: name === "latitude" || name === "longitude" ? parseFloat(value) : value,
     }));
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      setFormData((prev) => ({ ...prev, file }));
-      setImagePreview(URL.createObjectURL(file));
-    }
   };
 
   const handleSubmit = () => {
@@ -60,17 +49,6 @@ const AddFieldModal: React.FC<{ onClose: () => void; onSave: (data: FieldFormDat
           Longitude:
           <input type="number" name="longitude" value={formData.longitude} onChange={handleChange} />
         </label>
-        <label>
-          Image:
-          <input type="file" accept="image/*" onChange={handleFileChange} />
-        </label>
-
-        {imagePreview && (
-          <div className="image-preview">
-            <p>Image preview:</p>
-            <img src={imagePreview} alt="Preview" />
-          </div>
-        )}
 
         <div className="modal-actions">
           <button onClick={handleSubmit}>Add</button>

@@ -10,9 +10,10 @@ interface SprayCardProps {
   onCancel: (id: string) => void;
   onComplete: (id: string) => void;
   onReschedule: (id: string, newDate: string) => void;
+  onOpenDetails: (spray: SpraySchedule) => void;
 }
 
-const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onReschedule }) => {
+const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onReschedule, onOpenDetails }) => {
   const [showRescheduleInput, setShowRescheduleInput] = useState(false);
   const [newDate, setNewDate] = useState("");
 
@@ -37,15 +38,7 @@ const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onRe
   };
 
   const handleCardClick = () => {
-    alert(`
-Spray Details:
-- ID: ${spray.id}
-- Field ID: ${spray.fieldId}
-- Pesticide: ${spray.pesticideType ?? "N/A"}
-- Start: ${new Date(spray.startDateTime).toLocaleString()}
-- Duration: ${spray.durationHours}h
-- Status: ${sprayStatusNames[spray.status]}
-    `);
+    onOpenDetails(spray);
   };
 
   return (

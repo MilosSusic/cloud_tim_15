@@ -5,7 +5,8 @@ export interface Crop {
   fieldId: string;
   cropName: CropType;
   description: string;
-  color: string;
-  note: string | null;
+  floweringPeriodStart: string;
+  floweringPeriodEnd: string;
+  isDeleted: boolean;
 }
 

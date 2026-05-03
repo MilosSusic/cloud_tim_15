@@ -13,7 +13,7 @@ namespace SmartApiary.Application.Features.Crops.Commands
         Guid FieldId,
         CropType CropName,
         string? Description,
-        string? Note,
-        string Color
+        DateTime FloweringPeriodStart,
+        DateTime FloweringPeriodEnd
     ) : IRequest<Result<Guid>>;
 }

@@ -30,6 +30,8 @@ namespace SmartApiary.Application.Features.Crops.Commands
 
             crop.CropName = request.CropName;
             crop.Description = request.Description;
+            crop.FloweringPeriodStart = request.FloweringPeriodStart;
+            crop.FloweringPeriodEnd = request.FloweringPeriodEnd;
 
 
             _cropsRepository.Update(crop);

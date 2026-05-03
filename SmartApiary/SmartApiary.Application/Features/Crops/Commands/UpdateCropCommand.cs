@@ -12,6 +12,8 @@ namespace SmartApiary.Application.Features.Crops.Commands
     public record UpdateCropCommand(
         Guid Id,
         CropType CropName,
-        string? Description
+        string? Description,
+        DateTime FloweringPeriodStart,
+        DateTime FloweringPeriodEnd
     ) : IRequest<Result>;
 }

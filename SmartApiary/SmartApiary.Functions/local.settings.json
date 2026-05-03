@@ -12,7 +12,9 @@
     "SendGrid:FromEmail": "milossusic22@gmail.com",
     "SendGrid:FromName": "SmartApiary",
     "AzureBlob:ConnectionString": "UseDevelopmentStorage=true",
-    "AzureBlob:Container": "apiary-images"
+    "AzureBlob:Container": "apiary-images",
+    "AzureBlob:FieldConnectionString": "UseDevelopmentStorage=true",
+    "AzureBlob:FieldContainer": "field-images"
   },
   "Host": {
     "CORS": "http://localhost:5173",

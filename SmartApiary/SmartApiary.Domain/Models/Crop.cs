@@ -11,10 +11,10 @@ namespace SmartApiary.Domain.Models
     {
         public Guid Id { get; set; }
         public Guid FieldId { get; set; }
-        public CropType CropName { get; set; } = CropType.None;
+        public CropType CropName { get; set; }
+        public DateTime FloweringPeriodStart { get; set; }
+        public DateTime FloweringPeriodEnd { get; set; }
         public string? Description { get; set; }
-        public string? Note { get; set; }
-        public string Color { get; set; } = string.Empty;
         public bool IsDeleted { get; set; }
     }
 }

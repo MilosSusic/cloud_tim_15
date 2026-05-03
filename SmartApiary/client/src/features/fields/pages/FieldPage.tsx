@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import { createCrop, getCropsByField } from "../../crops/api/cropApi";
+import { createCrop, getCropsByField, harvestCrop } from "../../crops/api/cropApi";
 import AddCropModal from "../../crops/modals/AddCropModal";
 import type { Crop } from "../../crops/types/Crop";
 import {
@@ -15,7 +15,7 @@ import SprayScheduleModal from "../../spraySchedule/modals/SprayScheduleModal";
 import UpdateSprayScheduleModal from "../../spraySchedule/modals/UpdateSprayScheduleModal";
 import { SprayStatus } from "../../spraySchedule/types/SprayStatus";
 import type { SpraySchedule } from "../../spraySchedule/types/SpraySchedule";
-import { createField, getFields } from "../api/fieldApi";
+import { createField, getFields, updateField } from "../api/fieldApi";
 import "../layout/Field.css";
 import AddFieldModal from "../modals/AddFieldModal";
 import type { FieldFormData } from "../modals/AddFieldModal";
@@ -24,6 +24,9 @@ import type { CropFormData } from "../../crops/modals/AddCropModal";
 import type { SprayScheduleFormData } from "../../spraySchedule/modals/SprayScheduleModal";
 import type { UpdateSprayScheduleFormData } from "../../spraySchedule/modals/UpdateSprayScheduleModal";
 import "leaflet/dist/leaflet.css";
+import CropCard from "../../crops/modals/CropCard";
+import CropDetails from "../../crops/modals/CropDetails";
+import SprayDetails from "../../spraySchedule/modals/SprayDetails";
 
 const cropNames: Record<number, string> = {
   1: "Wheat",
@@ -34,7 +37,12 @@ const cropNames: Record<number, string> = {
   6: "Sorghum",
   7: "Buckwheat",
   8: "Chia",
+  9: "Sunflower",
 };
+
+function hasActiveCrop(crops: Crop[]): boolean {
+  return crops.some((c) => !c.isDeleted);
+}
 
 const FieldPage: React.FC = () => {
   const [fields, setFields] = useState<Field[]>([]);
@@ -49,6 +57,8 @@ const FieldPage: React.FC = () => {
   const [sprayToUpdate, setSprayToUpdate] =
     useState<UpdateSprayScheduleFormData | null>(null);
   const [activeTab, setActiveTab] = useState<"crops" | "sprays">("crops");
+  const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
+  const [selectedSpray, setSelectedSpray] = useState<SpraySchedule | null>(null);
 
   const isErrorMessage = (text: string) => {
     const normalized = text.toLowerCase();
@@ -151,14 +161,27 @@ const FieldPage: React.FC = () => {
     setLoading(false);
   };
 
-  const handleSaveCrop = async (data: CropFormData) => {
+  const handleSaveCrop = async (data: CropFormData, file: File | null) => {
     setLoading(true);
     try {
       await createCrop(data);
-      setShowCropModal(false);
+      setShowCropModal(false); 
+
+      if(selectedField && file){
+      const fieldData = {
+        id: selectedField.id,
+        fieldName: selectedField.fieldName,
+        description: selectedField.description,
+        latitude: selectedField.latitude,
+        longitude: selectedField.longitude,
+        file: file,
+        };
+        await updateField(fieldData);
+      }
       setMessage("Crop created successfully.");
       if (selectedField) {
         await fetchCrops(selectedField.id);
+        await fetchFields();
       }
     } catch (err) {
       console.error("Error creating crop:", err);
@@ -200,6 +223,25 @@ const FieldPage: React.FC = () => {
       console.error("Error updating spray schedule:", err);
       setMessage("Failed to update spray schedule.");
     }
+  };
+  const handleHarvestCrop = async (id: string) => {
+  try {
+    await harvestCrop(id);
+      setMessage("Crop harvested successfully.");
+      if (selectedField) {
+        await fetchCrops(selectedField.id);
+      }
+    } catch (error) {
+      console.error("Error harvesting crop:", error);
+      setMessage("Failed to harvest crop.");
+    }
+  };
+
+  const handleOpenSprayDetails = (spray: SpraySchedule) => {
+    setSelectedSpray(spray);
+  };
+  const handleOpenCropDetails = (crop: Crop) => {
+    setSelectedCrop(crop);
   };
 
   useEffect(() => {
@@ -367,23 +409,20 @@ const FieldPage: React.FC = () => {
               <div className="field-side-scroll">
                 {activeTab === "crops" && (
                   <>
-                    <button className="action-btn" onClick={() => setShowCropModal(true)}>
+                    <button className="action-btn" onClick={() => setShowCropModal(true)} disabled={hasActiveCrop(crops)}>
                       + Add Crop
                     </button>
                     <div className="field-side-list-scroll">
                       {crops.length > 0 ? (
-                        <ul className="sidebar-list">
+                        <div className="sidebar-list">
                           {crops.map((crop) => (
-                            <li key={crop.id} className="field-crop-item">
-                              <div className="field-crop-name">{cropNames[crop.cropName] || "Unknown Crop"}</div>
-                              <div className="field-crop-desc">{crop.description || "No description"}</div>
-                              <div className="field-crop-color" style={{ color: crop.color }}>
-                                Color: {crop.color}
-                              </div>
-                              {crop.note && <div className="field-crop-note">Note: {crop.note}</div>}
-                            </li>
+                            <div key={crop.id} onClick={() => setSelectedCrop(crop)}>
+                              <CropCard crop={crop} cropNames={cropNames} onHarvest={handleHarvestCrop} onOpenCropDetails={handleOpenCropDetails}/>
+                            </div>
                           ))}
-                        </ul>
+
+                          
+                        </div>
                       ) : (
                         <p className="field-panel-empty">No crops for this field.</p>
                       )}
@@ -412,6 +451,7 @@ const FieldPage: React.FC = () => {
                                   onCancel={(id) => handleCancelSpray(id)}
                                   onComplete={(id) => handleCompleteSpray(id)}
                                   onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
+                                  onOpenDetails={() => handleOpenSprayDetails(spray)}
                                 />
                               ))}
                             </div>
@@ -430,6 +470,7 @@ const FieldPage: React.FC = () => {
                                   onCancel={(id) => handleCancelSpray(id)}
                                   onComplete={(id) => handleCompleteSpray(id)}
                                   onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
+                                  onOpenDetails={() => handleOpenSprayDetails(spray)}
                                 />
                               ))}
                             </div>
@@ -441,6 +482,7 @@ const FieldPage: React.FC = () => {
                     </div>
                   </>
                 )}
+                
               </div>
             </>
           )}
@@ -451,6 +493,13 @@ const FieldPage: React.FC = () => {
         <AddFieldModal onClose={() => setShowFieldModal(false)} onSave={handleSaveField} />
       )}
 
+      {selectedSpray && (
+                  <SprayDetails
+                    spray={selectedSpray}
+                    onClose={() => setSelectedSpray(null)}
+                  />
+                )}
+
       {showCropModal && selectedField && (
         <AddCropModal
           fieldId={selectedField.id}
@@ -458,6 +507,15 @@ const FieldPage: React.FC = () => {
           onSave={handleSaveCrop}
         />
       )}
+
+      {selectedCrop && (
+                            <CropDetails
+                              crop={selectedCrop}
+                              cropNames={cropNames}
+                              onClose={() => setSelectedCrop(null)}
+                              onHarvest={handleHarvestCrop}
+                            />
+                          )}
 
       {showSprayModal && selectedField && (
         <SprayScheduleModal
