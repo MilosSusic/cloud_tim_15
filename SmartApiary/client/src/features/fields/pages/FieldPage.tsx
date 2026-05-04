@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { createCrop, getCropsByField, harvestCrop } from "../../crops/api/cropApi";
-import AddCropModal from "../../crops/modals/AddCropModal";
+import AddCropModal from "../../crops/components/AddCropModal";
 import type { Crop } from "../../crops/types/Crop";
 import {
   changeSprayStatus,
@@ -9,21 +9,21 @@ import {
   getSprayByField,
   rescheduleSpray,
 } from "../../spraySchedule/api/sprayScheduleApi";
-import SprayCard from "../../spraySchedule/modals/SprayCard";
-import SprayScheduleModal from "../../spraySchedule/modals/SprayScheduleModal";
+import SprayCard from "../../spraySchedule/components/SprayCard";
+import SprayScheduleModal from "../../spraySchedule/components/SprayScheduleModal";
 import { SprayStatus } from "../../spraySchedule/types/SprayStatus";
 import type { SpraySchedule } from "../../spraySchedule/types/SpraySchedule";
 import { createField, getFields, updateField } from "../api/fieldApi";
 import "../layout/Field.css";
-import AddFieldModal from "../modals/AddFieldModal";
-import type { FieldFormData } from "../modals/AddFieldModal";
+import AddFieldModal from "../components/AddFieldModal";
+import type { FieldFormData } from "../components/AddFieldModal";
 import type { Field } from "../types/Field";
-import type { CropFormData } from "../../crops/modals/AddCropModal";
-import type { SprayScheduleFormData } from "../../spraySchedule/modals/SprayScheduleModal";
+import type { CropFormData } from "../../crops/components/AddCropModal";
+import type { SprayScheduleFormData } from "../../spraySchedule/components/SprayScheduleModal";
 import "leaflet/dist/leaflet.css";
-import CropCard from "../../crops/modals/CropCard";
-import CropDetails from "../../crops/modals/CropDetails";
-import SprayDetails from "../../spraySchedule/modals/SprayDetails";
+import CropCard from "../../crops/components/CropCard";
+import CropDetails from "../../crops/components/CropDetails";
+import SprayDetails from "../../spraySchedule/components/SprayDetails";
 
 const cropNames: Record<number, string> = {
   1: "Wheat",
