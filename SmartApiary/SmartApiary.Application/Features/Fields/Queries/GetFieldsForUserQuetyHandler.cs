@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using SmartApiary.Application.Features.Apiaries.Queries;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
 using System;
 using System.Collections.Generic;
@@ -15,20 +16,20 @@ namespace SmartApiary.Application.Features.Fields.Queries
     public class GetFieldsForUserQueryHandler : IRequestHandler<GetFieldsForUserQuery, Result<List<FieldListItemDto>>>
     {
         private readonly IFieldRepository _fieldRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
 
-        public GetFieldsForUserQueryHandler(IFieldRepository fieldRepository, IHttpContextAccessor httpContextAccessor)
+        public GetFieldsForUserQueryHandler(IFieldRepository fieldRepository, ICurrentUserService currentUserService)
         {
             _fieldRepository = fieldRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<List<FieldListItemDto>>> Handle(GetFieldsForUserQuery request, CancellationToken cancellationToken)
         {
-            var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdStr, out var userId))
-                return Result<List<FieldListItemDto>>.Failure("Invalid user id.");  
-            var fields = await _fieldRepository.GetByOwnerIdAsync(userId, cancellationToken);
+            var userId = _currentUserService.UserId;
+            if (userId is null)
+                return Result<List<FieldListItemDto>>.Failure("Invalid user id.");
+            var fields = await _fieldRepository.GetByOwnerIdAsync(userId.Value, cancellationToken);
             var dtos = fields.Select(f => new FieldListItemDto
             {
                 Id = f.Id,

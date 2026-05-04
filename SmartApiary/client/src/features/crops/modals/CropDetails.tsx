@@ -37,7 +37,10 @@ const CropDetails: React.FC<CropDetailsProps> = ({ crop, cropNames, onClose, onH
         <div className="crop-details-footer">
           <button
             className="harvest-btn"
-            onClick={() => onHarvest(crop.id)}
+            onClick={() => {
+              onHarvest(crop.id);   
+              onClose();            
+            }}
             disabled={crop.isDeleted}
           >
             Harvest

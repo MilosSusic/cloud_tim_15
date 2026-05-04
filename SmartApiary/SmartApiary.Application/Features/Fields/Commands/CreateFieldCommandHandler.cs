@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using SmartApiary.Application.Features.Apiaries.Commands;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Models;
 using System;
@@ -16,18 +17,18 @@ namespace SmartApiary.Application.Features.Fields.Commands
     public class CreateFieldCommandHandler : IRequestHandler<CreateFieldCommand, Result<Guid>>
     {
         private readonly IFieldRepository _fieldRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CreateFieldCommandHandler(IFieldRepository fieldRepository, IHttpContextAccessor httpContextAccessor)
+        public CreateFieldCommandHandler(IFieldRepository fieldRepository, ICurrentUserService currentUserService)
         {
             _fieldRepository = fieldRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public async Task<Result<Guid>> Handle(CreateFieldCommand request, CancellationToken cancellationToken)
         {
-            var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdStr, out var userId))
+            var userId = _currentUserService.UserId;
+            if (userId is null)
                 return Result<Guid>.Failure("Invalid user id.");
 
             var field = new Field
@@ -39,7 +40,7 @@ namespace SmartApiary.Application.Features.Fields.Commands
                 Longitude = request.Longitude,
                 ImageUrl = request.ImageUrl,
                 ThumbnailUrl = request.ThumbnailUrl,
-                OwnerId = userId 
+                OwnerId = userId.Value 
             };
 
             await _fieldRepository.AddAsync(field, cancellationToken);

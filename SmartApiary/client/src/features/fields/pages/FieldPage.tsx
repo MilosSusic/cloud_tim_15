@@ -8,11 +8,9 @@ import {
   createSpray,
   getSprayByField,
   rescheduleSpray,
-  updateSpray,
 } from "../../spraySchedule/api/sprayScheduleApi";
 import SprayCard from "../../spraySchedule/modals/SprayCard";
 import SprayScheduleModal from "../../spraySchedule/modals/SprayScheduleModal";
-import UpdateSprayScheduleModal from "../../spraySchedule/modals/UpdateSprayScheduleModal";
 import { SprayStatus } from "../../spraySchedule/types/SprayStatus";
 import type { SpraySchedule } from "../../spraySchedule/types/SpraySchedule";
 import { createField, getFields, updateField } from "../api/fieldApi";
@@ -22,7 +20,6 @@ import type { FieldFormData } from "../modals/AddFieldModal";
 import type { Field } from "../types/Field";
 import type { CropFormData } from "../../crops/modals/AddCropModal";
 import type { SprayScheduleFormData } from "../../spraySchedule/modals/SprayScheduleModal";
-import type { UpdateSprayScheduleFormData } from "../../spraySchedule/modals/UpdateSprayScheduleModal";
 import "leaflet/dist/leaflet.css";
 import CropCard from "../../crops/modals/CropCard";
 import CropDetails from "../../crops/modals/CropDetails";
@@ -54,8 +51,6 @@ const FieldPage: React.FC = () => {
   const [showFieldModal, setShowFieldModal] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
   const [showSprayModal, setShowSprayModal] = useState(false);
-  const [sprayToUpdate, setSprayToUpdate] =
-    useState<UpdateSprayScheduleFormData | null>(null);
   const [activeTab, setActiveTab] = useState<"crops" | "sprays">("crops");
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [selectedSpray, setSelectedSpray] = useState<SpraySchedule | null>(null);
@@ -182,6 +177,7 @@ const FieldPage: React.FC = () => {
       if (selectedField) {
         await fetchCrops(selectedField.id);
         await fetchFields();
+
       }
     } catch (err) {
       console.error("Error creating crop:", err);
@@ -211,30 +207,19 @@ const FieldPage: React.FC = () => {
     setLoading(false);
   };
 
-  const handleUpdateSpray = async (data: UpdateSprayScheduleFormData) => {
-    try {
-      await updateSpray(data.id, data);
-      setMessage("Spray schedule updated successfully.");
-      setSprayToUpdate(null);
-      if (selectedField) {
-        await fetchSprays(selectedField.id);
-      }
-    } catch (err) {
-      console.error("Error updating spray schedule:", err);
-      setMessage("Failed to update spray schedule.");
-    }
-  };
   const handleHarvestCrop = async (id: string) => {
-  try {
-    await harvestCrop(id);
-      setMessage("Crop harvested successfully.");
-      if (selectedField) {
-        await fetchCrops(selectedField.id);
+    try {
+      await harvestCrop(id);
+        setMessage("Crop harvested successfully.");
+        
+        if (selectedField) {
+          await fetchCrops(selectedField.id);  
+        }
+
+      } catch (error) {
+        console.error("Error harvesting crop:", error);
+        setMessage("Failed to harvest crop.");
       }
-    } catch (error) {
-      console.error("Error harvesting crop:", error);
-      setMessage("Failed to harvest crop.");
-    }
   };
 
   const handleOpenSprayDetails = (spray: SpraySchedule) => {
@@ -257,6 +242,15 @@ const FieldPage: React.FC = () => {
       setSprays([]);
     }
   }, [selectedField]);
+
+  useEffect(() => {
+    if (selectedField) {
+      const refreshed = fields.find(f => f.id === selectedField.id);
+      if (refreshed) {
+        setSelectedField(refreshed);
+      }
+    }
+  }, [fields]);
 
   const sprayPriority = (status: number) => {
     switch (status) {
@@ -525,13 +519,6 @@ const FieldPage: React.FC = () => {
         />
       )}
 
-      {sprayToUpdate && (
-        <UpdateSprayScheduleModal
-          spray={sprayToUpdate}
-          onClose={() => setSprayToUpdate(null)}
-          onSave={handleUpdateSpray}
-        />
-      )}
     </div>
   );
 };

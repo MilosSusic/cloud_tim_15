@@ -34,13 +34,13 @@ namespace SmartApiary.Application.Features.Fields.Queries
             if (!Guid.TryParse(userIdStr, out var userId))
                 return new List<FieldWithCropsDto>();
 
-            // Get all apiaries for this user
+            
             var apiaries = await _apiaryRepository.GetByOwnerIdAsync(userId, cancellationToken);
             if (apiaries.Count == 0)
                 return new List<FieldWithCropsDto>();
 
-            // Get all fields (parcels)
-            var allFields = await _fieldRepository.GetAllWithCropsAsync(cancellationToken); // This should be replaced with a method to get all fields, not just by owner
+            
+            var allFields = await _fieldRepository.GetAllWithCropsAsync(cancellationToken); 
 
             var result = new List<FieldWithCropsDto>();
             foreach (var field in allFields)

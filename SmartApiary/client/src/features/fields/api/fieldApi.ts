@@ -65,8 +65,8 @@ export async function updateField(form: any) {
         description: form.description,
         latitude: form.latitude,
         longitude: form.longitude,
-        imageUrl: imageUrl,
-        thumbnailUrl: thumbnailUrl,
+        imageUrl: imageUrl || form.imageUrl || "",
+        thumbnailUrl: thumbnailUrl || form.thumbnailUrl || "",
     };
     console.log('Payload:', fieldData);
     const resp = await fetch(`${CONFIG.FIELD_URL}/${form.id}`, {

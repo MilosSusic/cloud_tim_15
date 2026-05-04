@@ -43,7 +43,10 @@ const CropCard: React.FC<CropCardProps> = ({ crop, cropNames, onHarvest, onOpenC
       <div className="crop-card-footer">
         <button
           className="harvest-btn"
-          onClick={() => onHarvest(crop.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onHarvest(crop.id);
+          }}
           disabled={crop.isDeleted}
         >
           Harvest

@@ -21,6 +21,7 @@ namespace SmartApiary.Application.Features.Crops.Commands
 
         public async Task<Result<Guid>> Handle(CreateCropCommand request, CancellationToken cancellationToken)
         {
+
             var crop = new Domain.Models.Crop
             {
                 Id = Guid.NewGuid(),
@@ -31,6 +32,13 @@ namespace SmartApiary.Application.Features.Crops.Commands
                 FloweringPeriodEnd = request.FloweringPeriodEnd,
                 IsDeleted = false
             };
+
+            if (crop.FloweringPeriodStart > crop.FloweringPeriodEnd)
+            {
+                var temp = crop.FloweringPeriodStart;
+                crop.FloweringPeriodStart = crop.FloweringPeriodEnd;
+                crop.FloweringPeriodEnd = temp;
+            }
 
             await _ropsRepository.AddAsync(crop, cancellationToken);
             await _ropsRepository.SaveChangesAsync(cancellationToken);
