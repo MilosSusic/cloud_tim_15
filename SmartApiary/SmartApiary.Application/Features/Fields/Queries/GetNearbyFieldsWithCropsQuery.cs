@@ -30,5 +30,7 @@ namespace SmartApiary.Application.Features.Fields.Queries
         public string Name { get; set; } = string.Empty;
         public string Icon { get; set; } = string.Empty;
         public string FloweringPeriod { get; set; } = string.Empty;
+        public DateTime FloweringPeriodStart { get; set; }
+        public DateTime FloweringPeriodEnd { get; set; }
     }
 }

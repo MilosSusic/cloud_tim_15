@@ -41,7 +41,6 @@ namespace SmartApiary.Application.Features.Fields.Queries
 
             // Get all fields (parcels)
             var allFields = await _fieldRepository.GetAllWithCropsAsync(cancellationToken); // This should be replaced with a method to get all fields, not just by owner
-            // If not available, you may need to add a method to get all fields in IFieldRepository
 
             var result = new List<FieldWithCropsDto>();
             foreach (var field in allFields)
@@ -64,8 +63,10 @@ namespace SmartApiary.Application.Features.Fields.Queries
                         var crops = field.Crops.Select(c => new CropDto
                         {
                             Name = c.CropName.ToString(),
-                            Icon = GetCropIcon(c.CropName),
-                            FloweringPeriod = GetFloweringPeriod(c.CropName)
+                            Icon = field.ThumbnailUrl ?? field.ImageUrl ?? string.Empty,
+                            FloweringPeriodStart = c.FloweringPeriodStart,
+                            FloweringPeriodEnd = c.FloweringPeriodEnd,
+                            FloweringPeriod = $"{c.FloweringPeriodStart:yyyy-MM-dd} - {c.FloweringPeriodEnd:yyyy-MM-dd}"
                         }).ToList();
                         result.Add(new FieldWithCropsDto
                         {
@@ -98,39 +99,5 @@ namespace SmartApiary.Application.Features.Fields.Queries
         }
 
         private static double DegreesToRadians(double deg) => deg * (Math.PI / 180.0);
-
-        private static string GetCropIcon(CropType cropType)
-        {
-            // Return icon name or url based on crop type
-            return cropType switch
-            {
-                CropType.Wheat => "wheat.png",
-                CropType.Rice => "rice.png",
-                CropType.Barley => "barley.png",
-                CropType.Oats => "oats.png",
-                CropType.Corn => "corn.png",
-                CropType.Sorghum => "sorghum.png",
-                CropType.Buckwheat => "buckwheat.png",
-                CropType.Chia => "chia.png",
-                _ => "crop.png"
-            };
-        }
-
-        private static string GetFloweringPeriod(CropType cropType)
-        {
-            // Return expected flowering period for each crop
-            return cropType switch
-            {
-                CropType.Wheat => "May - June",
-                CropType.Rice => "June - July",
-                CropType.Barley => "May - June",
-                CropType.Oats => "May - June",
-                CropType.Corn => "July - August",
-                CropType.Sorghum => "July - August",
-                CropType.Buckwheat => "June - July",
-                CropType.Chia => "July - September",
-                _ => "Unknown"
-            };
-        }
     }
 }

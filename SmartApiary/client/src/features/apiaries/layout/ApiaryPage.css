@@ -304,6 +304,166 @@
   box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
 }
 
+.field-info-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.field-info-title-wrap {
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.field-info-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.field-info-coords {
+  margin-top: 0.3rem;
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.field-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field-info-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #fbbf24;
+}
+
+.field-info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.09);
+}
+
+.field-info-row:last-child {
+  border-bottom: none;
+}
+
+.field-info-row span {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field-info-row strong {
+  color: #f1f5f9;
+  font-size: 15px;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.field-info-empty-crops {
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.field-info-current-crop {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field-info-current-crop-image {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.field-info-current-crop-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  border-radius: 10px;
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  color: #e2e8f0;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.field-info-current-crop-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.field-info-current-crop-name {
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.field-info-current-crop-period {
+  color: #93c5fd;
+  font-size: 12px;
+}
+
+.field-info-crops-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field-info-crop-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.field-info-crop-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.field-info-crop-name {
+  color: #4ade80;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.field-info-crop-period {
+  margin-left: auto;
+  font-size: 12px;
+  color: #93c5fd;
+}
+
+.field-info-image {
+  width: 100%;
+  margin-top: 0.4rem;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  max-height: 210px;
+  object-fit: cover;
+}
+
 /* ─── Modal Form ──────────────────────────────────────────── */
 .apiary-modal-backdrop {
   position: fixed;
@@ -463,6 +623,75 @@
 .apiary-popup-name { font-size: 13px; font-weight: 700; color: #1e293b; }
 .apiary-popup-desc { font-size: 12px; color: #64748b; margin: 0; }
 .apiary-popup-coords { font-size: 11px; color: #94a3b8; }
+
+.field-popup {
+  min-width: 240px;
+  max-width: 280px;
+  padding: 4px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-popup-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1f2937;
+  margin-bottom: 2px;
+}
+
+.field-popup-owner {
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.field-popup-owner span {
+  font-weight: 700;
+  color: #111827;
+}
+
+.field-popup-current-crop {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 8px;
+}
+
+.field-popup-current-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.field-popup-current-image {
+  width: 100%;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.field-popup-current-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 8px;
+  border: 1px dashed #d1d5db;
+  color: #374151;
+  font-weight: 700;
+  background: #f9fafb;
+}
+
+.field-popup-current-period {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #4b5563;
+  font-weight: 600;
+}
 
 /* ─── Animations ──────────────────────────────────────────── */
 @keyframes slideIn {

@@ -17,6 +17,8 @@ export interface NearbyField {
   latitude: number;
   longitude: number;
   area: number;
+  imageUrl?: string;
+  thumbnailUrl?: string;
   owner: NearbyFieldOwner;
   crops: NearbyFieldCrop[];
 }

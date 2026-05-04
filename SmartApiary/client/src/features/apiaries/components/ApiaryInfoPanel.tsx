@@ -3,6 +3,46 @@ import type { Apiary } from "../types/Apiary";
 import type { NearbyField } from "../types/NearbyField";
 import HivesSection from "../../hives/components/HivesSection";
 
+const isLikelyImageUrl = (value?: string) => {
+  if (!value) return false;
+  return /^https?:\/\//i.test(value) || value.startsWith("/") || value.startsWith("data:image") || value.startsWith("blob:");
+};
+
+const parsePeriod = (period: string) => {
+  const [rawStart, rawEnd] = period.split(" - ").map((part) => part.trim());
+  const start = new Date(rawStart);
+  const end = new Date(rawEnd);
+  return {
+    start,
+    end,
+    valid: !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()),
+  };
+};
+
+const formatDate = (value: Date) =>
+  value.toLocaleDateString("sr-RS", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+const formatFloweringPeriod = (period: string) => {
+  const { start, end, valid } = parsePeriod(period);
+  if (!valid) return period;
+  return `${formatDate(start)} - ${formatDate(end)}`;
+};
+
+const getCurrentCrop = (field: NearbyField) => {
+  if (field.crops.length === 0) return null;
+  const now = new Date();
+  const active = field.crops.find((crop) => {
+    const { start, end, valid } = parsePeriod(crop.floweringPeriod);
+    if (!valid) return false;
+    return now >= start && now <= end;
+  });
+  return active ?? field.crops[0];
+};
+
 interface Props {
   selectedApiary: Apiary | null;
   selectedField: NearbyField | null;
@@ -48,28 +88,70 @@ const ApiaryInfoPanel: React.FC<Props> = ({ selectedApiary, selectedField, onClo
         <HivesSection apiaryId={selectedApiary.id} onSuccess={onMessage} onError={onMessage} />
       </>
     ) : selectedField ? (
-      <div className="field-info-panel" style={{ padding: 16 }}>
-        <div style={{ fontWeight: "bold", fontSize: 18, marginBottom: 8 }}>{selectedField.fieldName}</div>
-        <div style={{ marginBottom: 6 }}><span style={{ fontWeight: "bold" }}>Owner:</span> {selectedField.owner.firstName} {selectedField.owner.lastName}</div>
-        <div style={{ marginBottom: 6 }}><span style={{ fontWeight: "bold" }}>Email:</span> {selectedField.owner.email}</div>
-        <div style={{ marginBottom: 6 }}><span style={{ fontWeight: "bold" }}>Phone:</span> {selectedField.owner.phone}</div>
-        <div style={{ marginTop: 10 }}>
-          <span style={{ fontWeight: "bold" }}>Crops:</span>
-          {selectedField.crops.length === 0 ? (
-            <span style={{ marginLeft: 6, color: "#888" }}>No crops</span>
+      (() => {
+        const currentCrop = getCurrentCrop(selectedField);
+        const currentCropHasImage = isLikelyImageUrl(currentCrop?.icon);
+
+        return (
+      <div className="field-info-panel">
+        <div className="field-info-title-wrap">
+          <h4 className="field-info-title">{selectedField.fieldName}</h4>
+          <div className="field-info-coords">
+            {Number(selectedField.latitude).toFixed(5)}, {Number(selectedField.longitude).toFixed(5)}
+          </div>
+        </div>
+
+        <div className="field-info-section">
+          <div className="field-info-row">
+            <span>Owner</span>
+            <strong>{selectedField.owner.firstName} {selectedField.owner.lastName}</strong>
+          </div>
+          <div className="field-info-row">
+            <span>Email</span>
+            <strong>{selectedField.owner.email}</strong>
+          </div>
+          <div className="field-info-row">
+            <span>Phone</span>
+            <strong>{selectedField.owner.phone}</strong>
+          </div>
+        </div>
+
+        <div className="field-info-section">
+          <div className="field-info-section-title">Current crop</div>
+          {!currentCrop ? (
+            <div className="field-info-empty-crops">No crops</div>
           ) : (
-            <ul style={{ margin: 0, paddingLeft: 18 }}>
-              {selectedField.crops.map((crop, idx) => (
-                <li key={idx} style={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
-                  {crop.icon && <img src={crop.icon} alt={crop.name} style={{ width: 16, height: 16, marginRight: 4 }} />}
-                  <span style={{ color: "#228B22", fontWeight: 500 }}>{crop.name}</span>
-                  <span style={{ marginLeft: 4, fontSize: 12, color: "#666" }}>({crop.floweringPeriod})</span>
-                </li>
-              ))}
-            </ul>
+            <div className="field-info-current-crop">
+              {currentCropHasImage ? (
+                <img
+                  src={currentCrop.icon}
+                  alt={currentCrop.name}
+                  className="field-info-current-crop-image"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="field-info-current-crop-fallback">{currentCrop.name}</div>
+              )}
+              <div className="field-info-current-crop-meta">
+                <span className="field-info-current-crop-name">{currentCrop.name}</span>
+                <span className="field-info-current-crop-period">{formatFloweringPeriod(currentCrop.floweringPeriod)}</span>
+              </div>
+            </div>
           )}
         </div>
+
+        {(selectedField.thumbnailUrl || selectedField.imageUrl) && (
+          <img
+            className="field-info-image"
+            src={selectedField.thumbnailUrl || selectedField.imageUrl}
+            alt={selectedField.fieldName}
+          />
+        )}
       </div>
+        );
+      })()
     ) : null}
   </aside>
 );
