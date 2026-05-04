@@ -50,7 +50,7 @@ const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onRe
       </div>
 
       <div className="spray-actions">
-        <button className="action-btn secondary" onClick={(e) => { e.stopPropagation(); onCancel(spray.id); }} disabled={spray.status === SprayStatus.Completed}>
+        <button className="action-btn secondary" onClick={(e) => { e.stopPropagation(); onCancel(spray.id); }} disabled={spray.status === SprayStatus.Completed || spray.status === SprayStatus.Cancelled}>
           Cancel
         </button>
         <button className="action-btn" onClick={(e) => { e.stopPropagation(); handleRescheduleClick(); }} disabled={spray.status === SprayStatus.Completed || spray.status === SprayStatus.Cancelled}>
