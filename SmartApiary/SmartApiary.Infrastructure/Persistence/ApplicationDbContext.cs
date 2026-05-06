@@ -12,6 +12,7 @@ namespace SmartApiary.Infrastructure.Persistence
         public DbSet<SpraySchedule> SpraySchedules => Set<SpraySchedule>();
         public DbSet<Crop> Crops => Set<Crop>();
         public DbSet<HiveLogEntry> HiveLogEntries => Set<HiveLogEntry>();
+        public DbSet<SprayLog> SprayLogs => Set<SprayLog>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -208,6 +209,18 @@ namespace SmartApiary.Infrastructure.Persistence
                     .IsRequired();
                 entity.Property(x => x.IsDeleted)
                     .IsRequired();
+            });
+
+            modelBuilder.Entity<SprayLog>(entity =>
+            {
+                entity.ToTable("SprayLogs");
+                entity.HasKey(x => x.Id);
+                entity.Property(x => x.FieldName).IsRequired().HasMaxLength(100);
+                entity.Property(x => x.CropName).HasMaxLength(100);
+                entity.Property(x => x.PesticideType).HasMaxLength(100);
+                entity.Property(x => x.WeatherDescription).HasMaxLength(256);
+                entity.Property(x => x.WindSpeed);
+                entity.Property(x => x.Temperature);
             });
 
             base.OnModelCreating(modelBuilder);

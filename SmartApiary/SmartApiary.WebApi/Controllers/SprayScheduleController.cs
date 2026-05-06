@@ -71,5 +71,17 @@ namespace SmartApiary.WebApi.Controllers
             return NoContent();
         }
 
+        [HttpGet("logs")]
+        public async Task<IActionResult> GetLogs(
+            [FromQuery] Guid? fieldId,
+            [FromQuery] DateTime? from,
+            [FromQuery] DateTime? to,
+            CancellationToken ct)
+        {
+            var result = await _mediator.Send(new GetSprayLogsQuery(fieldId, from, to), ct);
+            if (result.IsFailure)
+                return BadRequest(result.Error);
+            return Ok(result.Value);
+        }
     }
 }

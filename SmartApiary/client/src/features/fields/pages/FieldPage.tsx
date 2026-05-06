@@ -8,9 +8,11 @@ import {
   createSpray,
   getSprayByField,
   rescheduleSpray,
+  updateSpray,
 } from "../../spraySchedule/api/sprayScheduleApi";
 import SprayCard from "../../spraySchedule/components/SprayCard";
 import SprayScheduleModal from "../../spraySchedule/components/SprayScheduleModal";
+import UpdateSprayScheduleModal from "../../spraySchedule/components/UpdateSprayScheduleModal";
 import { SprayStatus } from "../../spraySchedule/types/SprayStatus";
 import type { SpraySchedule } from "../../spraySchedule/types/SpraySchedule";
 import { createField, getFields, updateField } from "../api/fieldApi";
@@ -20,10 +22,13 @@ import type { FieldFormData } from "../components/AddFieldModal";
 import type { Field } from "../types/Field";
 import type { CropFormData } from "../../crops/components/AddCropModal";
 import type { SprayScheduleFormData } from "../../spraySchedule/components/SprayScheduleModal";
+import type { UpdateSprayScheduleFormData } from "../../spraySchedule/components/UpdateSprayScheduleModal";
 import "leaflet/dist/leaflet.css";
 import CropCard from "../../crops/components/CropCard";
 import CropDetails from "../../crops/components/CropDetails";
 import SprayDetails from "../../spraySchedule/components/SprayDetails";
+import { useNavigate } from 'react-router-dom';
+import EditFieldModal from "../components/EditFieldModal";
 
 const cropNames: Record<number, string> = {
   1: "Wheat",
@@ -51,9 +56,15 @@ const FieldPage: React.FC = () => {
   const [showFieldModal, setShowFieldModal] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
   const [showSprayModal, setShowSprayModal] = useState(false);
+  const [sprayToUpdate, setSprayToUpdate] =
+    useState<UpdateSprayScheduleFormData | null>(null);
   const [activeTab, setActiveTab] = useState<"crops" | "sprays">("crops");
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [selectedSpray, setSelectedSpray] = useState<SpraySchedule | null>(null);
+  const [notifiedCount, setNotifiedCount] = useState<number | null>(null);
+  const [weatherWarning, setWeatherWarning] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [showEditFieldModal, setShowEditFieldModal] = useState(false);
 
   const isErrorMessage = (text: string) => {
     const normalized = text.toLowerCase();
@@ -177,7 +188,6 @@ const FieldPage: React.FC = () => {
       if (selectedField) {
         await fetchCrops(selectedField.id);
         await fetchFields();
-
       }
     } catch (err) {
       console.error("Error creating crop:", err);
@@ -194,7 +204,9 @@ const FieldPage: React.FC = () => {
         fieldId: selectedField?.id,
         createdAt: new Date().toISOString(),
       };
-      await createSpray(payload);
+      const result = await createSpray(payload); 
+      setNotifiedCount(result.notifiedBeekeepersCount);
+      setWeatherWarning(result.weatherWarning ?? null);
       setShowSprayModal(false);
       setMessage("Spray schedule created successfully.");
       if (selectedField) {
@@ -207,19 +219,30 @@ const FieldPage: React.FC = () => {
     setLoading(false);
   };
 
-  const handleHarvestCrop = async (id: string) => {
+  const handleUpdateSpray = async (data: UpdateSprayScheduleFormData) => {
     try {
-      await harvestCrop(id);
-        setMessage("Crop harvested successfully.");
-        
-        if (selectedField) {
-          await fetchCrops(selectedField.id);  
-        }
-
-      } catch (error) {
-        console.error("Error harvesting crop:", error);
-        setMessage("Failed to harvest crop.");
+      await updateSpray(data.id, data);
+      setMessage("Spray schedule updated successfully.");
+      setSprayToUpdate(null);
+      if (selectedField) {
+        await fetchSprays(selectedField.id);
       }
+    } catch (err) {
+      console.error("Error updating spray schedule:", err);
+      setMessage("Failed to update spray schedule.");
+    }
+  };
+  const handleHarvestCrop = async (id: string) => {
+  try {
+    await harvestCrop(id);
+      setMessage("Crop harvested successfully.");
+      if (selectedField) {
+        await fetchCrops(selectedField.id);
+      }
+    } catch (error) {
+      console.error("Error harvesting crop:", error);
+      setMessage("Failed to harvest crop.");
+    }
   };
 
   const handleOpenSprayDetails = (spray: SpraySchedule) => {
@@ -237,20 +260,29 @@ const FieldPage: React.FC = () => {
     if (selectedField) {
       fetchCrops(selectedField.id);
       fetchSprays(selectedField.id);
+      setNotifiedCount(null);
+      setWeatherWarning(null);
     } else {
       setCrops([]);
       setSprays([]);
+      setNotifiedCount(null);
+      setWeatherWarning(null);
     }
   }, [selectedField]);
 
-  useEffect(() => {
-    if (selectedField) {
-      const refreshed = fields.find(f => f.id === selectedField.id);
-      if (refreshed) {
-        setSelectedField(refreshed);
-      }
+  const handleEditField = async (data: any) => {
+    setLoading(true);
+    try {
+      await updateField(data);
+      setMessage("Field updated successfully.");
+      await fetchFields();
+      setSelectedField(null);
+    } catch (err) {
+      console.error("Error updating field:", err);
+      setMessage("Failed to update field.");
     }
-  }, [fields]);
+    setLoading(false);
+  };
 
   const sprayPriority = (status: number) => {
     switch (status) {
@@ -295,9 +327,14 @@ const FieldPage: React.FC = () => {
           <div className="field-header-eyebrow">Smart Agriculture</div>
           <h2>My Fields</h2>
         </div>
-        <button className="action-btn" onClick={() => setShowFieldModal(true)}>
-          + Add Field
-        </button>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button className="action-btn secondary" onClick={() => navigate('/farmer/spray-logs')}>
+            📄 Spray Logs
+          </button>
+          <button className="action-btn" onClick={() => setShowFieldModal(true)}>
+            + Add Field
+          </button>
+        </div>
       </div>
 
       {message && (
@@ -383,6 +420,13 @@ const FieldPage: React.FC = () => {
                 {selectedField.description && (
                   <p className="field-side-description">{selectedField.description}</p>
                 )}
+                <button
+                  className="action-btn secondary"
+                  style={{ marginTop: '0.75rem', width: '100%' }}
+                  onClick={() => setShowEditFieldModal(true)}
+                >
+                  ✏️ Edit Field
+                </button>
               </div>
 
               <div className="sidebar-tabs">
@@ -426,9 +470,23 @@ const FieldPage: React.FC = () => {
 
                 {activeTab === "sprays" && (
                   <>
-                    <button className="action-btn" onClick={() => setShowSprayModal(true)}>
-                      + Schedule Spray
+                    <button className="action-btn" onClick={() => {
+                        setNotifiedCount(null);
+                        setShowSprayModal(true);
+                    }}>
+                        + Schedule Spray
                     </button>
+
+                    {notifiedCount !== null && (
+                        <div className="notification-status">
+                            ✅ {notifiedCount} beekeepers notified nearby!
+                        </div>
+                    )}
+                    {weatherWarning && (
+                        <div className="weather-warning">
+                            ⚠️ {weatherWarning}
+                        </div>
+                    )}
                     <div className="field-side-list-scroll">
                       {sprays.length > 0 ? (
                         <div className="sidebar-list">
@@ -519,6 +577,20 @@ const FieldPage: React.FC = () => {
         />
       )}
 
+      {sprayToUpdate && (
+        <UpdateSprayScheduleModal
+          spray={sprayToUpdate}
+          onClose={() => setSprayToUpdate(null)}
+          onSave={handleUpdateSpray}
+        />
+      )}
+      {showEditFieldModal && selectedField && (
+        <EditFieldModal
+          field={selectedField}
+          onClose={() => setShowEditFieldModal(false)}
+          onSave={handleEditField}
+        />
+      )}
     </div>
   );
 };

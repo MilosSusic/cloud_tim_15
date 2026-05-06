@@ -10,6 +10,7 @@ import { AuthProvider } from './features/auth/context/AuthContext';
 
 import ApiaryPage from './features/apiaries/pages/ApiaryPage';
 import FieldPage from './features/fields/pages/FieldPage';
+import SprayLogPage from './features/spraySchedule/pages/SprayLogPage';
 
 function App() {
   return (
@@ -47,6 +48,13 @@ function App() {
                 <UserManagementPage />
               </PrivateRoute>
             }
+          />
+          <Route
+            path="/farmer/spray-logs"
+            element={
+                <PrivateRoute requiredRole="Farmer">
+                    <SprayLogPage />
+                </PrivateRoute>}
           />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

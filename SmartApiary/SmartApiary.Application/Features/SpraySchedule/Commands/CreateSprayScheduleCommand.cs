@@ -14,5 +14,5 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
         DateTime StartDateTime,
         int DurationHours,
         string? PesticideType
-    ) : IRequest<Result<Guid>>;
+    ) : IRequest<Result<CreateSprayScheduleResult>>;
 }

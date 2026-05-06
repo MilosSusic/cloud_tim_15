@@ -7,6 +7,7 @@ using SmartApiary.Application.Interfaces.Email;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
+using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Application.Interfaces.Storage;
 
 using SmartApiary.Infrastructure.Authentication;
@@ -48,6 +49,12 @@ namespace SmartApiary.Infrastructure
 
             services.AddScoped<IEmailService, SendGridEmailService>();
             services.AddScoped<ISprayNotificationEmailService, SprayNotificationEmailService>();
+
+            services.AddHttpClient<IWeatherService, WeatherService>();
+
+            services.AddScoped<ISprayLogRepository, SprayLogRepository>();
+
+            services.AddHttpClient<IWeatherService, WeatherService>();
 
             services.AddScoped<IBlobStorageService>(_ =>
             {

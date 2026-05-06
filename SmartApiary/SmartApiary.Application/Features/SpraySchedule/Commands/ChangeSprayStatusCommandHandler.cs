@@ -1,13 +1,9 @@
 ﻿using MediatR;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
+using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.SpraySchedule.Commands
 {
@@ -15,13 +11,22 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
     {
         private readonly ISprayScheduleRepository _sprayScheduleRepository;
         private readonly ISprayNotificationQueueService _sprayNotificationQueueService;
+        private readonly ISprayLogRepository _sprayLogRepository;
+        private readonly IFieldRepository _fieldRepository;
+        private readonly IWeatherService _weatherService;
 
         public ChangeSprayStatusCommandHandler(
             ISprayScheduleRepository sprayScheduleRepository,
-            ISprayNotificationQueueService sprayNotificationQueueService)
+            ISprayNotificationQueueService sprayNotificationQueueService,
+            ISprayLogRepository sprayLogRepository,
+            IFieldRepository fieldRepository,
+            IWeatherService weatherService)
         {
             _sprayScheduleRepository = sprayScheduleRepository;
             _sprayNotificationQueueService = sprayNotificationQueueService;
+            _sprayLogRepository = sprayLogRepository;
+            _fieldRepository = fieldRepository;
+            _weatherService = weatherService;
         }
 
         public async Task<Result> Handle(ChangeSprayStatusCommand request, CancellationToken cancellationToken)
@@ -47,6 +52,36 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
                         spraySchedule.DurationHours,
                         spraySchedule.PesticideType),
                     cancellationToken);
+            }
+
+            if (request.NewStatus == SprayStatus.Completed)
+            {
+                var field = await _fieldRepository.GetByIdAsync(
+                    spraySchedule.FieldId, cancellationToken);
+
+                var weather = await _weatherService.GetCurrentWeatherAsync(
+                    field!.Latitude, field.Longitude);
+
+                var activeCrop = field?.Crops?.FirstOrDefault(c => !c.IsDeleted);
+
+                var sprayLog = new Domain.Models.SprayLog
+                {
+                    Id = Guid.NewGuid(),
+                    SprayScheduleId = spraySchedule.Id,
+                    FieldId = spraySchedule.FieldId,
+                    FieldName = field?.FieldName ?? string.Empty,
+                    CropName = activeCrop?.CropName.ToString(),
+                    StartDateTime = spraySchedule.StartDateTime,
+                    EndDateTime = spraySchedule.StartDateTime
+                        .AddHours(spraySchedule.DurationHours),
+                    PesticideType = spraySchedule.PesticideType,
+                    WindSpeed = weather.WindSpeed,
+                    Temperature = weather.Temperature,
+                    WeatherDescription = weather.Description
+                };
+
+                await _sprayLogRepository.AddAsync(sprayLog, cancellationToken);
+                await _sprayLogRepository.SaveChangesAsync(cancellationToken);
             }
 
             return Result.Success();

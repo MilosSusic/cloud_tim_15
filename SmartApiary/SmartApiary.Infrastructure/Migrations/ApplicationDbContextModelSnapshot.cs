@@ -67,7 +67,7 @@ namespace SmartApiary.Infrastructure.Migrations
 
                     b.Property<string>("CropName")
                         .IsRequired()
-                        .HasColumnType("int");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasMaxLength(512)
@@ -323,7 +323,7 @@ namespace SmartApiary.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("SmartApiary.Domain.Models.FieldLogEntry", b =>
+             modelBuilder.Entity("SmartApiary.Domain.Models.FieldLogEntry", b =>
                 {
                     b.HasOne("SmartApiary.Domain.Models.Field", null)
                         .WithMany("LogEntries")
@@ -373,7 +373,7 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.Navigation("SpraySchedules");
                 });
 
-            modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
+             modelBuilder.Entity("SmartApiary.Domain.Models.Hive", b =>
                 {
                     b.Navigation("LogEntries");
                 });
