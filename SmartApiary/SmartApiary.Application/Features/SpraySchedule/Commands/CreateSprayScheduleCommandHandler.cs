@@ -50,14 +50,11 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
 
             bool badWeather = weather.WindSpeed > 5 || weather.HasRain;
 
-            var spraySchedule = new Domain.Models.SpraySchedule
-            {
-                Id = Guid.NewGuid(),
-                FieldId = request.FieldId,
-                StartDateTime = request.StartDateTime,
-                DurationHours = request.DurationHours,
-                PesticideType = request.PesticideType
-            };
+            var spraySchedule = Domain.Models.SpraySchedule.Create(
+                request.FieldId,
+                request.StartDateTime,
+                request.DurationHours,
+                request.PesticideType);
 
             await _sprayScheduleRepository.AddAsync(spraySchedule, cancellationToken);
             await _sprayScheduleRepository.SaveChangesAsync(cancellationToken);

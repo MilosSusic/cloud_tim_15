@@ -2,124 +2,110 @@ import { getToken } from '../../auth/api/authApi';
 import { CONFIG } from '../../../config/config';
 import type {SpraySchedule} from '../types/SpraySchedule'
 import type { SprayStatus } from '../types/SprayStatus';
+import axios from 'axios';
 
 const authHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
 });
 
 export async function createSpray(form: any): Promise<{ sprayScheduleId: string, notifiedBeekeepersCount: number, weatherWarning: string | null }> {
-    const token = getToken();
+  const sprayData = {
+    fieldId: form.fieldId,
+    startDateTime: form.startDateTime,
+    durationHours: form.durationHours,
+    pesticideType: form.pesticideType,
+    status: form.status,
+    createdAt: form.createdAt,
+  };
 
-    const sprayData = {
-        fieldId: form.fieldId,
-        startDateTime: form.startDateTime,
-        durationHours: form.durationHours,
-        pesticideType: form.pesticideType,
-        status: form.status,
-        createdAt: form.createdAt
-    };
-    console.log('Payload:', sprayData);
-    const resp = await fetch(CONFIG.SPRAY_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(sprayData)
+  console.log("Payload:", sprayData);
+
+  try {
+    const resp = await axios.post(CONFIG.SPRAY_URL, sprayData, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
     });
-    console.log('Response status:', resp.status);
-
-    if (!resp.ok) throw new Error('Error creating spray schedule.');
-    return await resp.json();
+    console.log("Response status:", resp.status);
+    return resp.data;
+  } catch (error: any) {
+    console.error("Error creating spray schedule:", error.response?.data || error.message);
+    throw new Error("Error creating spray schedule.");
+  }
 }
 
 export async function updateSpray(id: string, form: any) {
-  const token = getToken();
-
   const payload = {
     id,
-    startDateTime : form.startDateTime,
-    durationHours : form.durationHours,
-    pesticideType : form.pesticideType,
-    status : form.status
+    startDateTime: form.startDateTime,
+    durationHours: form.durationHours,
+    pesticideType: form.pesticideType,
+    status: form.status,
   };
+
   console.log(payload.status);
-  const resp = await fetch(`${CONFIG.SPRAY_URL}/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-  const text = await resp.text();
-  console.log(text);
-  if (!resp.ok) throw new Error('Error with update of spraySchedule');
-  
-  
-  return text ? JSON.parse(text) : null;
+
+  try {
+    const resp = await axios.put(`${CONFIG.SPRAY_URL}/${id}`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+    });
+
+    console.log(resp.data);
+    return resp.data || null;
+  } catch (error: any) {
+    console.error("Error with update of spraySchedule:", error.response?.data || error.message);
+    throw new Error("Error with update of spraySchedule");
+  }
 }
 
 export async function getSprayByField(fieldId: string): Promise<SpraySchedule[]> {
-  const resp = await fetch(`${CONFIG.SPRAY_URL}/by-field/${fieldId}`, {
-    headers: authHeaders(),
-  });
-  if (!resp.ok) {
-    const errorText = await resp.text();
-    console.error("Backend error:", errorText);
+  try {
+    const resp = await axios.get(`${CONFIG.SPRAY_URL}/by-field/${fieldId}`, {
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    return resp.data as SpraySchedule[];
+  } catch (error: any) {
+    console.error("Error with fetching spray from field:", error.response?.data || error.message);
     throw new Error("Error with fetching spray from field.");
   }
-  const data: SpraySchedule[] = await resp.json();
-  return data;
 }
 
-export async function rescheduleSpray(id: string, startDateTime: string){
-  const token = getToken();
+export async function rescheduleSpray(id: string, startDateTime: string) {
+  const payload = { id, startDateTime };
 
-  const payload = {
-    id,
-    startDateTime
-  };
-
-  const resp = await fetch(`${CONFIG.SPRAY_URL}/reschedule/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!resp.ok) {
-    const errorText = await resp.text();
-    console.error("Backend error:", errorText);
+  try {
+    await axios.put(`${CONFIG.SPRAY_URL}/reschedule/${id}`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+    });
+  } catch (error: any) {
+    console.error("Error with rescheduling spray:", error.response?.data || error.message);
     throw new Error("Error with rescheduling spray.");
   }
 }
 
 export async function changeSprayStatus(id: string, status: SprayStatus) {
-  const token = getToken();
+  const payload = { id, newStatus: status };
 
-  const payload = {
-    id,
-    newStatus: status
-  };
-
-  const resp = await fetch(`${CONFIG.SPRAY_URL}/status/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!resp.ok) {
-    const errorText = await resp.text();
-    console.error("Backend error:", errorText);
+  try {
+    await axios.put(`${CONFIG.SPRAY_URL}/status/${id}`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+    });
+  } catch (error: any) {
+    console.error("Error with changing spray status:", error.response?.data || error.message);
     throw new Error("Error with changing spray status.");
   }
-
 }
 
 export async function getSprayLogs(

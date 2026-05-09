@@ -27,9 +27,8 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
                 return Result.Failure("Spray schedule not found.");
 
             var parsedDateTime = DateTime.Parse(request.StartDateTime, CultureInfo.InvariantCulture);
-            spraySchedule.StartDateTime = parsedDateTime;
-            spraySchedule.Status = SprayStatus.Rescheduled;
-            spraySchedule.UpdatedAt = DateTime.UtcNow;
+            
+            spraySchedule.Reschedule(parsedDateTime);
 
             _sprayScheduleRepository.Update(spraySchedule);
             await _sprayScheduleRepository.SaveChangesAsync(cancellationToken);

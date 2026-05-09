@@ -90,14 +90,9 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Crop");
-
-            migrationBuilder.DropTable(
-                name: "SpraySchedule");
-
-            migrationBuilder.DropTable(
-                name: "Fields");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.Crop', N'U') IS NOT NULL DROP TABLE dbo.Crop;");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.SpraySchedule', N'U') IS NOT NULL DROP TABLE dbo.SpraySchedule;");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.Fields', N'U') IS NOT NULL DROP TABLE dbo.Fields;");
         }
     }
 }

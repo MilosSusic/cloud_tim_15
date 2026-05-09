@@ -35,8 +35,7 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
             if (spraySchedule is null)
                 return Result.Failure("Spray schedule not found.");
 
-            spraySchedule.Status = request.NewStatus;
-            spraySchedule.UpdatedAt = DateTime.UtcNow;
+            spraySchedule.UpdateStatus(request.NewStatus);
 
             _sprayScheduleRepository.Update(spraySchedule);
             await _sprayScheduleRepository.SaveChangesAsync(cancellationToken);

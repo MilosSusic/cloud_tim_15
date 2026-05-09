@@ -24,14 +24,9 @@ namespace SmartApiary.Infrastructure.Migrations
                 nullable: false,
                 defaultValue: new DateTime(2000, 1, 2));
 
-            // Drop removed columns
-            migrationBuilder.DropColumn(
-                name: "Color",
-                table: "Crop");
-
-            migrationBuilder.DropColumn(
-                name: "Note",
-                table: "Crop");
+            // Drop removed columns if they exist
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Crop','Color') IS NOT NULL ALTER TABLE dbo.Crop DROP COLUMN [Color];");
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Crop','Note') IS NOT NULL ALTER TABLE dbo.Crop DROP COLUMN [Note];");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -50,14 +45,9 @@ namespace SmartApiary.Infrastructure.Migrations
                 type: "nvarchar(max)",
                 nullable: true);
 
-            // Remove flowering period columns
-            migrationBuilder.DropColumn(
-                name: "FloweringPeriodStart",
-                table: "Crop");
-
-            migrationBuilder.DropColumn(
-                name: "FloweringPeriodEnd",
-                table: "Crop");
+            // Remove flowering period columns if they exist
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Crop','FloweringPeriodStart') IS NOT NULL ALTER TABLE dbo.Crop DROP COLUMN [FloweringPeriodStart];");
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Crop','FloweringPeriodEnd') IS NOT NULL ALTER TABLE dbo.Crop DROP COLUMN [FloweringPeriodEnd];");
         }
     }
 }

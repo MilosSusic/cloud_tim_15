@@ -258,6 +258,15 @@ const FieldPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedField) {
+      const refreshed = fields.find(f => f.id === selectedField.id);
+      if (refreshed) {
+        setSelectedField(refreshed);
+      }
+    }
+  }, [fields]);
+
+  useEffect(() => {
+    if (selectedField) {
       fetchCrops(selectedField.id);
       fetchSprays(selectedField.id);
       setNotifiedCount(null);

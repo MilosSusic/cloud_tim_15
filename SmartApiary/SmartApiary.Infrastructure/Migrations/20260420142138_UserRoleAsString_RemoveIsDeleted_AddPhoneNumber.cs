@@ -10,9 +10,7 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "IsDeleted",
-                table: "Users");
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Users','IsDeleted') IS NOT NULL ALTER TABLE dbo.Users DROP COLUMN [IsDeleted];");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Role",
@@ -33,9 +31,7 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "PhoneNumber",
-                table: "Users");
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Users','PhoneNumber') IS NOT NULL ALTER TABLE dbo.Users DROP COLUMN [PhoneNumber];");
 
             migrationBuilder.AlterColumn<int>(
                 name: "Role",

@@ -93,14 +93,9 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "HiveLogEntries");
-
-            migrationBuilder.DropTable(
-                name: "Hives");
-
-            migrationBuilder.DropTable(
-                name: "Apiaries");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.HiveLogEntries', N'U') IS NOT NULL DROP TABLE dbo.HiveLogEntries;");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.Hives', N'U') IS NOT NULL DROP TABLE dbo.Hives;");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.Apiaries', N'U') IS NOT NULL DROP TABLE dbo.Apiaries;");
         }
     }
 }

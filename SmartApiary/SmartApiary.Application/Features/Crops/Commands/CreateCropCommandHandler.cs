@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using SmartApiary.Application.Features.SpraySchedule.Commands;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Common;
+using SmartApiary.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,23 +23,13 @@ namespace SmartApiary.Application.Features.Crops.Commands
         public async Task<Result<Guid>> Handle(CreateCropCommand request, CancellationToken cancellationToken)
         {
 
-            var crop = new Domain.Models.Crop
-            {
-                Id = Guid.NewGuid(),
-                FieldId = request.FieldId,
-                CropName = request.CropName,
-                Description = request.Description,
-                FloweringPeriodStart = request.FloweringPeriodStart,
-                FloweringPeriodEnd = request.FloweringPeriodEnd,
-                IsDeleted = false
-            };
-
-            if (crop.FloweringPeriodStart > crop.FloweringPeriodEnd)
-            {
-                var temp = crop.FloweringPeriodStart;
-                crop.FloweringPeriodStart = crop.FloweringPeriodEnd;
-                crop.FloweringPeriodEnd = temp;
-            }
+            var crop = Crop.Create(
+                request.FieldId,
+                request.CropName,
+                request.Description,
+                request.FloweringPeriodStart,
+                request.FloweringPeriodEnd
+            );
 
             await _ropsRepository.AddAsync(crop, cancellationToken);
             await _ropsRepository.SaveChangesAsync(cancellationToken);

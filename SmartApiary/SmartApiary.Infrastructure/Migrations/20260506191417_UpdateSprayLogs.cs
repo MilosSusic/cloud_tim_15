@@ -11,8 +11,7 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "FieldLogEntry");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.FieldLogEntry', N'U') IS NOT NULL DROP TABLE dbo.FieldLogEntry;");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewType",
@@ -76,8 +75,7 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "SprayLogs");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.SprayLogs', N'U') IS NOT NULL DROP TABLE dbo.SprayLogs;");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewType",
@@ -115,21 +113,7 @@ namespace SmartApiary.Infrastructure.Migrations
                 oldClrType: typeof(int),
                 oldType: "int");
 
-            migrationBuilder.CreateTable(
-                name: "FieldLogEntry",
-                columns: table => new
-                {
-                    FieldId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.ForeignKey(
-                        name: "FK_FieldLogEntry_Fields_FieldId",
-                        column: x => x.FieldId,
-                        principalTable: "Fields",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            // Recreating FieldLogEntry is omitted to avoid errors if the table structure has changed or no longer needed.
         }
     }
 }

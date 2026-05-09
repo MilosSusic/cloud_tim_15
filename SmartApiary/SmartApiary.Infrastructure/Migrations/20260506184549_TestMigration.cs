@@ -73,8 +73,7 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "SprayLogs");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.SprayLogs', N'U') IS NOT NULL DROP TABLE dbo.SprayLogs;");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewType",

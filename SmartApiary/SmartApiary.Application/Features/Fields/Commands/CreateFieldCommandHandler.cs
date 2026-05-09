@@ -31,17 +31,15 @@ namespace SmartApiary.Application.Features.Fields.Commands
             if (userId is null)
                 return Result<Guid>.Failure("Invalid user id.");
 
-            var field = new Field
-            {
-                Id = Guid.NewGuid(),
-                FieldName = request.FieldName,
-                Description = request.Description,
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
-                ImageUrl = request.ImageUrl,
-                ThumbnailUrl = request.ThumbnailUrl,
-                OwnerId = userId.Value 
-            };
+            var field = Field.Create(
+                userId.Value,
+                request.FieldName,
+                request.Description,
+                request.Latitude,
+                request.Longitude,
+                request.ImageUrl,
+                request.ThumbnailUrl
+            );
 
             await _fieldRepository.AddAsync(field, cancellationToken);
             await _fieldRepository.SaveChangesAsync(cancellationToken);

@@ -29,8 +29,6 @@ namespace SmartApiary.Application.Features.Crops.Commands
 
         public async Task<Result> Handle(DeleteCropCommand request, CancellationToken cancellationToken)
         {
-            
-
             var crop = await _cropsRepository.GetByIdAsync(request.Id, cancellationToken);
             if (crop is null)
                 return Result.Failure("Crop not found.");
@@ -38,7 +36,8 @@ namespace SmartApiary.Application.Features.Crops.Commands
             var field = await _fieldRepository.GetByIdAsync(crop.FieldId, cancellationToken);
             if (field is null)
                 return Result.Failure("Field not found.");
-            crop.IsDeleted = true;
+
+            crop.MarkAsDeleted();
 
             _cropsRepository.Update(crop);
             await _cropsRepository.SaveChangesAsync(cancellationToken);
