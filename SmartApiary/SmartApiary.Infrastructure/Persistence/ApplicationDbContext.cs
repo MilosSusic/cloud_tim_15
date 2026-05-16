@@ -189,6 +189,8 @@ namespace SmartApiary.Infrastructure.Persistence
                 entity.Property(x => x.Status)
                     .HasConversion<string>() 
                     .IsRequired();
+                entity.Property(x => x.WeatherWarning)
+                    .HasMaxLength(256);
             });
 
             modelBuilder.Entity<Crop>(entity =>

@@ -7,5 +7,6 @@ export interface SpraySchedule{
     status : number,
     createdAt : string,
     updatedAt : string | null
+    weatherWarning: string | null;
 }
 

@@ -49,6 +49,12 @@ const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onRe
         <div><strong>Status:</strong> {sprayStatusNames[spray.status]}</div>
       </div>
 
+      {spray.weatherWarning && (
+          <div className="spray-weather-warning">
+              {spray.weatherWarning}
+          </div>
+      )}
+
       <div className="spray-actions">
         <button className="action-btn secondary" onClick={(e) => { e.stopPropagation(); onCancel(spray.id); }} disabled={spray.status === SprayStatus.Completed || spray.status === SprayStatus.Cancelled}>
           Cancel
