@@ -8,16 +8,18 @@ namespace SmartApiary.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
+        private readonly string _baseUrl;
 
         public WeatherService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _apiKey = configuration["OpenWeather:ApiKey"]!;
+            _baseUrl = configuration["OpenWeather:BaseUrl"]!;
         }
 
         public async Task<WeatherInfo> GetCurrentWeatherAsync(double lat, double lon)
         {
-            var url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={_apiKey}&units=metric";
+            var url = $"{_baseUrl}/weather?lat={lat}&lon={lon}&appid={_apiKey}&units=metric";
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             var json = JsonDocument.Parse(content);
@@ -36,7 +38,7 @@ namespace SmartApiary.Infrastructure.Services
 
         public async Task<WeatherInfo> GetForecastAsync(double lat, double lon, DateTime dateTime)
         {
-            var url = $"https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={_apiKey}&units=metric";
+            var url = $"{_baseUrl}/forecast?lat={lat}&lon={lon}&appid={_apiKey}&units=metric";
             var response = await _httpClient.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
             var json = JsonDocument.Parse(content);

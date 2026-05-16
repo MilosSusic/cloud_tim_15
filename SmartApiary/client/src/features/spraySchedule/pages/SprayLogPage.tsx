@@ -60,9 +60,15 @@ const SprayLogPage: React.FC = () => {
     autoTable(doc, {
       startY: 28,
       head: [[
-        "Field", "Crop", "Start", "End",
-        "Pesticide", "Wind (m/s)", "Temp (°C)", "Weather"
-      ]],
+              "Field Name",
+              "Crop Type", 
+              "Start Date & Time",
+              "End Date & Time",
+              "Pesticide Type",
+              "Wind Speed (m/s)",
+              "Temperature (°C)",
+              "Weather Conditions"
+            ]],
       body: logs.map(log => [
         log.fieldName,
         log.cropName ?? "N/A",
@@ -134,14 +140,14 @@ const SprayLogPage: React.FC = () => {
           <table className="spray-log-table">
             <thead>
               <tr>
-                <th>Field</th>
-                <th>Crop</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Pesticide</th>
-                <th>Wind (m/s)</th>
-                <th>Temp (°C)</th>
-                <th>Weather</th>
+                <th>Field Name</th>
+                <th>Crop Type</th>
+                <th>Start Date & Time</th>
+                <th>End Date & Time</th>
+                <th>Pesticide Type</th>
+                <th>Wind Speed (m/s)</th>
+                <th>Temperature (°C)</th>
+                <th>Weather Conditions</th>
               </tr>
             </thead>
             <tbody>
