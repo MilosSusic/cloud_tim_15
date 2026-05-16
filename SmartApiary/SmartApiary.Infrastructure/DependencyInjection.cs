@@ -12,11 +12,11 @@ using SmartApiary.Application.Interfaces.Storage;
 
 using SmartApiary.Infrastructure.Authentication;
 using SmartApiary.Infrastructure.Persistence;
+using SmartApiary.Infrastructure.Persistence.AzureBlob.Services;
 using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Infrastructure.Services;
 using SmartApiary.Infrastructure.Services.Email;
-using SmartApiary.Infrastructure.Services.Storage;
 
 namespace SmartApiary.Infrastructure
 {

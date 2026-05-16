@@ -1,85 +1,105 @@
 import { getToken } from '../../auth/api/authApi';
 import { CONFIG } from '../../../config/config';
+import axios from 'axios';
+
+const authHeaders = () => ({
+  Authorization: `Bearer ${getToken()}`,
+});
 
 export async function createField(form: any) {
-    const token = getToken();
+  const fieldData = {
+    fieldName: form.fieldName,
+    description: form.description,
+    latitude: parseFloat(form.latitude),
+    longitude: parseFloat(form.longitude),
+    imageUrl: "",
+    thumbnailUrl: "",
+  };
 
-    const fieldData = {
-        fieldName: form.fieldName,
-        description: form.description,
-        latitude: parseFloat(form.latitude),
-        longitude: parseFloat(form.longitude),
-        imageUrl: "",
-        thumbnailUrl: "",
-    };
-    console.log('Payload:', fieldData);
-    const resp = await fetch(CONFIG.FIELD_URL, {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(fieldData)
+  console.log("Payload:", fieldData);
+
+  try {
+    const resp = await axios.post(CONFIG.FIELD_URL, fieldData, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
     });
-    if (!resp.ok) {
-        const errorText = await resp.text();
-        console.error("Backend error:", errorText);
-        throw new Error(errorText || "Error with creating field!");
+    return resp.data;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("Backend error:", error.response.data);
+      throw new Error(error.response.data || "Error with creating field!");
     }
-    return resp.json();
-}
-export async function getFields() {
-  const token = getToken();
-  console.log("Fetching fields from:", CONFIG.FIELD_URL);
-  const resp = await fetch(CONFIG.FIELD_URL, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-  
-  
-  if (!resp.ok){
-    const errorText = await resp.text();
-    console.error("Error fetching fields:", errorText);
+    throw new Error("Network error while creating field!");
   }
-  return resp.json();
+}
+
+export async function getFields() {
+  try {
+    const resp = await axios.get(CONFIG.FIELD_URL, {
+      headers: {
+        ...authHeaders(),
+      },
+    });
+    return resp.data;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("Backend error:", error.response.data);
+      throw new Error("Error with fetching fields.");
+    }
+    throw new Error("Network error while fetching fields.");
+  }
 }
 
 export async function updateField(form: any) {
-    const token = getToken();
+  let imageUrl: string | null = null;
+  let thumbnailUrl: string | null = null;
 
-    let imageUrl: string | null = null;
-    let thumbnailUrl: string | null = null;
-      if (form.file) {
-        const formData = new FormData();
-        formData.append('file', form.file);
-        const uploadResp = await fetch(CONFIG.UPLOAD_FIELD_IMAGE_URL, { method: 'POST', body: formData });
-        if (!uploadResp.ok) throw new Error('Failed to upload field image');
-        const uploadJson = await uploadResp.json();
-        const url = Array.isArray(uploadJson.urls) ? uploadJson.urls[0] : undefined;
-        imageUrl = url ?? null;
-        thumbnailUrl = url ?? null;
-      }
+  if (form.file) {
+    const formData = new FormData();
+    formData.append("file", form.file);
 
-    const fieldData = {
-        id: form.id,
-        fieldName: form.fieldName,
-        description: form.description,
-        latitude: form.latitude,
-        longitude: form.longitude,
-        imageUrl: imageUrl || form.imageUrl || "",
-        thumbnailUrl: thumbnailUrl || form.thumbnailUrl || "",
-    };
-    console.log('Payload:', fieldData);
-    const resp = await fetch(`${CONFIG.FIELD_URL}/${form.id}`, {
-        method: 'PUT',
+    try {
+      const uploadResp = await axios.post(CONFIG.UPLOAD_FIELD_IMAGE_URL, formData, {
         headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+          ...authHeaders(),
         },
-        body: JSON.stringify(fieldData)
-    });
-    if (!resp.ok) {
-        const errorText = await resp.text();
-        console.error("Backend error:", errorText);
-        throw new Error(errorText || "Error with updating field!");
+      });
+
+      const uploadJson = uploadResp.data;
+      const url = Array.isArray(uploadJson.urls) ? uploadJson.urls[0] : undefined;
+      imageUrl = url ?? null;
+      thumbnailUrl = url ?? null;
+    } catch (error: any) {
+      throw new Error("Failed to upload field image");
     }
+  }
+
+  const fieldData = {
+    id: form.id,
+    fieldName: form.fieldName,
+    description: form.description,
+    latitude: form.latitude,
+    longitude: form.longitude,
+    imageUrl: imageUrl || form.imageUrl || "",
+    thumbnailUrl: thumbnailUrl || form.thumbnailUrl || "",
+  };
+
+  console.log("Payload:", fieldData);
+
+  try {
+    await axios.put(`${CONFIG.FIELD_URL}/${form.id}`, fieldData, {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(),
+      },
+    });
+  } catch (error: any) {
+    if (error.response) {
+      console.error("Backend error:", error.response.data);
+      throw new Error(error.response.data || "Error with updating field!");
+    }
+    throw new Error("Network error while updating field!");
+  }
 }

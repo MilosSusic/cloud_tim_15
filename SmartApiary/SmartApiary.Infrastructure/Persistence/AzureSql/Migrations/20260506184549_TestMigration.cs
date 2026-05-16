@@ -6,14 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartApiary.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateSprayLogs : Migration
+    public partial class TestMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "FieldLogEntry");
-
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewType",
                 table: "HiveLogEntries",
@@ -57,15 +54,15 @@ namespace SmartApiary.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SprayScheduleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FieldId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FieldName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CropName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    FieldName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CropName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StartDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PesticideType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PesticideType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     WindSpeed = table.Column<double>(type: "float", nullable: true),
                     Temperature = table.Column<double>(type: "float", nullable: true),
-                    WeatherDescription = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
+                    WeatherDescription = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -76,8 +73,7 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "SprayLogs");
+            migrationBuilder.Sql("IF OBJECT_ID(N'dbo.SprayLogs', N'U') IS NOT NULL DROP TABLE dbo.SprayLogs;");
 
             migrationBuilder.AlterColumn<string>(
                 name: "ReviewType",
@@ -114,22 +110,6 @@ namespace SmartApiary.Infrastructure.Migrations
                 nullable: false,
                 oldClrType: typeof(int),
                 oldType: "int");
-
-            migrationBuilder.CreateTable(
-                name: "FieldLogEntry",
-                columns: table => new
-                {
-                    FieldId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.ForeignKey(
-                        name: "FK_FieldLogEntry_Fields_FieldId",
-                        column: x => x.FieldId,
-                        principalTable: "Fields",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
         }
     }
 }

@@ -1,17 +1,8 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
-using SmartApiary.Application.Features.Fields.Commands;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Common;
-using SmartApiary.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.SpraySchedule.Commands
 {
@@ -50,14 +41,11 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
 
             bool badWeather = weather.WindSpeed > 5 || weather.HasRain;
 
-            var spraySchedule = new Domain.Models.SpraySchedule
-            {
-                Id = Guid.NewGuid(),
-                FieldId = request.FieldId,
-                StartDateTime = request.StartDateTime,
-                DurationHours = request.DurationHours,
-                PesticideType = request.PesticideType
-            };
+            var spraySchedule = Domain.Models.SpraySchedule.Create(
+                request.FieldId,
+                request.StartDateTime,
+                request.DurationHours,
+                request.PesticideType);
 
             await _sprayScheduleRepository.AddAsync(spraySchedule, cancellationToken);
             await _sprayScheduleRepository.SaveChangesAsync(cancellationToken);

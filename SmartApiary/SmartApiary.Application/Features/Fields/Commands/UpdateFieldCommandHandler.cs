@@ -1,15 +1,7 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
-using SmartApiary.Application.Features.Apiaries.Commands;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.Fields.Commands
 {
@@ -39,15 +31,12 @@ namespace SmartApiary.Application.Features.Fields.Commands
             if (field.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this field.");
 
-            field.FieldName = request.FieldName;
-            field.Description = request.Description;
-            field.Latitude = request.Latitude;
-            field.Longitude = request.Longitude;
-
-            if (!string.IsNullOrWhiteSpace(request.ImageUrl))
-                field.ImageUrl = request.ImageUrl;
-            if (!string.IsNullOrWhiteSpace(request.ThumbnailUrl))
-                field.ThumbnailUrl = request.ThumbnailUrl;
+            field.Update(request.FieldName, 
+                        request.Description, 
+                        request.Latitude, 
+                        request.Longitude, 
+                        request.ImageUrl, 
+                        request.ThumbnailUrl);
 
             _fieldRepository.Update(field);
             await _fieldRepository.SaveChangesAsync(cancellationToken);

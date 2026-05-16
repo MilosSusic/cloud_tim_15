@@ -11,13 +11,8 @@ namespace SmartApiary.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Color",
-                table: "Crop");
-
-            migrationBuilder.DropColumn(
-                name: "Note",
-                table: "Crop");
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Crop','Color') IS NOT NULL ALTER TABLE dbo.Crop DROP COLUMN [Color];");
+            migrationBuilder.Sql("IF COL_LENGTH('dbo.Crop','Note') IS NOT NULL ALTER TABLE dbo.Crop DROP COLUMN [Note];");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Description",

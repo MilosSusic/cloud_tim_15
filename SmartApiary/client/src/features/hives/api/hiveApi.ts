@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { getToken } from '../../auth/api/authApi';
 import { CONFIG } from '../../../config/config';
 import type { Hive } from '../types/Hive';
@@ -11,12 +12,25 @@ const authHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
 });
 
+const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const apiMessage = error.response?.data;
+    if (typeof apiMessage === 'string' && apiMessage.trim()) {
+      return apiMessage;
+    }
+  }
+  return fallback;
+};
+
 export async function getHivesByApiary(apiaryId: string): Promise<Hive[]> {
-  const resp = await fetch(`${CONFIG.HIVES_URL}/by-apiary/${apiaryId}`, {
-    headers: authHeaders(),
-  });
-  if (!resp.ok) throw new Error('Failed to fetch hives');
-  return resp.json();
+  try {
+    const response = await axios.get(`${CONFIG.HIVES_URL}/by-apiary/${apiaryId}`, {
+      headers: authHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to fetch hives'));
+  }
 }
 
 export async function createHive(payload: {
@@ -27,17 +41,14 @@ export async function createHive(payload: {
   queenAge: number;
   note?: string | null;
 }): Promise<string> {
-  const resp = await fetch(CONFIG.HIVES_URL, {
-    method: 'POST',
-    headers: authJsonHeaders(),
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to create hive');
+  try {
+    const response = await axios.post(CONFIG.HIVES_URL, payload, {
+      headers: authJsonHeaders(),
+    });
+    return typeof response.data === 'string' ? response.data : '';
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to create hive'));
   }
-  const text = await resp.text();
-  return text ? JSON.parse(text) : '';
 }
 
 export async function updateHive(
@@ -51,24 +62,21 @@ export async function updateHive(
     note?: string | null;
   }
 ): Promise<void> {
-  const resp = await fetch(`${CONFIG.HIVES_URL}/${id}`, {
-    method: 'PUT',
-    headers: authJsonHeaders(),
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to update hive');
+  try {
+    await axios.put(`${CONFIG.HIVES_URL}/${id}`, payload, {
+      headers: authJsonHeaders(),
+    });
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to update hive'));
   }
 }
 
 export async function deleteHive(id: string): Promise<void> {
-  const resp = await fetch(`${CONFIG.HIVES_URL}/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to delete hive');
+  try {
+    await axios.delete(`${CONFIG.HIVES_URL}/${id}`, {
+      headers: authHeaders(),
+    });
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to delete hive'));
   }
 }

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { getToken } from '../../auth/api/authApi';
 import { CONFIG } from '../../../config/config';
 import type {
@@ -16,58 +17,64 @@ const authHeaders = () => ({
   Authorization: `Bearer ${getToken()}`,
 });
 
+const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const apiMessage = error.response?.data;
+    if (typeof apiMessage === 'string' && apiMessage.trim()) {
+      return apiMessage;
+    }
+  }
+  return fallback;
+};
+
 export async function getLogsByHive(
   hiveId: string,
   page = 1,
   pageSize = 10
 ): Promise<PagedResult<HiveLogEntryDto>> {
-  const url = `${CONFIG.HIVE_LOG_ENTRIES_URL}/by-hive/${hiveId}?page=${page}&pageSize=${pageSize}`;
-  const resp = await fetch(url, { headers: authHeaders() });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to fetch log entries.');
+  try {
+    const response = await axios.get(`${CONFIG.HIVE_LOG_ENTRIES_URL}/by-hive/${hiveId}`, {
+      params: { page, pageSize },
+      headers: authHeaders(),
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to fetch log entries.'));
   }
-  return resp.json();
 }
 
 export async function createLogEntry(
   payload: CreateHiveLogEntryRequest
 ): Promise<string> {
-  const resp = await fetch(CONFIG.HIVE_LOG_ENTRIES_URL, {
-    method: 'POST',
-    headers: authJsonHeaders(),
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to create log entry.');
+  try {
+    const response = await axios.post(CONFIG.HIVE_LOG_ENTRIES_URL, payload, {
+      headers: authJsonHeaders(),
+    });
+    return typeof response.data === 'string' ? response.data : '';
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to create log entry.'));
   }
-  const text = await resp.text();
-  return text ? JSON.parse(text) : '';
 }
 
 export async function updateLogEntry(
   id: string,
   payload: UpdateHiveLogEntryRequest
 ): Promise<void> {
-  const resp = await fetch(`${CONFIG.HIVE_LOG_ENTRIES_URL}/${id}`, {
-    method: 'PUT',
-    headers: authJsonHeaders(),
-    body: JSON.stringify(payload),
-  });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to update log entry.');
+  try {
+    await axios.put(`${CONFIG.HIVE_LOG_ENTRIES_URL}/${id}`, payload, {
+      headers: authJsonHeaders(),
+    });
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to update log entry.'));
   }
 }
 
 export async function deleteLogEntry(id: string): Promise<void> {
-  const resp = await fetch(`${CONFIG.HIVE_LOG_ENTRIES_URL}/${id}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  });
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(err || 'Failed to delete log entry.');
+  try {
+    await axios.delete(`${CONFIG.HIVE_LOG_ENTRIES_URL}/${id}`, {
+      headers: authHeaders(),
+    });
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Failed to delete log entry.'));
   }
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using SmartApiary.Infrastructure.Services.Storage;
+using SmartApiary.Infrastructure.Persistence.AzureBlob.Services;
 using Azure.Storage.Queues;
 
 namespace SmartApiary.Tools

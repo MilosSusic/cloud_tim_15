@@ -1,10 +1,6 @@
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using SmartApiary.Application.Features.Fields.Queries;
 using SmartApiary.Application.Interfaces.Repositories;
-using SmartApiary.Domain.Enums;
-using SmartApiary.Domain.Models;
-using System.Security.Claims;
+using SmartApiary.Application.Interfaces.Security;
 
 namespace SmartApiary.Application.Features.Fields.Queries
 {
@@ -13,44 +9,39 @@ namespace SmartApiary.Application.Features.Fields.Queries
         private readonly IApiaryRepository _apiaryRepository;
         private readonly IFieldRepository _fieldRepository;
         private readonly IUserRepository _userRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICurrentUserService _currentUserService;
 
         public GetNearbyFieldsWithCropsQueryHandler(
             IApiaryRepository apiaryRepository,
             IFieldRepository fieldRepository,
             IUserRepository userRepository,
-            IHttpContextAccessor httpContextAccessor)
+            ICurrentUserService currentUserService)
         {
             _apiaryRepository = apiaryRepository;
             _fieldRepository = fieldRepository;
             _userRepository = userRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _currentUserService = currentUserService;
         }
 
         public async Task<List<FieldWithCropsDto>> Handle(GetNearbyFieldsWithCropsQuery request, CancellationToken cancellationToken)
         {
-            // Get current user id from context
-            var userIdStr = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdStr, out var userId))
+            var userId = _currentUserService.UserId;
+            if (userId is null)
                 return new List<FieldWithCropsDto>();
 
-            
-            var apiaries = await _apiaryRepository.GetByOwnerIdAsync(userId, cancellationToken);
+            var apiaries = await _apiaryRepository.GetByOwnerIdAsync(userId.Value, cancellationToken);
             if (apiaries.Count == 0)
                 return new List<FieldWithCropsDto>();
 
-            
-            var allFields = await _fieldRepository.GetAllWithCropsAsync(cancellationToken); 
+            var allFields = await _fieldRepository.GetAllWithCropsAsync(cancellationToken);
 
             var result = new List<FieldWithCropsDto>();
             foreach (var field in allFields)
             {
-                // Check if field is within 5km of any apiary
                 foreach (var apiary in apiaries)
                 {
                     if (GetDistanceKm(apiary.Latitude, apiary.Longitude, field.Latitude, field.Longitude) <= 5.0)
                     {
-                        // Get owner info
                         var owner = await _userRepository.GetByIdAsync(field.OwnerId, cancellationToken);
                         var ownerDto = new OwnerDto
                         {
@@ -59,7 +50,6 @@ namespace SmartApiary.Application.Features.Fields.Queries
                             Email = owner?.Email ?? string.Empty,
                             Phone = owner?.PhoneNumber ?? string.Empty
                         };
-                        // Map crops
                         var crops = field.Crops.Select(c => new CropDto
                         {
                             Name = c.CropName.ToString(),
@@ -74,7 +64,7 @@ namespace SmartApiary.Application.Features.Fields.Queries
                             FieldName = field.FieldName,
                             Latitude = field.Latitude,
                             Longitude = field.Longitude,
-                            Area = 0, // Add area if available
+                            Area = 0,
                             Owner = ownerDto,
                             Crops = crops
                         });
@@ -87,7 +77,6 @@ namespace SmartApiary.Application.Features.Fields.Queries
 
         private static double GetDistanceKm(double lat1, double lon1, double lat2, double lon2)
         {
-            // Haversine formula
             var R = 6371.0;
             var dLat = DegreesToRadians(lat2 - lat1);
             var dLon = DegreesToRadians(lon2 - lon1);

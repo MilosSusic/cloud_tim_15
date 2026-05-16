@@ -1,6 +1,4 @@
-using System.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
@@ -41,19 +39,24 @@ namespace SmartApiary.Application.Features.HiveLogEntries.Commands
             if (apiary is null || apiary.OwnerId != userId.Value)
                 return Result<Guid>.Failure("You do not have access to this hive.");
 
-            var entry = new HiveLogEntry
+            HiveLogEntry entry;
+            try
             {
-                Id = Guid.NewGuid(),
-                HiveId = request.HiveId,
-                ReviewDate = request.ReviewDate,
-                ReviewType = request.ReviewType,
-                BottomBoardColor = request.BottomBoardColor,
-                HoneyFrames = request.HoneyFrames,
-                HoneyAmountKg = request.HoneyAmountKg,
-                BroodFrames = request.BroodFrames,
-                QueenPresent = request.QueenPresent,
-                Note = request.Note
-            };
+                entry = HiveLogEntry.Create(
+                    request.HiveId,
+                    request.ReviewDate,
+                    request.ReviewType,
+                    request.BottomBoardColor,
+                    request.HoneyFrames,
+                    request.HoneyAmountKg,
+                    request.BroodFrames,
+                    request.QueenPresent,
+                    request.Note);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result<Guid>.Failure(ex.Message);
+            }
 
             await _logRepository.AddAsync(entry, cancellationToken);
             await _logRepository.SaveChangesAsync(cancellationToken);
