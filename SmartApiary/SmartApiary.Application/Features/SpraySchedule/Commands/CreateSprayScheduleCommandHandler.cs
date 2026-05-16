@@ -1,17 +1,8 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
-using SmartApiary.Application.Features.Fields.Commands;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Common;
-using SmartApiary.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.SpraySchedule.Commands
 {

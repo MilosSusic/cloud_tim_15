@@ -35,17 +35,21 @@ namespace SmartApiary.Application.Features.Hives.Commands
             if (apiary.OwnerId != userId.Value)
                 return Result<Guid>.Failure("You do not have access to this apiary.");
 
-            var hive = new Hive
+            Hive hive;
+            try
             {
-                Id = Guid.NewGuid(),
-                ApiaryId = request.ApiaryId,
-                Label = request.Label,
-                Type = request.Type,
-                Color = request.Color,
-                QueenAge = request.QueenAge,
-                Note = request.Note,
-                IsDeleted = false
-            };
+                hive = Hive.Create(
+                    request.ApiaryId,
+                    request.Label,
+                    request.Type,
+                    request.Color,
+                    request.QueenAge,
+                    request.Note);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result<Guid>.Failure(ex.Message);
+            }
 
             await _hiveRepository.AddAsync(hive, cancellationToken);
             await _hiveRepository.SaveChangesAsync(cancellationToken);

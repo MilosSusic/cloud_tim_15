@@ -23,17 +23,22 @@ namespace SmartApiary.Application.Features.Apiaries.Commands
             if (userId is null)
                 return Result<Guid>.Failure("Invalid user id.");
 
-            var apiary = new Apiary
+            Apiary apiary;
+            try
             {
-                Id = Guid.NewGuid(),
-                Name = request.Name,
-                Description = request.Description,
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
-                ImageUrl = request.ImageUrl,
-                ThumbnailUrl = request.ThumbnailUrl,
-                OwnerId = userId.Value
-            };
+                apiary = Apiary.Create(
+                    userId.Value,
+                    request.Name,
+                    request.Description,
+                    request.Latitude,
+                    request.Longitude,
+                    request.ImageUrl,
+                    request.ThumbnailUrl);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result<Guid>.Failure(ex.Message);
+            }
 
             await _apiaryRepository.AddAsync(apiary, cancellationToken);
             await _apiaryRepository.SaveChangesAsync(cancellationToken);

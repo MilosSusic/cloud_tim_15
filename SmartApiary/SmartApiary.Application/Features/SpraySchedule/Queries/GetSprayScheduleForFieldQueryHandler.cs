@@ -1,14 +1,6 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Http;
-using SmartApiary.Application.Features.Fields.Queries;
-using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
+using SmartApiary.Application.Interfaces.Repositories;
 
 namespace SmartApiary.Application.Features.SpraySchedule.Queries
 {
@@ -16,9 +8,9 @@ namespace SmartApiary.Application.Features.SpraySchedule.Queries
     {
         private readonly ISprayScheduleRepository _sprayScheduleRepository;
 
-        public GetSprayScheduleForFieldQueryHandler(ISprayScheduleRepository sprayScheduleRepository, IHttpContextAccessor httpContextAccessor)
+        public GetSprayScheduleForFieldQueryHandler(ISprayScheduleRepository sprayScheduleRepository)
         {
-            _sprayScheduleRepository = sprayScheduleRepository  ;
+            _sprayScheduleRepository = sprayScheduleRepository;
         }
 
         public async Task<Result<List<SprayListItemDto>>> Handle(GetSprayScheduleForFieldQuery request, CancellationToken cancellationToken)
@@ -39,4 +31,3 @@ namespace SmartApiary.Application.Features.SpraySchedule.Queries
         }
     }
 }
-                

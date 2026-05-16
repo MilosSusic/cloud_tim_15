@@ -6,7 +6,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using SmartApiary.Application.Interfaces.Storage;
 
-namespace SmartApiary.Infrastructure.Services.Storage
+namespace SmartApiary.Infrastructure.Persistence.AzureBlob.Services
 {
     public class BlobUploadService : IBlobStorageService
     {

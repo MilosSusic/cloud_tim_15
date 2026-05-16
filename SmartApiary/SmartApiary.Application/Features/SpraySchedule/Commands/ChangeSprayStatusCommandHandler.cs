@@ -4,6 +4,7 @@ using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Enums;
+using SmartApiary.Domain.Models;
 
 namespace SmartApiary.Application.Features.SpraySchedule.Commands
 {
@@ -63,21 +64,25 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
 
                 var activeCrop = field?.Crops?.FirstOrDefault(c => !c.IsDeleted);
 
-                var sprayLog = new Domain.Models.SprayLog
+                SprayLog sprayLog;
+                try
                 {
-                    Id = Guid.NewGuid(),
-                    SprayScheduleId = spraySchedule.Id,
-                    FieldId = spraySchedule.FieldId,
-                    FieldName = field?.FieldName ?? string.Empty,
-                    CropName = activeCrop?.CropName.ToString(),
-                    StartDateTime = spraySchedule.StartDateTime,
-                    EndDateTime = spraySchedule.StartDateTime
-                        .AddHours(spraySchedule.DurationHours),
-                    PesticideType = spraySchedule.PesticideType,
-                    WindSpeed = weather.WindSpeed,
-                    Temperature = weather.Temperature,
-                    WeatherDescription = weather.Description
-                };
+                    sprayLog = SprayLog.Create(
+                        spraySchedule.Id,
+                        spraySchedule.FieldId,
+                        field?.FieldName ?? string.Empty,
+                        activeCrop?.CropName.ToString(),
+                        spraySchedule.StartDateTime,
+                        spraySchedule.StartDateTime.AddHours(spraySchedule.DurationHours),
+                        spraySchedule.PesticideType,
+                        weather.WindSpeed,
+                        weather.Temperature,
+                        weather.Description);
+                }
+                catch (ArgumentException ex)
+                {
+                    return Result.Failure(ex.Message);
+                }
 
                 await _sprayLogRepository.AddAsync(sprayLog, cancellationToken);
                 await _sprayLogRepository.SaveChangesAsync(cancellationToken);

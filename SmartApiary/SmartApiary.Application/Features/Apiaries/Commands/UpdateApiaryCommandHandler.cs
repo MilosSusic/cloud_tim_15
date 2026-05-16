@@ -31,16 +31,20 @@ namespace SmartApiary.Application.Features.Apiaries.Commands
             if (apiary.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this apiary.");
 
-            apiary.Name = request.Name;
-            apiary.Description = request.Description;
-            apiary.Latitude = request.Latitude;
-            apiary.Longitude = request.Longitude;
-
-            if (!string.IsNullOrWhiteSpace(request.ImageUrl))
-                apiary.ImageUrl = request.ImageUrl;
-
-            if (!string.IsNullOrWhiteSpace(request.ThumbnailUrl))
-                apiary.ThumbnailUrl = request.ThumbnailUrl;
+            try
+            {
+                apiary.UpdateDetails(
+                    request.Name,
+                    request.Description,
+                    request.Latitude,
+                    request.Longitude,
+                    request.ImageUrl,
+                    request.ThumbnailUrl);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result.Failure(ex.Message);
+            }
 
             _apiaryRepository.Update(apiary);
             await _apiaryRepository.SaveChangesAsync(cancellationToken);
