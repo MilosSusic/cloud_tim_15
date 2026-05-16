@@ -96,29 +96,36 @@ const SprayLogPage: React.FC = () => {
       </div>
 
       <div className="spray-log-filters">
-        <select
-          value={selectedFieldId}
-          onChange={(e) => setSelectedFieldId(e.target.value)}
-        >
-          <option value="">All Fields</option>
-          {fields.map((f) => (
-            <option key={f.id} value={f.id}>{f.fieldName}</option>
-          ))}
-        </select>
+        <div className="filter-group">
+          <label>Field Name</label>
+          <select
+            value={selectedFieldId}
+            onChange={(e) => setSelectedFieldId(e.target.value)}
+          >
+            <option value="">All Fields</option>
+            {fields.map((f) => (
+              <option key={f.id} value={f.id}>{f.fieldName}</option>
+            ))}
+          </select>
+        </div>
 
-        <input
-          type="date"
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          placeholder="From"
-        />
+        <div className="filter-group">
+          <label>Start Date</label>
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="date"
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          placeholder="To"
-        />
+        <div className="filter-group">
+          <label>End Date</label>
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          />
+        </div>
 
         <button className="spray-log-btn" onClick={fetchLogs}>
           🔍 Search
@@ -130,7 +137,6 @@ const SprayLogPage: React.FC = () => {
           </button>
         )}
       </div>
-
       {message && <div className="spray-log-message">{message}</div>}
 
       {loading && <div className="spray-log-message">Loading...</div>}
