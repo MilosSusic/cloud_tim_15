@@ -21,7 +21,9 @@ namespace SmartApiary.Infrastructure.Repositories
 
         public async Task<Field?> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
-            return await _dbContext.Fields.FirstOrDefaultAsync(f => f.Id == id, ct);
+            return await _dbContext.Fields
+                .Include(f => f.Crops)
+                .FirstOrDefaultAsync(f => f.Id == id, ct);
         }
 
         public async Task<List<Field>> GetByOwnerIdAsync(Guid ownerId, CancellationToken ct = default)

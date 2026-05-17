@@ -110,7 +110,7 @@ const SprayLogPage: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>Start Date</label>
+          <label>Start Date <span className="date-format">(MM/DD/YYYY)</span></label>
           <input
             type="date"
             value={from}
@@ -119,7 +119,7 @@ const SprayLogPage: React.FC = () => {
         </div>
 
         <div className="filter-group">
-          <label>End Date</label>
+          <label>End Date <span className="date-format">(MM/DD/YYYY)</span></label>
           <input
             type="date"
             value={to}

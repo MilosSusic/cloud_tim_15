@@ -15,5 +15,7 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task<List<SpraySchedule>> GetScheduledForTomorrowAsync(CancellationToken ct = default);
         void Update(SpraySchedule spraySchedule);
         Task SaveChangesAsync(CancellationToken ct = default);
+
+        Task<List<SpraySchedule>> GetPastScheduledAsync(CancellationToken ct = default);
     }
 }

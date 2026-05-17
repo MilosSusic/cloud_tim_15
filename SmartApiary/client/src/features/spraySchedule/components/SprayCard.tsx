@@ -44,7 +44,10 @@ const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onRe
   return (
     <div className="spray-card" onClick={handleCardClick}>
       <div className="spray-info">
-        <div><strong>Start:</strong> {new Date(spray.startDateTime).toLocaleString()}</div>
+         <div>
+            <strong>Start:</strong> {new Date(spray.startDateTime).toLocaleString()}
+            <span className="date-format"> (MM/DD/YYYY)</span>
+        </div>
         <div><strong>Duration:</strong> {spray.durationHours}h</div>
         <div><strong>Status:</strong> {sprayStatusNames[spray.status]}</div>
       </div>

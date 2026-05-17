@@ -40,6 +40,15 @@ namespace SmartApiary.Infrastructure.Repositories
                 .ToListAsync(ct);
         }
 
+        public async Task<List<SpraySchedule>> GetPastScheduledAsync(CancellationToken ct = default)
+        {
+            var now = DateTime.UtcNow;
+            return await _dbContext.SpraySchedules
+                .Where(s => (s.Status == SprayStatus.Scheduled || s.Status == SprayStatus.Rescheduled)
+                         && s.StartDateTime.AddHours(s.DurationHours) < now)
+                .ToListAsync(ct);
+        }
+
         public void Update(SpraySchedule spraySchedule)
         {
             _dbContext.SpraySchedules.Update(spraySchedule);

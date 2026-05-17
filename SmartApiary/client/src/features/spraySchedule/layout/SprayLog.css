@@ -161,3 +161,11 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+.date-format {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
