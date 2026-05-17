@@ -49,27 +49,25 @@ namespace SmartApiary.Infrastructure.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.CreateTable(
-                name: "SprayLogs",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SprayScheduleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FieldId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    FieldName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    CropName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    StartDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PesticideType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    WindSpeed = table.Column<double>(type: "float", nullable: true),
-                    Temperature = table.Column<double>(type: "float", nullable: true),
-                    WeatherDescription = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SprayLogs", x => x.Id);
-                });
+            migrationBuilder.Sql(@"
+IF OBJECT_ID(N'dbo.SprayLogs', N'U') IS NULL
+BEGIN
+    CREATE TABLE [SprayLogs] (
+        [Id] uniqueidentifier NOT NULL,
+        [SprayScheduleId] uniqueidentifier NOT NULL,
+        [FieldId] uniqueidentifier NOT NULL,
+        [FieldName] nvarchar(100) NOT NULL,
+        [CropName] nvarchar(100) NULL,
+        [StartDateTime] datetime2 NOT NULL,
+        [EndDateTime] datetime2 NOT NULL,
+        [PesticideType] nvarchar(100) NULL,
+        [CreatedAt] datetime2 NOT NULL,
+        [WindSpeed] float NULL,
+        [Temperature] float NULL,
+        [WeatherDescription] nvarchar(256) NULL,
+        CONSTRAINT [PK_SprayLogs] PRIMARY KEY ([Id])
+    );
+END");
         }
 
         /// <inheritdoc />
