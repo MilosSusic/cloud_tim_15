@@ -1,14 +1,8 @@
 import axios from 'axios';
-import { getToken } from '../../auth/api/authApi';
-import { CONFIG } from '../../../config/config';
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
-});
+import { CONFIG } from '../../../shared/config/config';
 
 const authJsonHeaders = () => ({
   'Content-Type': 'application/json',
-  ...authHeaders(),
 });
 
 const extractUploadUrl = (uploadResponse: unknown): string | undefined => {
@@ -31,9 +25,7 @@ const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
 
 export async function getApiaries() {
   try {
-    const response = await axios.get(CONFIG.APIARIES_URL, {
-      headers: authHeaders(),
-    });
+    const response = await axios.get(CONFIG.APIARIES_URL);
     return response.data;
   } catch (error) {
     throw new Error(extractAxiosErrorMessage(error, 'Failed to fetch apiaries'));

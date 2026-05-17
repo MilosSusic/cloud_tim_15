@@ -10,17 +10,26 @@ export interface CropFormData {
   FloweringPeriodEnd: string; 
 }
 
-const AddCropModal: React.FC<{ fieldId: string; onClose: () => void; onSave: (data: CropFormData,file: File | null) => void }> = ({ fieldId, onClose, onSave }) => {
+const formatDate = (date: Date): string => date.toISOString().split("T")[0];
+
+const getTomorrow = (): string => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return formatDate(tomorrow);
+};
+
+const AddCropModal: React.FC<{ fieldId: string; onClose: () => void; onSave: (data: CropFormData,file: File | null) => Promise<void> }> = ({ fieldId, onClose, onSave }) => {
   const [formData, setFormData] = useState<CropFormData>({
     fieldId,
     cropName: CropType.None,
     description: "",
-    FloweringPeriodStart: new Date().toISOString().split("T")[0],
-    FloweringPeriodEnd: new Date().toISOString().split("T")[0],
+    FloweringPeriodStart: formatDate(new Date()),
+    FloweringPeriodEnd: getTomorrow(),
   });
 
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -41,9 +50,28 @@ const AddCropModal: React.FC<{ fieldId: string; onClose: () => void; onSave: (da
     }
   };
 
-  const handleSubmit = () => {
-    onSave(formData, file);
-    onClose();
+  const handleSubmit = async () => {
+    setError("");
+
+    const start = new Date(formData.FloweringPeriodStart);
+    const end = new Date(formData.FloweringPeriodEnd);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      setError("Please enter valid flowering dates.");
+      return;
+    }
+
+    if (end <= start) {
+      setError("Flowering period end must be after start date.");
+      return;
+    }
+
+    try {
+      await onSave(formData, file);
+      onClose();
+    } catch {
+      // Parent already sets a toast message; keep modal open so user can correct input.
+    }
   };
 
   return (
@@ -81,6 +109,7 @@ const AddCropModal: React.FC<{ fieldId: string; onClose: () => void; onSave: (da
             type="date"
             name="FloweringPeriodEnd"
             value={formData.FloweringPeriodEnd}
+            min={formData.FloweringPeriodStart}
             onChange={handleChange}
           />
         </label>
@@ -89,6 +118,7 @@ const AddCropModal: React.FC<{ fieldId: string; onClose: () => void; onSave: (da
           <input type="file" accept="image/*" onChange={handleFileChange} />
         </label>
         {previewUrl && <img src={previewUrl} alt="Preview" style={{ maxWidth: "200px" }} />}
+        {error && <p style={{ color: "#f87171", margin: "8px 0 0" }}>{error}</p>}
 
         <div className="modal-actions">
           <button onClick={handleSubmit}>Add</button>

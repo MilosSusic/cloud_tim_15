@@ -6,7 +6,7 @@ import ResetPasswordPage from './features/auth/pages/ResetPasswordPage';
 import UserManagementPage from './features/userManagement/pages/UserManagementPage';
 import AccessDeniedPage from './features/auth/pages/AccessDeniedPage';
 import PrivateRoute from './features/auth/components/PrivateRoute';
-import { AuthProvider } from './features/auth/context/AuthContext';
+import { AuthProvider } from './shared/auth/AuthContext';
 
 import ApiaryPage from './features/apiaries/pages/ApiaryPage';
 import FieldPage from './features/fields/pages/FieldPage';

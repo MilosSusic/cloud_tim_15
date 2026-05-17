@@ -1,10 +1,5 @@
-import { getToken } from '../../auth/api/authApi';
-import { CONFIG } from '../../../config/config';
+import { CONFIG } from '../../../shared/config/config';
 import axios from 'axios';
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
-});
 
 export async function createField(form: any) {
   const fieldData = {
@@ -22,7 +17,6 @@ export async function createField(form: any) {
     const resp = await axios.post(CONFIG.FIELD_URL, fieldData, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
     return resp.data;
@@ -37,11 +31,7 @@ export async function createField(form: any) {
 
 export async function getFields() {
   try {
-    const resp = await axios.get(CONFIG.FIELD_URL, {
-      headers: {
-        ...authHeaders(),
-      },
-    });
+    const resp = await axios.get(CONFIG.FIELD_URL);
     return resp.data;
   } catch (error: any) {
     if (error.response) {
@@ -61,11 +51,7 @@ export async function updateField(form: any) {
     formData.append("file", form.file);
 
     try {
-      const uploadResp = await axios.post(CONFIG.UPLOAD_FIELD_IMAGE_URL, formData, {
-        headers: {
-          ...authHeaders(),
-        },
-      });
+      const uploadResp = await axios.post(CONFIG.UPLOAD_FIELD_IMAGE_URL, formData);
 
       const uploadJson = uploadResp.data;
       const url = Array.isArray(uploadJson.urls) ? uploadJson.urls[0] : undefined;
@@ -92,7 +78,6 @@ export async function updateField(form: any) {
     await axios.put(`${CONFIG.FIELD_URL}/${form.id}`, fieldData, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
   } catch (error: any) {

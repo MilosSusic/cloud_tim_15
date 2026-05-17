@@ -171,8 +171,6 @@ const FieldPage: React.FC = () => {
     setLoading(true);
     try {
       await createCrop(data);
-      setShowCropModal(false); 
-
       if(selectedField && file){
       const fieldData = {
         id: selectedField.id,
@@ -191,9 +189,12 @@ const FieldPage: React.FC = () => {
       }
     } catch (err) {
       console.error("Error creating crop:", err);
-      setMessage("Failed to create crop.");
+      const message = err instanceof Error ? err.message : "Failed to create crop.";
+      setMessage(message);
+      throw err;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSaveSpray = async (data: SprayScheduleFormData) => {

@@ -5,48 +5,17 @@ import type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from '../types/AuthRequests';
+import { CONFIG } from '../../../shared/config/config';
 
-const api = axios.create({
-  baseURL: 'https://localhost:7159/api',
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+// Auth API calls - koristi globalni axios sa interceptorima
 export const login = (data: LoginRequest) =>
-  api.post<string>('/auth/login', data);
+  axios.post<string>(CONFIG.AUTH_LOGIN_URL, data);
 
 export const activateAccount = (data: ActivateAccountRequest) =>
-  api.post('/auth/activate', data);
+  axios.post(CONFIG.AUTH_ACTIVATE_URL, data);
 
 export const forgotPassword = (data: ForgotPasswordRequest) =>
-  api.post('/auth/forgot-password', data);
+  axios.post(CONFIG.AUTH_FORGOT_PASSWORD_URL, data);
 
 export const resetPassword = (data: ResetPasswordRequest) =>
-  api.post('/auth/reset-password', data);
-
-export function getToken(): string | null {
-  return localStorage.getItem('token');
-}
-
-export function getUserRoleFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1])) as Record<string, string>;
-
-    return (
-      payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-      payload['role'] ||
-      null
-    );
-  } catch {
-    return null;
-  }
-}
+  axios.post(CONFIG.AUTH_RESET_PASSWORD_URL, data);

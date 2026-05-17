@@ -1,16 +1,34 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
-import { getUserRoleFromToken } from '../api/authApi';
+import { useAuth } from '../../../shared/auth/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, role, isAuthenticated } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pendingRedirect, setPendingRedirect] = useState(false);
+
+  useEffect(() => {
+    if (!pendingRedirect || !isAuthenticated) {
+      return;
+    }
+
+    if (role === 'Admin') {
+      navigate('/admin/users');
+    } else if (role === 'Beekeeper') {
+      navigate('/beekeeper/apiaries');
+    } else if (role === 'Farmer') {
+      navigate('/farmer/field');
+    } else {
+      navigate('/access-denied');
+    }
+
+    setPendingRedirect(false);
+  }, [pendingRedirect, isAuthenticated, role, navigate]);
 
   const handleLogin = async () => {
     setError('');
@@ -19,19 +37,7 @@ export default function LoginPage() {
     try {
       const success = await authLogin(email, password);
       if (!success) throw new Error();
-
-      // Pročitaj rolu direktno iz tokena odmah nakon logina
-      const newRole = getUserRoleFromToken();
-
-      if (newRole === 'Admin') {
-        navigate('/admin/users');
-      } else if (newRole === 'Beekeeper') {
-        navigate('/beekeeper/apiaries');
-      }else if (newRole === 'Farmer') {
-        navigate('/farmer/field');
-      } else {
-        navigate('/access-denied');
-      }
+      setPendingRedirect(true);
     } catch (error) {
       let message = 'Login failed. Please try again.';
 

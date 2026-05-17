@@ -1,17 +1,44 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../../../shared/auth/AuthContext';
+import { CONFIG } from '../../../shared/config/config';
 import type { User, CreateUserForm } from '../types/User';
 
-const api = axios.create({ baseURL: 'https://localhost:7159/api' });
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
+const extractUsers = (payload: unknown): User[] => {
+  if (Array.isArray(payload)) {
+    return payload as User[];
+  }
+
+  if (payload && typeof payload === 'object') {
+    const data = payload as {
+      items?: unknown;
+      users?: unknown;
+      data?: unknown;
+      value?: unknown;
+      $values?: unknown;
+    };
+
+    if (Array.isArray(data.items)) return data.items as User[];
+    if (Array.isArray(data.users)) return data.users as User[];
+    if (Array.isArray(data.data)) return data.data as User[];
+    if (
+      data.data &&
+      typeof data.data === 'object' &&
+      Array.isArray((data.data as { $values?: unknown }).$values)
+    ) {
+      return (data.data as { $values: User[] }).$values;
+    }
+    if (Array.isArray(data.value)) return data.value as User[];
+    if (Array.isArray(data.$values)) return data.$values as User[];
+  }
+
+  return [];
+};
 
 export default function UserManagementPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -30,8 +57,8 @@ export default function UserManagementPage() {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const response = await api.get<User[]>('/users');
-        setUsers(response.data);
+        const response = await axios.get(CONFIG.USERS_URL);
+        setUsers(extractUsers(response.data));
       } catch (err) {
         setError('Failed to load users.');
       } finally {
@@ -43,8 +70,8 @@ export default function UserManagementPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get<User[]>('/users');
-      setUsers(response.data);
+      const response = await axios.get(CONFIG.USERS_URL);
+      setUsers(extractUsers(response.data));
     } catch {
       setError('Failed to load users.');
     }
@@ -54,7 +81,7 @@ export default function UserManagementPage() {
     setError('');
     setActionLoading(true);
     try {
-      await api.post('/users', form);
+      await axios.post(CONFIG.USERS_URL, form);
       setSuccess('User created! Activation email sent.');
       setShowModal(false);
       setForm({ firstName: '', lastName: '', email: '', role: 2, phoneNumber: '' });
@@ -71,7 +98,7 @@ export default function UserManagementPage() {
   const handleSuspend = async (email: string) => {
     setActionLoading(true);
     try {
-      await api.post('/users/suspend', { email });
+      await axios.post(`${CONFIG.USERS_URL}/suspend`, { email });
       setSuccess('User suspended.');
       fetchUsers();
       setTimeout(() => setSuccess(''), 3000);
@@ -87,7 +114,7 @@ export default function UserManagementPage() {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     setActionLoading(true);
     try {
-      await api.post('/users/delete', { email });
+      await axios.post(`${CONFIG.USERS_URL}/delete`, { email });
       setSuccess('User deleted.');
       fetchUsers();
       setTimeout(() => setSuccess(''), 3000);
@@ -100,7 +127,7 @@ export default function UserManagementPage() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    logout();
     navigate('/login');
   };
 

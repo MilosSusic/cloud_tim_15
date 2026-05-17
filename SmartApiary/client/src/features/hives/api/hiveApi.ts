@@ -1,15 +1,9 @@
 import axios from 'axios';
-import { getToken } from '../../auth/api/authApi';
-import { CONFIG } from '../../../config/config';
+import { CONFIG } from '../../../shared/config/config';
 import type { Hive } from '../types/Hive';
 
 const authJsonHeaders = () => ({
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${getToken()}`,
-});
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
 });
 
 const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
@@ -24,9 +18,7 @@ const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
 
 export async function getHivesByApiary(apiaryId: string): Promise<Hive[]> {
   try {
-    const response = await axios.get(`${CONFIG.HIVES_URL}/by-apiary/${apiaryId}`, {
-      headers: authHeaders(),
-    });
+    const response = await axios.get(`${CONFIG.HIVES_URL}/by-apiary/${apiaryId}`);
     return response.data;
   } catch (error) {
     throw new Error(extractAxiosErrorMessage(error, 'Failed to fetch hives'));
@@ -73,9 +65,7 @@ export async function updateHive(
 
 export async function deleteHive(id: string): Promise<void> {
   try {
-    await axios.delete(`${CONFIG.HIVES_URL}/${id}`, {
-      headers: authHeaders(),
-    });
+    await axios.delete(`${CONFIG.HIVES_URL}/${id}`);
   } catch (error) {
     throw new Error(extractAxiosErrorMessage(error, 'Failed to delete hive'));
   }

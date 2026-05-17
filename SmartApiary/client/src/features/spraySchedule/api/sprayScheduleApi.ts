@@ -1,12 +1,7 @@
-import { getToken } from '../../auth/api/authApi';
-import { CONFIG } from '../../../config/config';
+import { CONFIG } from '../../../shared/config/config';
 import type {SpraySchedule} from '../types/SpraySchedule'
 import type { SprayStatus } from '../types/SprayStatus';
 import axios from 'axios';
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
-});
 
 export async function createSpray(form: any): Promise<{ sprayScheduleId: string, notifiedBeekeepersCount: number, weatherWarning: string | null }> {
   const sprayData = {
@@ -24,7 +19,6 @@ export async function createSpray(form: any): Promise<{ sprayScheduleId: string,
     const resp = await axios.post(CONFIG.SPRAY_URL, sprayData, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
     console.log("Response status:", resp.status);
@@ -50,7 +44,6 @@ export async function updateSpray(id: string, form: any) {
     const resp = await axios.put(`${CONFIG.SPRAY_URL}/${id}`, payload, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
 
@@ -64,11 +57,7 @@ export async function updateSpray(id: string, form: any) {
 
 export async function getSprayByField(fieldId: string): Promise<SpraySchedule[]> {
   try {
-    const resp = await axios.get(`${CONFIG.SPRAY_URL}/by-field/${fieldId}`, {
-      headers: {
-        ...authHeaders(),
-      },
-    });
+    const resp = await axios.get(`${CONFIG.SPRAY_URL}/by-field/${fieldId}`);
     return resp.data as SpraySchedule[];
   } catch (error: any) {
     console.error("Error with fetching spray from field:", error.response?.data || error.message);
@@ -83,7 +72,6 @@ export async function rescheduleSpray(id: string, startDateTime: string) {
     await axios.put(`${CONFIG.SPRAY_URL}/reschedule/${id}`, payload, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
   } catch (error: any) {
@@ -99,7 +87,6 @@ export async function changeSprayStatus(id: string, status: SprayStatus) {
     await axios.put(`${CONFIG.SPRAY_URL}/status/${id}`, payload, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
   } catch (error: any) {
@@ -113,14 +100,13 @@ export async function getSprayLogs(
   from?: string,
   to?: string
 ): Promise<any[]> {
-  const params = new URLSearchParams();
-  if (fieldId) params.append("fieldId", fieldId);
-  if (from) params.append("from", from);
-  if (to) params.append("to", to);
-
-  const resp = await fetch(`${CONFIG.SPRAY_URL}/logs?${params.toString()}`, {
-    headers: authHeaders(),
-  });
-  if (!resp.ok) throw new Error("Error fetching spray logs.");
-  return await resp.json();
+  try {
+    const resp = await axios.get(`${CONFIG.SPRAY_URL}/logs`, {
+      params: { fieldId, from, to },
+    });
+    return resp.data as any[];
+  } catch (error: any) {
+    console.error("Error fetching spray logs:", error.response?.data || error.message);
+    throw new Error("Error fetching spray logs.");
+  }
 }

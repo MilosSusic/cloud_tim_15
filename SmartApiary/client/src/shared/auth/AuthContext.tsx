@@ -1,7 +1,8 @@
-
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { getUserRoleFromToken, login as apiLogin, getToken as getStoredToken } from '../api/authApi';
-import type { AuthContextType } from '../types/AuthContext';
+import { getUserRoleFromToken } from './utils';
+import { login as apiLogin } from '../../features/auth/api/authApi';
+import type { AuthContextType } from '../../features/auth/types/AuthContext';
+import { setAxiosAuthToken } from '../api/axiosSetup';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -11,11 +12,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = getStoredToken();
+    const storedToken = localStorage.getItem('token');
     setToken(storedToken);
-    setRole(getUserRoleFromToken());
+    setRole(getUserRoleFromToken(storedToken));
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    setAxiosAuthToken(token);
+  }, [token]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -23,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const newToken = response.data;
       localStorage.setItem('token', newToken);
       setToken(newToken);
-      setRole(getUserRoleFromToken());
+      setRole(getUserRoleFromToken(newToken));
       return true;
     } catch (error) {
       return false;

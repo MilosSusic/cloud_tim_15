@@ -1,11 +1,40 @@
-import { getToken } from '../../auth/api/authApi';
-import { CONFIG } from '../../../config/config';
+import { CONFIG } from '../../../shared/config/config';
 import type {Crop} from '../types/Crop'
 import axios from 'axios';
 
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
-});
+const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    const payload = error.response?.data;
+
+    if (typeof payload === 'string' && payload.trim()) {
+      return payload;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const data = payload as { message?: unknown; title?: unknown; errors?: Record<string, string[] | string> };
+
+      if (typeof data.message === 'string' && data.message.trim()) {
+        return data.message;
+      }
+
+      if (typeof data.title === 'string' && data.title.trim()) {
+        return data.title;
+      }
+
+      if (data.errors && typeof data.errors === 'object') {
+        const first = Object.values(data.errors)[0];
+        if (Array.isArray(first) && first.length > 0) {
+          return String(first[0]);
+        }
+        if (typeof first === 'string' && first.trim()) {
+          return first;
+        }
+      }
+    }
+  }
+
+  return fallback;
+};
 
 export async function createCrop(form: any) {
   const cropData = {
@@ -22,29 +51,18 @@ export async function createCrop(form: any) {
     const resp = await axios.post(CONFIG.CROP_URL, cropData, {
       headers: {
         "Content-Type": "application/json",
-        ...authHeaders(),
       },
     });
 
     return resp.data; 
-  } catch (error: any) {
-    if (error.response) {
-      console.error("Backend error:", error.response.data);
-      throw new Error(error.response.data || "Error with creating crop!");
-    } else {
-      console.error("Network error:", error.message);
-      throw new Error("Network error while creating crop!");
-    }
+  } catch (error) {
+    throw new Error(extractAxiosErrorMessage(error, 'Error with creating crop!'));
   }
 }
 
 export async function getCropsByField(fieldId: string): Promise<Crop[]> {
   try {
-    const resp = await axios.get(`${CONFIG.CROP_URL}/by-field/${fieldId}`, {
-      headers: {
-        ...authHeaders(),
-      },
-    });
+    const resp = await axios.get(`${CONFIG.CROP_URL}/by-field/${fieldId}`);
     return resp.data as Crop[];
   } catch (error: any) {
     if (error.response) {
@@ -57,11 +75,7 @@ export async function getCropsByField(fieldId: string): Promise<Crop[]> {
 
 export async function harvestCrop(cropId: string) {
   try {
-    const resp = await axios.delete(`${CONFIG.CROP_URL}/${cropId}`, {
-      headers: {
-        ...authHeaders(),
-      },
-    });
+    const resp = await axios.delete(`${CONFIG.CROP_URL}/${cropId}`);
     return resp.data;
   } catch (error: any) {
     if (error.response) {

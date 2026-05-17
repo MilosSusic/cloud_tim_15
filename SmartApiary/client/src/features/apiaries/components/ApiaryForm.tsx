@@ -63,7 +63,7 @@ const ApiaryForm: React.FC<Props> = ({
         </div>
         <div className="apiary-form-group apiary-form-file-group">
           <label htmlFor="apiary-file">{imageRequired ? "Image" : "Image (optional)"}</label>
-          <input id="apiary-file" name="file" type="file" accept="image/*" onChange={onChange} required={imageRequired} />
+          <input id="apiary-file" name="file" type="file" accept="image/*" onChange={onChange} />
           <label htmlFor="apiary-file" className="apiary-form-file-label">
             {imageRequired ? "Choose Image" : "Choose New Image"}
           </label>

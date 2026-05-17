@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { getToken } from '../../auth/api/authApi';
-import { CONFIG } from '../../../config/config';
+import { CONFIG } from '../../../shared/config/config';
 import type {
   HiveLogEntryDto,
   PagedResult,
@@ -10,11 +9,6 @@ import type {
 
 const authJsonHeaders = () => ({
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${getToken()}`,
-});
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${getToken()}`,
 });
 
 const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
@@ -35,7 +29,6 @@ export async function getLogsByHive(
   try {
     const response = await axios.get(`${CONFIG.HIVE_LOG_ENTRIES_URL}/by-hive/${hiveId}`, {
       params: { page, pageSize },
-      headers: authHeaders(),
     });
     return response.data;
   } catch (error) {
@@ -71,9 +64,7 @@ export async function updateLogEntry(
 
 export async function deleteLogEntry(id: string): Promise<void> {
   try {
-    await axios.delete(`${CONFIG.HIVE_LOG_ENTRIES_URL}/${id}`, {
-      headers: authHeaders(),
-    });
+    await axios.delete(`${CONFIG.HIVE_LOG_ENTRIES_URL}/${id}`);
   } catch (error) {
     throw new Error(extractAxiosErrorMessage(error, 'Failed to delete log entry.'));
   }

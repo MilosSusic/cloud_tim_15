@@ -138,6 +138,10 @@ const ApiaryPage: React.FC = () => {
     e.preventDefault();
     setCreateSubmitted(true);
     if (!createValidation.isValid) return;
+    if (!form.file) {
+      setMessage("Image is required.");
+      return;
+    }
     setLoading(true);
     try {
       await createApiary(form);
@@ -154,7 +158,8 @@ const ApiaryPage: React.FC = () => {
       await fetchApiaries();
       await fetchNearbyFields();
     } catch (err) {
-      setMessage("Failed to create apiary.");
+      const message = err instanceof Error ? err.message : "Failed to create apiary.";
+      setMessage(message);
     }
     setLoading(false);
   };
