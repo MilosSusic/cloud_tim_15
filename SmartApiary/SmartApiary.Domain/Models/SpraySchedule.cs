@@ -4,15 +4,15 @@ namespace SmartApiary.Domain.Models
 {
     public class SpraySchedule
     {
-        public Guid Id { get; set; }
-        public Guid FieldId { get; set; }
-        public DateTime StartDateTime { get; set; }
-        public int DurationHours { get; set; }
-        public string? PesticideType { get; set; }
-        public SprayStatus Status { get; set; } = SprayStatus.Scheduled;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
-        public string? WeatherWarning { get; set; }
+        public Guid Id { get; private set; }
+        public Guid FieldId { get; private set; }
+        public DateTime StartDateTime { get; private set; }
+        public int DurationHours { get; private set; }
+        public string? PesticideType { get; private set; }
+        public SprayStatus Status { get; private set; } = SprayStatus.Scheduled;
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; private set; }
+        public string? WeatherWarning { get; private set; }
 
         public static SpraySchedule Create(Guid fieldId, DateTime startDateTime, int durationHours, string? pesticideType)
         {
@@ -47,6 +47,12 @@ namespace SmartApiary.Domain.Models
             Status = newStatus;
             DurationHours = newDurationHours;
             PesticideType = newPesticideType;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void SetWeatherWarning(string? weatherWarning)
+        {
+            WeatherWarning = weatherWarning;
             UpdatedAt = DateTime.UtcNow;
         }
     }

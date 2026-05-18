@@ -4,16 +4,16 @@ namespace SmartApiary.Domain.Models
 {
     public class HiveLogEntry
     {
-        public Guid Id { get; set; }
-        public Guid HiveId { get; set; }
-        public DateTime ReviewDate { get; set; }
-        public string ReviewType { get; set; } = string.Empty;
-        public string BottomBoardColor { get; set; } = string.Empty;
-        public int HoneyFrames { get; set; }
-        public double HoneyAmountKg { get; set; }
-        public int BroodFrames { get; set; }
-        public bool QueenPresent { get; set; }
-        public string? Note { get; set; }
+        public Guid Id { get; private set; }
+        public Guid HiveId { get; private set; }
+        public DateTime ReviewDate { get; private set; }
+        public string ReviewType { get; private set; } = string.Empty;
+        public string BottomBoardColor { get; private set; } = string.Empty;
+        public int HoneyFrames { get; private set; }
+        public double HoneyAmountKg { get; private set; }
+        public int BroodFrames { get; private set; }
+        public bool QueenPresent { get; private set; }
+        public string? Note { get; private set; }
 
         public static HiveLogEntry Create(
             Guid hiveId,

@@ -14,7 +14,7 @@ namespace SmartApiary.Tools
                 var filePath = args[1];
                 var connectionString = args[2];
                 var containerName = args[3];
-                var blobService = new BlobUploadService(connectionString, containerName);
+                var blobService = new AzureBlobStorage(connectionString, containerName);
                 var url = await blobService.UploadFileAsync(filePath);
                 Console.WriteLine($"Uploaded! Blob URL: {url}");
                 return;

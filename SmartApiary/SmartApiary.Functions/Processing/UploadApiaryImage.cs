@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -8,6 +7,8 @@ using HttpMultipartParser;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.WebUtilities;
+using SmartApiary.Application.Common;
 using SmartApiary.Application.Interfaces.Storage;
 
 namespace SmartApiary.Functions.Processing
@@ -36,13 +37,17 @@ namespace SmartApiary.Functions.Processing
                 return badResp;
             }
 
+            var category = ResolveCategory(req);
+
             var urls = new List<string>();
             foreach (var file in parser.Files)
             {
                 var url = await _blobStorage.UploadStreamAsync(
                     file.Data,
                     file.FileName,
+                    category,
                     file.ContentType ?? "application/octet-stream");
+
                 urls.Add(url);
             }
 
@@ -50,5 +55,18 @@ namespace SmartApiary.Functions.Processing
             await resp.WriteAsJsonAsync(new { urls });
             return resp;
         }
+
+        private static BlobCategory ResolveCategory(HttpRequestData req)
+        {
+            var query = QueryHelpers.ParseQuery(req.Url.Query);
+            if (query.TryGetValue("category", out var categoryValue)
+                && Enum.TryParse<BlobCategory>(categoryValue.ToString(), true, out var parsed))
+            {
+                return parsed;
+            }
+
+            return BlobCategory.Apiary;
+        }
     }
 }
+

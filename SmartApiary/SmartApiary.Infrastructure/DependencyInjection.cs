@@ -49,6 +49,7 @@ namespace SmartApiary.Infrastructure
 
             services.AddScoped<IEmailService, SendGridEmailService>();
             services.AddScoped<ISprayNotificationEmailService, SprayNotificationEmailService>();
+            services.AddScoped<ISprayNotificationOrchestrator, SprayNotificationOrchestrator>();
 
             services.AddHttpClient<IWeatherService, WeatherService>();
 
@@ -56,23 +57,28 @@ namespace SmartApiary.Infrastructure
 
             services.AddHttpClient<IWeatherService, WeatherService>();
 
-            services.AddScoped<IBlobStorageService>(_ =>
+            services.AddScoped<AzureBlobStorage>(sp =>
             {
-                var connectionString = configuration["AzureBlob:ConnectionString"]
+                var apiaryConnectionString = configuration["AzureBlob:ConnectionString"]
                     ?? throw new InvalidOperationException("AzureBlob:ConnectionString is not configured.");
-                var containerName = configuration["AzureBlob:Container"]
+                var apiaryContainerName = configuration["AzureBlob:Container"]
                     ?? throw new InvalidOperationException("AzureBlob:Container is not configured.");
-                return new BlobUploadService(connectionString, containerName);
+
+                var fieldConnectionString = configuration["AzureBlob:FieldConnectionString"]
+                    ?? throw new InvalidOperationException("AzureBlob:FieldConnectionString is not configured.");
+                var fieldContainerName = configuration["AzureBlob:FieldContainer"]
+                    ?? throw new InvalidOperationException("AzureBlob:FieldContainer is not configured.");
+
+                var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<AzureBlobStorage>>();
+                return new AzureBlobStorage(
+                    apiaryConnectionString,
+                    apiaryContainerName,
+                    fieldConnectionString,
+                    fieldContainerName,
+                    logger);
             });
 
-            services.AddScoped<IFieldBlobStorageService>(_ =>
-            {
-                var connectionString = configuration["AzureBlob:FieldConnectionString"]
-                    ?? throw new InvalidOperationException("AzureBlob:FieldConnectionString is not configured.");
-                var containerName = configuration["AzureBlob:FieldContainer"]
-                    ?? throw new InvalidOperationException("AzureBlob:FieldContainer is not configured.");
-                return new FieldBlobUploadService(connectionString, containerName);
-            });
+            services.AddScoped<IBlobStorageService>(sp => sp.GetRequiredService<AzureBlobStorage>());
 
             return services;
         }

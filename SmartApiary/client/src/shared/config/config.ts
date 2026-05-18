@@ -13,7 +13,6 @@ const AUTH_ACTIVATE_PATH = '/activate';
 const AUTH_FORGOT_PASSWORD_PATH = '/forgot-password';
 const AUTH_RESET_PASSWORD_PATH = '/reset-password';
 const UPLOAD_PATH = '/api/upload-image';
-const UPLOAD_FIELD_IMAGE_PATH = '/api/upload-field-image';
 const NEARBY_FIELDS_WITH_CROPS_PATH = '/api/beekeeper/nearby-fields-with-crops';
 
 export const CONFIG = {
@@ -21,7 +20,7 @@ export const CONFIG = {
   HIVES_URL: `${API_BASE_URL}${HIVES_PATH}`,
   HIVE_LOG_ENTRIES_URL: `${API_BASE_URL}${HIVE_LOG_ENTRIES_PATH}`,
   UPLOAD_URL: `${UPLOAD_BASE_URL}${UPLOAD_PATH}`,
-  UPLOAD_FIELD_IMAGE_URL: `${UPLOAD_BASE_URL}${UPLOAD_FIELD_IMAGE_PATH}`,
+  UPLOAD_FIELD_IMAGE_URL: `${UPLOAD_BASE_URL}${UPLOAD_PATH}?category=field`,
   FIELD_URL: `${API_BASE_URL}${FIELD_PATH}`,
   CROP_URL: `${API_BASE_URL}${CROP_PATH}`,
   SPRAY_URL: `${API_BASE_URL}${SPRAY_PATH}`,

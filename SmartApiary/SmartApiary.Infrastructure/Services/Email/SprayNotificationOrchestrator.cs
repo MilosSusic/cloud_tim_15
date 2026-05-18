@@ -4,7 +4,7 @@ using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Common;
 
-namespace SmartApiary.Application.Services
+namespace SmartApiary.Infrastructure.Services.Email
 {
     public class SprayNotificationOrchestrator(
         ISprayNotificationRepository sprayNotificationRepository,

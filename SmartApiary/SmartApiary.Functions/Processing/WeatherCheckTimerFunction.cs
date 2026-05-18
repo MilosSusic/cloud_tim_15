@@ -56,13 +56,13 @@ namespace SmartApiary.Functions.Processing
 
                 if (weather.WindSpeed > 5 || weather.HasRain)
                 {
-                    spray.WeatherWarning =
-                        $"⚠️ Bad weather expected – Wind: {weather.WindSpeed:F1} m/s, {weather.Description}";
+                    spray.SetWeatherWarning(
+                        $"⚠️ Bad weather expected – Wind: {weather.WindSpeed:F1} m/s, {weather.Description}");
                     logger.LogInformation("Bad weather warning set for spray {SprayId}.", spray.Id);
                 }
                 else
                 {
-                    spray.WeatherWarning = null;
+                    spray.SetWeatherWarning(null);
                     logger.LogInformation("Weather is fine for spray {SprayId}.", spray.Id);
                 }
 

@@ -5,15 +5,15 @@ namespace SmartApiary.Domain.Models
 {
     public class Hive
     {
-        public Guid Id { get; set; }
-        public Guid ApiaryId { get; set; }
-        public string Label { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public string Color { get; set; } = string.Empty;
-        public int QueenAge { get; set; }
-        public string? Note { get; set; }
-        public bool IsDeleted { get; set; }
-        public List<HiveLogEntry> LogEntries { get; set; } = new();
+        public Guid Id { get; private set; }
+        public Guid ApiaryId { get; private set; }
+        public string Label { get; private set; } = string.Empty;
+        public string Type { get; private set; } = string.Empty;
+        public string Color { get; private set; } = string.Empty;
+        public int QueenAge { get; private set; }
+        public string? Note { get; private set; }
+        public bool IsDeleted { get; private set; }
+        public List<HiveLogEntry> LogEntries { get; private set; } = new();
 
         public static Hive Create(
             Guid apiaryId,
