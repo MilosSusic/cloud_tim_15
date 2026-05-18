@@ -61,10 +61,11 @@ const FieldPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"crops" | "sprays">("crops");
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [selectedSpray, setSelectedSpray] = useState<SpraySchedule | null>(null);
-  const [notifiedCount, setNotifiedCount] = useState<number | null>(null);
-  const [weatherWarning, setWeatherWarning] = useState<string | null>(null);
   const navigate = useNavigate();
   const [showEditFieldModal, setShowEditFieldModal] = useState(false);
+  const [newSprayId, setNewSprayId] = useState<string | null>(null);
+  const [newSprayNotifiedCount, setNewSprayNotifiedCount] = useState<number | null>(null);
+  const [newSprayWeatherWarning, setNewSprayWeatherWarning] = useState<string | null>(null);
 
   const isErrorMessage = (text: string) => {
     const normalized = text.toLowerCase();
@@ -206,8 +207,9 @@ const FieldPage: React.FC = () => {
         createdAt: new Date().toISOString(),
       };
       const result = await createSpray(payload); 
-      setNotifiedCount(result.notifiedBeekeepersCount);
-      setWeatherWarning(result.weatherWarning ?? null);
+      setNewSprayId(result.sprayScheduleId);
+      setNewSprayNotifiedCount(result.notifiedBeekeepersCount); 
+      setNewSprayWeatherWarning(result.weatherWarning ?? null);
       setShowSprayModal(false);
       setMessage("Spray schedule created successfully.");
       if (selectedField) {
@@ -270,15 +272,27 @@ const FieldPage: React.FC = () => {
     if (selectedField) {
       fetchCrops(selectedField.id);
       fetchSprays(selectedField.id);
-      setNotifiedCount(null);
-      setWeatherWarning(null);
+      setNewSprayId(null);              
+      setNewSprayNotifiedCount(null);   
+      setNewSprayWeatherWarning(null);
     } else {
       setCrops([]);
       setSprays([]);
-      setNotifiedCount(null);
-      setWeatherWarning(null);
+      setNewSprayId(null);              
+      setNewSprayNotifiedCount(null);   
+      setNewSprayWeatherWarning(null);  
     }
   }, [selectedField]);
+
+  useEffect(() => {
+    if (!selectedField) return;
+    
+    const interval = setInterval(() => {
+        fetchSprays(selectedField.id);
+    }, 3000); 
+
+    return () => clearInterval(interval);
+}, [selectedField]);
 
   const handleEditField = async (data: any) => {
     setLoading(true);
@@ -481,22 +495,11 @@ const FieldPage: React.FC = () => {
                 {activeTab === "sprays" && (
                   <>
                     <button className="action-btn" onClick={() => {
-                        setNotifiedCount(null);
                         setShowSprayModal(true);
                     }}>
                         + Schedule Spray
                     </button>
 
-                    {notifiedCount !== null && (
-                        <div className="notification-status">
-                            ✅ {notifiedCount} beekeepers notified nearby!
-                        </div>
-                    )}
-                    {weatherWarning && (
-                        <div className="weather-warning">
-                            ⚠️ {weatherWarning}
-                        </div>
-                    )}
                     <div className="field-side-list-scroll">
                       {sprays.length > 0 ? (
                         <div className="sidebar-list">
@@ -514,6 +517,8 @@ const FieldPage: React.FC = () => {
                                   onComplete={(id) => handleCompleteSpray(id)}
                                   onReschedule={(id, newDate) => handleRescheduleSpray(id, newDate)}
                                   onOpenDetails={() => handleOpenSprayDetails(spray)}
+                                  notifiedCount={spray.id === newSprayId ? newSprayNotifiedCount : null}
+                                  creationWeatherWarning={spray.id === newSprayId ? newSprayWeatherWarning : null}
                                 />
                               ))}
                             </div>

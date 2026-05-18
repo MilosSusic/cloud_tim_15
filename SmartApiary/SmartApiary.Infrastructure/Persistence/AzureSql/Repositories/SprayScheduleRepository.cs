@@ -42,7 +42,7 @@ namespace SmartApiary.Infrastructure.Repositories
 
         public async Task<List<SpraySchedule>> GetPastScheduledAsync(CancellationToken ct = default)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             return await _dbContext.SpraySchedules
                 .Where(s => (s.Status == SprayStatus.Scheduled || s.Status == SprayStatus.Rescheduled)
                          && s.StartDateTime.AddHours(s.DurationHours) < now)

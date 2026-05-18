@@ -11,9 +11,11 @@ interface SprayCardProps {
   onComplete: (id: string) => void;
   onReschedule: (id: string, newDate: string) => void;
   onOpenDetails: (spray: SpraySchedule) => void;
+  notifiedCount?: number | null;       
+  creationWeatherWarning?: string | null; 
 }
 
-const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onReschedule, onOpenDetails }) => {
+const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onReschedule, onOpenDetails, notifiedCount, creationWeatherWarning }) => {
   const [showRescheduleInput, setShowRescheduleInput] = useState(false);
   const [newDate, setNewDate] = useState("");
 
@@ -52,9 +54,21 @@ const SprayCard: React.FC<SprayCardProps> = ({ spray, onCancel, onComplete, onRe
         <div><strong>Status:</strong> {sprayStatusNames[spray.status]}</div>
       </div>
 
+      {notifiedCount !== null && notifiedCount !== undefined && (
+        <div className="spray-notification-info">
+            ✅ {notifiedCount} beekeepers notified nearby!
+        </div>
+      )}    
+
       {spray.weatherWarning && (
           <div className="spray-weather-warning">
               {spray.weatherWarning}
+          </div>
+      )}
+
+      {creationWeatherWarning && (
+          <div className="spray-weather-warning">
+              {creationWeatherWarning}
           </div>
       )}
 

@@ -14,7 +14,7 @@ namespace SmartApiary.Functions.Processing
     {
         [Function(nameof(WeatherCheckTimerFunction))]
         public async Task RunAsync(
-    [TimerTrigger("0 0 */3 * * *")] TimerInfo timerInfo,
+    [TimerTrigger("0 */3 * * * *")] TimerInfo timerInfo,
     CancellationToken ct)
         {
             logger.LogInformation("WeatherCheck Timer triggered at {Time}", DateTime.UtcNow);

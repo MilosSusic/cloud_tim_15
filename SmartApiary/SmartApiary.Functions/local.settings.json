@@ -14,7 +14,9 @@
     "AzureBlob:ConnectionString": "UseDevelopmentStorage=true",
     "AzureBlob:Container": "apiary-images",
     "AzureBlob:FieldConnectionString": "UseDevelopmentStorage=true",
-    "AzureBlob:FieldContainer": "field-images"
+    "AzureBlob:FieldContainer": "field-images",
+    "OpenWeather:ApiKey": "19249504011865ab4acf094df66ad8f6",
+    "OpenWeather:BaseUrl": "https://api.openweathermap.org/data/2.5"
   },
   "Host": {
     "CORS": "http://localhost:5173",
