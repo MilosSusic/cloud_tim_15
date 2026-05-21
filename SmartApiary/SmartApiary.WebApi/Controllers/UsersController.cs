@@ -44,7 +44,7 @@ namespace SmartApiary.WebApi.Controllers
             CancellationToken ct)
         {
             var result = await _mediator.Send(command, ct);
-            if (!result.IsSuccess)
+            if (result.IsFailure)
                 return BadRequest(result.Error);
             return Ok();
         }
@@ -55,7 +55,7 @@ namespace SmartApiary.WebApi.Controllers
             CancellationToken ct)
         {
             var result = await _mediator.Send(command, ct);
-            if (!result.IsSuccess)
+            if (result.IsFailure)
                 return BadRequest(result.Error);
             return Ok();
         }

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { CONFIG } from '../../../shared/config/config';
+import { extractAxiosErrorMessage } from '../../../shared/api/extractAxiosErrorMessage';
 import type {
   HiveLogEntryDto,
   PagedResult,
@@ -10,16 +11,6 @@ import type {
 const authJsonHeaders = () => ({
   'Content-Type': 'application/json',
 });
-
-const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
-  if (axios.isAxiosError(error)) {
-    const apiMessage = error.response?.data;
-    if (typeof apiMessage === 'string' && apiMessage.trim()) {
-      return apiMessage;
-    }
-  }
-  return fallback;
-};
 
 export async function getLogsByHive(
   hiveId: string,

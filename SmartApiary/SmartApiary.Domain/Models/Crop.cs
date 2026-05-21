@@ -1,9 +1,4 @@
 ﻿using SmartApiary.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Domain.Models
 {
@@ -19,12 +14,8 @@ namespace SmartApiary.Domain.Models
 
         public static Crop Create(Guid fieldId, CropType cropName, string? description, DateTime floweringPeriodStart, DateTime floweringPeriodEnd)
         {
-            if (floweringPeriodStart > floweringPeriodEnd)
-            {
-                var temp = floweringPeriodStart;
-                floweringPeriodStart = floweringPeriodEnd;
-                floweringPeriodEnd = temp;
-            }
+            ValidateFieldId(fieldId);
+            ValidateDetails(cropName, description, floweringPeriodStart, floweringPeriodEnd);
 
             return new Crop
             {
@@ -37,22 +28,44 @@ namespace SmartApiary.Domain.Models
                 IsDeleted = false
             };
         }
+
         public void Update(CropType cropName, string? description, DateTime floweringPeriodStart, DateTime floweringPeriodEnd)
         {
-            if (floweringPeriodStart > floweringPeriodEnd)
-            {
-                var temp = floweringPeriodStart;
-                floweringPeriodStart = floweringPeriodEnd;
-                floweringPeriodEnd = temp;
-            }
+            ValidateDetails(cropName, description, floweringPeriodStart, floweringPeriodEnd);
+
             CropName = cropName;
             Description = description;
             FloweringPeriodStart = floweringPeriodStart;
             FloweringPeriodEnd = floweringPeriodEnd;
         }
+
         public void MarkAsDeleted()
         {
             IsDeleted = true;
+        }
+
+        private static void ValidateFieldId(Guid fieldId)
+        {
+            if (fieldId == Guid.Empty)
+                throw new ArgumentException("Field id is required.", nameof(fieldId));
+        }
+
+        private static void ValidateDetails(
+            CropType cropName,
+            string? description,
+            DateTime floweringPeriodStart,
+            DateTime floweringPeriodEnd)
+        {
+            if (!Enum.IsDefined(typeof(CropType), cropName))
+                throw new ArgumentException("Invalid crop type.", nameof(cropName));
+            if (!string.IsNullOrWhiteSpace(description) && description.Length > 512)
+                throw new ArgumentException("Description must not exceed 512 characters.", nameof(description));
+            if (floweringPeriodStart == default)
+                throw new ArgumentException("Flowering period start is required.", nameof(floweringPeriodStart));
+            if (floweringPeriodEnd == default)
+                throw new ArgumentException("Flowering period end is required.", nameof(floweringPeriodEnd));
+            if (floweringPeriodStart > floweringPeriodEnd)
+                throw new ArgumentException("Flowering period start must be before end.", nameof(floweringPeriodStart));
         }
     }
 }

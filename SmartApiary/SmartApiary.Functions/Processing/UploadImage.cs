@@ -13,18 +13,18 @@ using SmartApiary.Application.Interfaces.Storage;
 
 namespace SmartApiary.Functions.Processing
 {
-    public class UploadApiaryImage
+    public class UploadImage
     {
         private readonly IBlobStorageService _blobStorage;
         private readonly ILogger _logger;
 
-        public UploadApiaryImage(IBlobStorageService blobStorage, ILoggerFactory loggerFactory)
+        public UploadImage(IBlobStorageService blobStorage, ILoggerFactory loggerFactory)
         {
             _blobStorage = blobStorage;
-            _logger = loggerFactory.CreateLogger<UploadApiaryImage>();
+            _logger = loggerFactory.CreateLogger<UploadImage>();
         }
 
-        [Function("UploadApiaryImage")]
+        [Function("UploadImage")]
         public async Task<HttpResponseData> Run([
             HttpTrigger(AuthorizationLevel.Function, "post", Route = "upload-image")
         ] HttpRequestData req)

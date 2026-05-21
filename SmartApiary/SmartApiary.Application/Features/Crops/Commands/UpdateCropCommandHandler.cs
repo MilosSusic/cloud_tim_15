@@ -21,12 +21,18 @@ namespace SmartApiary.Application.Features.Crops.Commands
             if (crop is null)
                 return Result.Failure("Crop not found.");
 
-            crop.Update(
-                request.CropName,
-                request.Description,
-                request.FloweringPeriodStart,
-                request.FloweringPeriodEnd
-            );
+            try
+            {
+                crop.Update(
+                    request.CropName,
+                    request.Description,
+                    request.FloweringPeriodStart,
+                    request.FloweringPeriodEnd);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result.Failure(ex.Message);
+            }
 
             _cropsRepository.Update(crop);
             await _cropsRepository.SaveChangesAsync(cancellationToken);

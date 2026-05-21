@@ -221,7 +221,7 @@ const HiveLogModal: React.FC<Props> = ({
           disabled={page <= 1 || loading}
           onClick={() => loadPage(page - 1)}
         >
-          â€¹ Prev
+          {'<'} Prev
         </button>
         {pages.map((p) => (
           <button
@@ -240,7 +240,7 @@ const HiveLogModal: React.FC<Props> = ({
           disabled={page >= totalPages || loading}
           onClick={() => loadPage(page + 1)}
         >
-          Next â€º
+          Next {'>'}
         </button>
       </div>
     );
@@ -274,7 +274,7 @@ const HiveLogModal: React.FC<Props> = ({
               onClick={onClose}
               aria-label="Close"
             >
-              Ã—
+              ×
             </button>
           </div>
         </div>

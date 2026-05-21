@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "../layout/SprayCard.css";
 import { SprayStatus } from "../types/SprayStatus";
-import "../layout/SprayCard.css"
 import type { SpraySchedule } from "../types/SpraySchedule";
 
 

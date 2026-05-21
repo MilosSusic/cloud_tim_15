@@ -22,7 +22,7 @@ namespace SmartApiary.Application.Features.Fields.Commands
         {
             var userId = _currentUserService.UserId;
             if (userId is null)
-                return Result<Guid>.Failure("Invalid user id.");
+                return Result.Failure("Invalid user id.");
 
             var field = await _fieldRepository.GetByIdAsync(request.Id, cancellationToken);
             if (field is null)
@@ -31,12 +31,19 @@ namespace SmartApiary.Application.Features.Fields.Commands
             if (field.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this field.");
 
-            field.Update(request.FieldName, 
-                        request.Description, 
-                        request.Latitude, 
-                        request.Longitude, 
-                        request.ImageUrl, 
-                        request.ThumbnailUrl);
+            try
+            {
+                field.Update(request.FieldName,
+                            request.Description,
+                            request.Latitude,
+                            request.Longitude,
+                            request.ImageUrl,
+                            request.ThumbnailUrl);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result.Failure(ex.Message);
+            }
 
             _fieldRepository.Update(field);
             await _fieldRepository.SaveChangesAsync(cancellationToken);

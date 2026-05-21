@@ -1,20 +1,11 @@
 import axios from 'axios';
 import { CONFIG } from '../../../shared/config/config';
 import type { Hive } from '../types/Hive';
+import { extractAxiosErrorMessage } from '../../../shared/api/extractAxiosErrorMessage';
 
 const authJsonHeaders = () => ({
   'Content-Type': 'application/json',
 });
-
-const extractAxiosErrorMessage = (error: unknown, fallback: string): string => {
-  if (axios.isAxiosError(error)) {
-    const apiMessage = error.response?.data;
-    if (typeof apiMessage === 'string' && apiMessage.trim()) {
-      return apiMessage;
-    }
-  }
-  return fallback;
-};
 
 export async function getHivesByApiary(apiaryId: string): Promise<Hive[]> {
   try {

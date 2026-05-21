@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SmartApiary.Application.Features.Fields.Commands;
-using SmartApiary.Application.Features.Fields.Queries;
 using SmartApiary.Application.Features.SpraySchedule.Commands;
 using SmartApiary.Application.Features.SpraySchedule.Queries;
 

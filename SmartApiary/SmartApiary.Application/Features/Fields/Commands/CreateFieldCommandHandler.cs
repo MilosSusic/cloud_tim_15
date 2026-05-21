@@ -3,8 +3,6 @@ using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Models;
-using System;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.Fields.Commands
 {
@@ -25,15 +23,22 @@ namespace SmartApiary.Application.Features.Fields.Commands
             if (userId is null)
                 return Result<Guid>.Failure("Invalid user id.");
 
-            var field = Field.Create(
-                userId.Value,
-                request.FieldName,
-                request.Description,
-                request.Latitude,
-                request.Longitude,
-                request.ImageUrl,
-                request.ThumbnailUrl
-            );
+            Field field;
+            try
+            {
+                field = Field.Create(
+                    userId.Value,
+                    request.FieldName,
+                    request.Description,
+                    request.Latitude,
+                    request.Longitude,
+                    request.ImageUrl,
+                    request.ThumbnailUrl);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result<Guid>.Failure(ex.Message);
+            }
 
             await _fieldRepository.AddAsync(field, cancellationToken);
             await _fieldRepository.SaveChangesAsync(cancellationToken);
