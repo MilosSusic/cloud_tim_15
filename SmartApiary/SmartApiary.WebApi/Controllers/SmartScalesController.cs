@@ -1,0 +1,33 @@
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SmartApiary.Application.Features.SmartScales.Commands;
+
+namespace SmartApiary.WebApi.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize(Roles = "Beekeeper")]
+    public class SmartScalesController : ControllerBase
+    {
+        private readonly IMediator _mediator;
+
+        public SmartScalesController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterScaleCommand command, CancellationToken ct)
+        {
+            var result = await _mediator.Send(command, ct);
+            
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+
+            return Ok(new { Message = "Vaga je uspešno registrovana sa statusom 'Unpaired'.", ScaleId = result.Value });
+        }
+    }
+}
