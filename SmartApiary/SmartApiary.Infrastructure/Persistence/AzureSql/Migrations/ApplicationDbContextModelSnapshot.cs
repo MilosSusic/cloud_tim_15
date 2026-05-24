@@ -211,6 +211,33 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.ToTable("HiveLogEntries");
                 });
 
+            modelBuilder.Entity("SmartApiary.Domain.Models.SmartScale", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccessToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("HardwareId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("HiveId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SmartScales");
+                });
+
             modelBuilder.Entity("SmartApiary.Domain.Models.SprayLog", b =>
                 {
                     b.Property<Guid>("Id")

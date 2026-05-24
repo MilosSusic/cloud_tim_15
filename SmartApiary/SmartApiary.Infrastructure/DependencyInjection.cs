@@ -14,6 +14,7 @@ using SmartApiary.Infrastructure.Authentication;
 using SmartApiary.Infrastructure.Persistence;
 using SmartApiary.Infrastructure.Persistence.AzureBlob.Services;
 using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
+using SmartApiary.Infrastructure.Persistence.AzureSql.Repositories;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Infrastructure.Services;
 using SmartApiary.Infrastructure.Services.Email;
@@ -37,6 +38,7 @@ namespace SmartApiary.Infrastructure
             services.AddScoped<ISprayScheduleRepository, SprayScheduleRepository>();
             services.AddScoped<ICropsRepository, CropsRepository>();
             services.AddScoped<ISprayNotificationRepository, SprayNotificationRepository>();
+            services.AddScoped<ISmartScaleRepository, SmartScaleRepository>();
 
             services.AddScoped<IPasswordHasher, PasswordHasher>();
 

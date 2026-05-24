@@ -13,6 +13,7 @@ namespace SmartApiary.Infrastructure.Persistence
         public DbSet<Crop> Crops => Set<Crop>();
         public DbSet<HiveLogEntry> HiveLogEntries => Set<HiveLogEntry>();
         public DbSet<SprayLog> SprayLogs => Set<SprayLog>();
+        public DbSet<SmartScale> SmartScales => Set<SmartScale>();
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
