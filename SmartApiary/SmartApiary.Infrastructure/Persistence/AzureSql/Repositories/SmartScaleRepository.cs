@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Models;
 using System;
@@ -23,6 +24,12 @@ namespace SmartApiary.Infrastructure.Persistence.AzureSql.Repositories
         {
             return await _dbContext.SmartScales
                 .FirstOrDefaultAsync(s => s.SerialNumber == serialNumber, ct);
+        }
+
+        public async Task<SmartScale?> GetByTokenAsync(string token, CancellationToken ct = default)
+        {
+            return await _dbContext.SmartScales
+            .FirstOrDefaultAsync(s => s.AccessToken == token, cancellationToken: ct);
         }
 
         public async Task<bool> IsSerialNumberUniqueAsync(string serialNumber, CancellationToken ct = default)

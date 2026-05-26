@@ -11,6 +11,7 @@ namespace SmartApiary.Application.Interfaces.Repositories
     {
         Task AddAsync(SmartScale device, CancellationToken ct = default);
         Task<SmartScale?> GetBySerialNumberAsync(string serialNumber, CancellationToken ct = default);
+        Task<SmartScale?> GetByTokenAsync(string token, CancellationToken ct = default);
         Task<bool> IsSerialNumberUniqueAsync(string serialNumber, CancellationToken ct = default);
         void Update(SmartScale device);
         Task SaveChangesAsync(CancellationToken ct = default);
