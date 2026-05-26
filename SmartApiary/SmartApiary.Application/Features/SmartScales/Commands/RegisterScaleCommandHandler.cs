@@ -56,7 +56,44 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
             await _smartScaleRepository.AddAsync(smartScale, cancellationToken);
             await _smartScaleRepository.SaveChangesAsync(cancellationToken);
 
+            StartConsoleSimulator(request.SerialNumber);
+
             return Result<Guid>.Success(smartScale.Id);
+        }
+        private void StartConsoleSimulator(string serialNumber)
+        {
+            try
+            {
+                string apiBaseDir = AppContext.BaseDirectory;
+
+                string simulatorPath = Path.GetFullPath(Path.Combine(apiBaseDir,
+                    "../../../../SmartApiary.ScaleSimulator/bin/Debug/net8.0/SmartApiary.ScaleSimulator.exe"));
+
+                if (!File.Exists(simulatorPath))
+                {
+                    Console.WriteLine("FILE PATH DOESN'T EXIST");
+                    Console.WriteLine("==================================================");
+                    Console.WriteLine($"[DEBUG] Simulator NOT found at: {simulatorPath}");
+                    Console.WriteLine($"[DEBUG] Web API Base Dir was: {apiBaseDir}");
+                    Console.WriteLine("==================================================");
+                    return;
+                }
+
+                var startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = simulatorPath,
+                    Arguments = serialNumber,
+                    CreateNoWindow = false,
+                    UseShellExecute = true,
+                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
+                };
+
+                System.Diagnostics.Process.Start(startInfo);
+            }
+            catch
+            {
+                Console.WriteLine("SOMETHING WENT WRONG WHILE STARTING SIMULATOR");
+            }
         }
     }
 }

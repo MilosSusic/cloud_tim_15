@@ -1,10 +1,14 @@
 using Azure.Storage.Queues;
+using MediatR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SmartApiary.Application;
+using SmartApiary.Application.Features.SmartScales.Commands;
+using SmartApiary.Domain.Common;
 using SmartApiary.Infrastructure;
 
 var builder = FunctionsApplication.CreateBuilder(args);
@@ -16,6 +20,17 @@ builder.Services
     .ConfigureFunctionsApplicationInsights();
 
 builder.Services.AddInfrastructure(builder.Configuration);
+
+
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(System.Reflection.Assembly.GetExecutingAssembly());
+});
+builder.Services.AddTransient<
+    MediatR.IRequestHandler<
+        SmartApiary.Application.Features.SmartScales.Commands.ActivateScaleCommand,
+        SmartApiary.Domain.Common.Result<string>>,
+    SmartApiary.Application.Features.SmartScales.Commands.ActivateScaleCommandHandler>();
 
 var app = builder.Build();
 

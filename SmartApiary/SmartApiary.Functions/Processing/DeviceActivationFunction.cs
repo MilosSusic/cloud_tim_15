@@ -23,7 +23,7 @@ namespace SmartApiary.Functions.Processing
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             var data = JsonSerializer.Deserialize<ActivationRequestDto>(requestBody, new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true // Da ne pravi problem ako simulator pošalje mala/velika slova
+                PropertyNameCaseInsensitive = true // Da ne pravi problem ako simulator posalje mala/velika slova
             });
 
             if (data == null)
