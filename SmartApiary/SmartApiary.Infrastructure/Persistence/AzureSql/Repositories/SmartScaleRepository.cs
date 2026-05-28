@@ -20,6 +20,17 @@ namespace SmartApiary.Infrastructure.Persistence.AzureSql.Repositories
             await _dbContext.SmartScales.AddAsync(device, ct);
         }
 
+        public async Task<IEnumerable<SmartScale>> GetAllAsync(CancellationToken cancellationToken)
+        {
+            return await _dbContext.SmartScales.ToListAsync(cancellationToken);
+        }
+
+        public async Task<SmartScale?> GetByHiveIdAsync(Guid hiveId, CancellationToken ct)
+        {
+            return await _dbContext.SmartScales
+                .FirstOrDefaultAsync(s => s.HiveId == hiveId, ct);
+        }
+
         public async Task<SmartScale?> GetBySerialNumberAsync(string serialNumber, CancellationToken ct = default)
         {
             return await _dbContext.SmartScales

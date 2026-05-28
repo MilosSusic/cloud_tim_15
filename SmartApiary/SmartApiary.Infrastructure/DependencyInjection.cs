@@ -9,12 +9,17 @@ using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
 using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Application.Interfaces.Storage;
-
+using SmartApiary.Domain.Models;
 using SmartApiary.Infrastructure.Authentication;
 using SmartApiary.Infrastructure.Persistence;
 using SmartApiary.Infrastructure.Persistence.AzureBlob.Services;
 using SmartApiary.Infrastructure.Persistence.AzureQueue.Services;
 using SmartApiary.Infrastructure.Persistence.AzureSql.Repositories;
+using SmartApiary.Infrastructure.Persistence.AzureTable.Common;
+using SmartApiary.Infrastructure.Persistence.AzureTable.Entities;
+using SmartApiary.Infrastructure.Persistence.AzureTable.KeyProviders;
+using SmartApiary.Infrastructure.Persistence.AzureTable.Mappers;
+using SmartApiary.Infrastructure.Persistence.AzureTable.Repositories;
 using SmartApiary.Infrastructure.Repositories;
 using SmartApiary.Infrastructure.Services;
 using SmartApiary.Infrastructure.Services.Email;
@@ -81,6 +86,24 @@ namespace SmartApiary.Infrastructure
             });
 
             services.AddScoped<IBlobStorageService>(sp => sp.GetRequiredService<AzureBlobStorage>());
+
+            services.AddScoped<ITableKeyProvider<Telemetry>, TelemetryTableKeyProvider>();
+            services.AddScoped<ITableMapper<Telemetry, TelemetryEntity>, TelemetryTableMapper>();
+            services.AddScoped<ITelemetryRepository, TelemetryRepository>(sp =>
+            {
+                var connectionString = configuration["AzureTable:ConnectionString"]
+                    ?? "UseDevelopmentStorage=true";
+
+                var tableName = configuration["AzureTable:ScaleMeasurementsTable"] ?? throw new InvalidOperationException("AzureTable:Table name is not configured.");
+
+                var keyProvider = sp.GetRequiredService<ITableKeyProvider<Telemetry>>();
+                var mapper = sp.GetRequiredService<ITableMapper<Telemetry, TelemetryEntity>>();
+
+                return new TelemetryRepository(connectionString, tableName, keyProvider, mapper);
+            });
+
+            services.AddScoped<IScaleSimulatorLauncher, ScaleSimulatorLauncher>();
+            services.AddScoped<IStartupScaleSimulator, StartupScaleSimulator>();
 
             return services;
         }

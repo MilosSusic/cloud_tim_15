@@ -32,6 +32,12 @@ builder.Services.AddTransient<
         SmartApiary.Domain.Common.Result<string>>,
     SmartApiary.Application.Features.SmartScales.Commands.ActivateScaleCommandHandler>();
 
+builder.Services.AddTransient<
+    MediatR.IRequestHandler<
+        SmartApiary.Application.Features.SmartScales.Commands.ProcessScaleTelemetryCommand,
+        SmartApiary.Domain.Common.Result>,
+    SmartApiary.Application.Features.SmartScales.Commands.ProcessScaleTelemetryHandler>();
+
 var app = builder.Build();
 
 await InitializeQueuesAsync(app.Services, builder.Configuration);

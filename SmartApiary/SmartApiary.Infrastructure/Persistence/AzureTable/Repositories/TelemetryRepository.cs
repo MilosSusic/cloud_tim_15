@@ -19,16 +19,29 @@ namespace SmartApiary.Infrastructure.Persistence.AzureTable.Repositories
         private readonly ITableKeyProvider<Telemetry> _keyProvider;
         private readonly ITableMapper<Telemetry, TelemetryEntity> _mapper;
 
+        //public TelemetryRepository(
+        //    TableServiceClient tableServiceClient,
+        //    ITableKeyProvider<Telemetry> keyProvider,
+        //    ITableMapper<Telemetry, TelemetryEntity> mapper,
+        //    IOptions<AzureTableOptions> options)
+        //{
+        //    _keyProvider = keyProvider;
+        //    _mapper = mapper;
+
+        //    _tableClient = tableServiceClient.GetTableClient(options.Value.ScaleMeasurementsTable);
+        //}
         public TelemetryRepository(
-            TableServiceClient tableServiceClient,
-            ITableKeyProvider<Telemetry> keyProvider,
-            ITableMapper<Telemetry, TelemetryEntity> mapper,
-            IOptions<AzureTableOptions> options)
+        string connectionString,
+        string tableName,
+        ITableKeyProvider<Telemetry> keyProvider,
+        ITableMapper<Telemetry, TelemetryEntity> mapper)
         {
             _keyProvider = keyProvider;
             _mapper = mapper;
 
-            _tableClient = tableServiceClient.GetTableClient(options.Value.ScaleMeasurementsTable);
+            // Više nema if provera, odmah pravimo klijenta
+            _tableClient = new TableClient(connectionString, tableName);
+            _tableClient.CreateIfNotExists();
         }
 
         public async Task SaveAsync(Telemetry telemetry, CancellationToken ct)

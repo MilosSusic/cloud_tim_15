@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Application.Interfaces.Security;
+using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Common;
 using SmartApiary.Domain.Models;
 
@@ -12,17 +13,20 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
         private readonly IHiveRepository _hiveRepository;
         private readonly IApiaryRepository _apiaryRepository;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IScaleSimulatorLauncher _simulatorLauncher;
 
         public RegisterScaleCommandHandler(
             ISmartScaleRepository smartScaleRepository,
             IHiveRepository hiveRepository,
             IApiaryRepository apiaryRepository,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            IScaleSimulatorLauncher simulatorLauncher)
         {
             _smartScaleRepository = smartScaleRepository;
             _hiveRepository = hiveRepository;
             _apiaryRepository = apiaryRepository;
             _currentUserService = currentUserService;
+            _simulatorLauncher = simulatorLauncher;
         }
 
         public async Task<Result<Guid>> Handle(RegisterScaleCommand request, CancellationToken cancellationToken)
@@ -34,6 +38,10 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
             var hive = await _hiveRepository.GetByIdAsync(request.HiveId, cancellationToken);
             if (hive is null)
                 return Result<Guid>.Failure("Hive not found.");
+
+            var hasScale = await _smartScaleRepository.GetByHiveIdAsync(request.HiveId, cancellationToken);
+            if (hasScale is not null)
+                return Result<Guid>.Failure("This hive already has a smart scale registered.");
 
             var apiary = await _apiaryRepository.GetByIdAsync(hive.ApiaryId, cancellationToken);
             if (apiary is null || apiary.OwnerId != userId.Value)
@@ -56,44 +64,10 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
             await _smartScaleRepository.AddAsync(smartScale, cancellationToken);
             await _smartScaleRepository.SaveChangesAsync(cancellationToken);
 
-            StartConsoleSimulator(request.SerialNumber);
+            _simulatorLauncher.Launch(smartScale);
 
             return Result<Guid>.Success(smartScale.Id);
         }
-        private void StartConsoleSimulator(string serialNumber)
-        {
-            try
-            {
-                string apiBaseDir = AppContext.BaseDirectory;
-
-                string simulatorPath = Path.GetFullPath(Path.Combine(apiBaseDir,
-                    "../../../../SmartApiary.ScaleSimulator/bin/Debug/net8.0/SmartApiary.ScaleSimulator.exe"));
-
-                if (!File.Exists(simulatorPath))
-                {
-                    Console.WriteLine("FILE PATH DOESN'T EXIST");
-                    Console.WriteLine("==================================================");
-                    Console.WriteLine($"[DEBUG] Simulator NOT found at: {simulatorPath}");
-                    Console.WriteLine($"[DEBUG] Web API Base Dir was: {apiBaseDir}");
-                    Console.WriteLine("==================================================");
-                    return;
-                }
-
-                var startInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = simulatorPath,
-                    Arguments = serialNumber,
-                    CreateNoWindow = false,
-                    UseShellExecute = true,
-                    WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal
-                };
-
-                System.Diagnostics.Process.Start(startInfo);
-            }
-            catch
-            {
-                Console.WriteLine("SOMETHING WENT WRONG WHILE STARTING SIMULATOR");
-            }
-        }
+        
     }
 }

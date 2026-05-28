@@ -15,6 +15,8 @@
     "AzureBlob:Container": "apiary-images",
     "AzureBlob:FieldConnectionString": "UseDevelopmentStorage=true",
     "AzureBlob:FieldContainer": "field-images",
+    "AzureTable:ConnectionString": "UseDevelopmentStorage=true",
+    "AzureTable:ScaleMeasurementsTable": "ScaleMeasurements",
     "OpenWeather:ApiKey": "19249504011865ab4acf094df66ad8f6",
     "OpenWeather:BaseUrl": "https://api.openweathermap.org/data/2.5"
   },
