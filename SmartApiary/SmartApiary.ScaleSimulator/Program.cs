@@ -15,35 +15,9 @@ namespace SmartApiary.ScaleSimulator
             Console.WriteLine("        SMART APIARY - IOT SCALE SIMULATOR         ");
             Console.WriteLine("==================================================");
 
-            string serialNumber = "";
-            string accessToken = "";
+            Console.Write("[INPUT] Enter Scale Serial Number (format SA-YYYY-XXXXX): ");
+            string serialNumber = Console.ReadLine()?.Trim() ?? "";
 
-            // 1. Hvatanje parametara prosleđenih iz Launchera
-            if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
-            {
-                serialNumber = args[0].Trim('"');
-                Console.WriteLine($"[AUTO-START] Scale triggered for S/N: {serialNumber}");
-
-                if (args.Length > 1 && !string.IsNullOrWhiteSpace(args[1]))
-                {
-                    accessToken = args[1].Trim('"');
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine("[AUTO-START] Existing Access Token detected. Skipping Handshake!");
-                    Console.ResetColor();
-                }
-                else
-                {
-                    Console.WriteLine("[AUTO-START] No token received from launcher. Will attempt activation.");
-                }
-            }
-            else
-            {
-                // Ručno pokretanje (F5 u simulatoru)
-                Console.Write("[INPUT] Enter Scale Serial Number (format SA-YYYY-XXXXX): ");
-                serialNumber = Console.ReadLine()?.Trim() ?? "";
-            }
-
-            // Validacija serijskog broja
             if (string.IsNullOrWhiteSpace(serialNumber))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -53,43 +27,56 @@ namespace SmartApiary.ScaleSimulator
                 return;
             }
 
-            // Inicijalizacija HTTP klijenta i klijenta za uređaj (Mora biti pre bilo kakve provere!)
             using var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:7253/") };
             var deviceClient = new DeviceClient(httpClient);
 
-            // 2. Provera: Ako nemamo token, tek tada generišemo Hardware ID i radimo Handshake
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                // 🚀 Hardware ID se pravi i ispisuje SAMO ako se radi prva aktivacija
-                Guid hardwareId = Guid.NewGuid();
-                Console.WriteLine($"[HARDWARE] New Device UUID Generated for Activation: {hardwareId}");
+            Console.WriteLine($"\n[CHECK] Contacting Azure Function for S/N: {serialNumber}...");
 
-                Console.WriteLine("\n[HANDSHAKE] Sending unique identifier and serial number to Azure Function...");
+            // KORAK 1: Šaljemo upit sa Guid.Empty. Još uvek NE GENERIŠEMO hardverski ID!
+            string? accessToken = await deviceClient.ActivateDeviceAsync(serialNumber, Guid.Empty);
+
+            if (accessToken == "HARDWARE_ID_REQUIRED")
+            {
+                // SCENARIO 1: Server je potvrdio da vaga nije uparena.
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("[NOT PAIRED] Scale is registered but not paired. Initiating activation protocol...");
+                Console.ResetColor();
+
+                // TEK SADA generišemo Hardware ID pošto znamo da je neophodan!
+                Guid hardwareId = Guid.NewGuid();
+                Console.WriteLine($"[HARDWARE] Generated Device UUID for Activation: {hardwareId}");
+
+                Console.WriteLine("[HANDSHAKE] Sending Hardware ID to complete pairing...");
+                // KORAK 2: Ponovni zahtev sa pravim hardverskim ID-jem
                 accessToken = await deviceClient.ActivateDeviceAsync(serialNumber, hardwareId);
 
-                if (string.IsNullOrEmpty(accessToken))
+                if (!string.IsNullOrEmpty(accessToken))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("[HANDSHAKE FAILED] Azure Function rejected activation. Check logs.");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("[SUCCESS] Handshake successful! Device is now PAIRED.");
                     Console.ResetColor();
-                    Console.WriteLine("\nPress ENTER to close the simulator.");
-                    Console.ReadLine();
-                    return;
                 }
-
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("[SUCCESS] Handshake successful! Device is now PAIRED via API.");
-                Console.ResetColor();
             }
-            else
+            else if (!string.IsNullOrEmpty(accessToken))
             {
-                // Ako token postoji, samo ispisujemo BYPASS i idemo dalje
+                // SCENARIO 2: Server je vratio postojeći token, preskačemo generisanje ID-ja!
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("[BYPASS] Device safely initialized using startup token configuration.");
+                Console.WriteLine("[BYPASS] Device already paired. Existing access token loaded successfully!");
                 Console.ResetColor();
             }
 
-            // --- TELEMETRIJSKI MOD (Za oba režima) ---
+            // Krajnja provera validnosti tokena
+            if (string.IsNullOrEmpty(accessToken) || accessToken == "HARDWARE_ID_REQUIRED")
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("[ERROR] Failed to obtain Access Token. Activation rejected by server.");
+                Console.ResetColor();
+                Console.WriteLine("\nPress ENTER to close the simulator.");
+                Console.ReadLine();
+                return;
+            }
+
+            // --- TELEMETRIJSKI MOD ---
             Console.WriteLine($"[STORAGE] Secure Device Access Token: {accessToken}");
             Console.WriteLine("\n[SYSTEM] Entering telemetry mode. Sending data every 8 seconds...\n");
 

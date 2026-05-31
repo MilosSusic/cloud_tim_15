@@ -102,8 +102,6 @@ namespace SmartApiary.Infrastructure
                 return new TelemetryRepository(connectionString, tableName, keyProvider, mapper);
             });
 
-            services.AddScoped<IScaleSimulatorLauncher, ScaleSimulatorLauncher>();
-            services.AddScoped<IStartupScaleSimulator, StartupScaleSimulator>();
 
             return services;
         }

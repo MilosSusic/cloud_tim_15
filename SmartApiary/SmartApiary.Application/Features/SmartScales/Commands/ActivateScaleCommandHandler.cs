@@ -19,6 +19,7 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
         {
             _smartScaleRepository = smartScaleRepository;
         }
+
         public async Task<Result<string>> Handle(ActivateScaleCommand request, CancellationToken cancellationToken)
         {
             var scale = await _smartScaleRepository.GetBySerialNumberAsync(request.SerialNumber, cancellationToken);
@@ -27,11 +28,21 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
                 return Result<string>.Failure("A device with this serial number has not been registered by a beekeeper.");
             }
 
+            // SCENARIO 2: Vaga je već uparena -> Odmah vrati njen postojeći token!
             if (scale.Status == SmartScaleStatus.Paired)
             {
-                return Result<string>.Failure("This device has already been successfully activated and paired.");
+                // Pretpostavka je da tvoj entitet čuva AccessToken. Ako se zove drugačije, prilagodi naziv.
+                return Result<string>.Success(scale.AccessToken);
             }
 
+            // SCENARIO 1 (Prvi korak): Vaga postoji ali nije uparena, a simulator je poslao Guid.Empty
+            if (request.HardwareId == Guid.Empty)
+            {
+                // Šaljemo jasan signal simulatoru da je vaga slobodna za uparivanje i da mu treba Hardware ID
+                return Result<string>.Failure("HARDWARE_ID_REQUIRED");
+            }
+
+            // SCENARIO 1 (Drugi korak): Vaga nije uparena, a simulator je poslao izgenerisani HardwareId
             string generatedToken = GenerateSecureToken();
 
             try
@@ -48,6 +59,7 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
 
             return Result<string>.Success(generatedToken);
         }
+
         private static string GenerateSecureToken()
         {
             var randomNumber = new byte[32];

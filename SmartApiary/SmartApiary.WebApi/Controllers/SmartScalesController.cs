@@ -27,7 +27,7 @@ namespace SmartApiary.WebApi.Controllers
                 return BadRequest(result.Error);
             }
 
-            return Ok(new { Message = "Vaga je uspešno registrovana sa statusom 'Unpaired'.", ScaleId = result.Value });
+            return Ok(new { Message = "Scale successfully registered with status: 'Unpaired'.", ScaleId = result.Value });
         }
     }
 }

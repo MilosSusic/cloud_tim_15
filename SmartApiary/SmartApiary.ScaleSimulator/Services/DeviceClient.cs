@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,6 +34,12 @@ namespace SmartApiary.ScaleSimulator.Services
                 {
                     var responseBody = await response.Content.ReadFromJsonAsync<ApiResponse<ActivationResult>>();
                     return responseBody?.Data?.AccessToken;
+                }
+
+                // Ako server vrati 428, to znači da vaga postoji ali nije uparena
+                if (response.StatusCode == HttpStatusCode.PreconditionRequired)
+                {
+                    return "HARDWARE_ID_REQUIRED";
                 }
 
                 return null;

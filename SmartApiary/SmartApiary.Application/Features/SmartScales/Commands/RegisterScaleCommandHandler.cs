@@ -13,20 +13,17 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
         private readonly IHiveRepository _hiveRepository;
         private readonly IApiaryRepository _apiaryRepository;
         private readonly ICurrentUserService _currentUserService;
-        private readonly IScaleSimulatorLauncher _simulatorLauncher;
 
         public RegisterScaleCommandHandler(
             ISmartScaleRepository smartScaleRepository,
             IHiveRepository hiveRepository,
             IApiaryRepository apiaryRepository,
-            ICurrentUserService currentUserService,
-            IScaleSimulatorLauncher simulatorLauncher)
+            ICurrentUserService currentUserService)
         {
             _smartScaleRepository = smartScaleRepository;
             _hiveRepository = hiveRepository;
             _apiaryRepository = apiaryRepository;
             _currentUserService = currentUserService;
-            _simulatorLauncher = simulatorLauncher;
         }
 
         public async Task<Result<Guid>> Handle(RegisterScaleCommand request, CancellationToken cancellationToken)
@@ -63,8 +60,6 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
 
             await _smartScaleRepository.AddAsync(smartScale, cancellationToken);
             await _smartScaleRepository.SaveChangesAsync(cancellationToken);
-
-            _simulatorLauncher.Launch(smartScale);
 
             return Result<Guid>.Success(smartScale.Id);
         }
