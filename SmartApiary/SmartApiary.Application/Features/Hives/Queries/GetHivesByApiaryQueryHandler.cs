@@ -10,15 +10,18 @@ namespace SmartApiary.Application.Features.Hives.Queries
         private readonly IHiveRepository _hiveRepository;
         private readonly IApiaryRepository _apiaryRepository;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ISmartScaleRepository _smartScaleRepository;
 
         public GetHivesByApiaryQueryHandler(
             IHiveRepository hiveRepository,
             IApiaryRepository apiaryRepository,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            ISmartScaleRepository smartScaleRepository)
         {
             _hiveRepository = hiveRepository;
             _apiaryRepository = apiaryRepository;
             _currentUserService = currentUserService;
+            _smartScaleRepository = smartScaleRepository;
         }
 
         public async Task<Result<List<HiveDto>>> Handle(GetHivesByApiaryQuery request, CancellationToken cancellationToken)
@@ -36,8 +39,26 @@ namespace SmartApiary.Application.Features.Hives.Queries
 
             var hives = await _hiveRepository.GetByApiaryIdAsync(request.ApiaryId, cancellationToken);
 
+            var allScales = await _smartScaleRepository.GetAllAsync(cancellationToken);
+
+            //var result = hives
+            //    .Select(h => new HiveDto(h.Id, h.ApiaryId, h.Label, h.Type, h.Color, h.QueenAge, h.Note))
+            //    .ToList();
             var result = hives
-                .Select(h => new HiveDto(h.Id, h.ApiaryId, h.Label, h.Type, h.Color, h.QueenAge, h.Note))
+                .Select(h => {
+                    var associatedScale = allScales.FirstOrDefault(s => s.HiveId == h.Id);
+
+                    return new HiveDto(
+                        h.Id,
+                        h.ApiaryId,
+                        h.Label,
+                        h.Type,
+                        h.Color,
+                        h.QueenAge,
+                        h.Note,
+                        associatedScale?.SerialNumber
+                    );
+                })
                 .ToList();
 
             return Result<List<HiveDto>>.Success(result);

@@ -11,6 +11,8 @@ import HiveLogModal from "../../hiveLogs/components/HiveLogModal";
 import HiveForm from "./HiveForm";
 import HiveListItem from "./HiveListItem";
 import "../layout/HivesSection.css";
+import { registerScale } from "../../scales/api/scaleApi";
+import RegisterScaleModal from "../../scales/components/RegisterScaleModal";
 
 interface Props {
   apiaryId: string;
@@ -33,6 +35,8 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   const [editingHive, setEditingHive] = useState<Hive | null>(null);
   const [form, setForm] = useState<HiveFormState>(emptyForm);
   const [logHive, setLogHive] = useState<Hive | null>(null);
+  const [scaleHive, setScaleHive] = useState<Hive | null>(null);
+  const [scaleLoading, setScaleLoading] = useState(false);
   const createEmptyHiveTouched = () => ({
     label: false,
     type: false,
@@ -62,6 +66,23 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
     loadHives();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiaryId]);
+
+  const handleRegisterScale = async (serialNumber: string) => {
+    if (!scaleHive) return;
+    setScaleLoading(true);
+    try {
+      await registerScale(scaleHive.id, serialNumber);
+      onSuccess?.(
+        `Scale ${serialNumber} successfully attached to hive ${scaleHive.label}.`,
+      );
+      setScaleHive(null);
+      await loadHives();
+    } catch (err: any) {
+      throw err;
+    } finally {
+      setScaleLoading(false);
+    }
+  };
 
   const openCreate = () => {
     setEditingHive(null);
@@ -94,7 +115,7 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
@@ -139,7 +160,9 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
       closeForm();
       await loadHives();
     } catch {
-      onError?.(editingHive ? "Failed to update hive." : "Failed to create hive.");
+      onError?.(
+        editingHive ? "Failed to update hive." : "Failed to create hive.",
+      );
     }
     setLoading(false);
   };
@@ -160,8 +183,12 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
   return (
     <div className="hives-section">
       <div className="hives-section-header">
-        <h4>Hives <span className="hives-count">({hives.length})</span></h4>
-        <button type="button" className="hives-add-btn" onClick={openCreate}>+ Add</button>
+        <h4>
+          Hives <span className="hives-count">({hives.length})</span>
+        </h4>
+        <button type="button" className="hives-add-btn" onClick={openCreate}>
+          + Add
+        </button>
       </div>
 
       {hives.length === 0 && !loading && (
@@ -176,6 +203,7 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
             onEdit={openEdit}
             onDelete={handleDelete}
             onOpenLog={setLogHive}
+            onOpenScale={setScaleHive}
           />
         ))}
       </ul>
@@ -200,6 +228,15 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
           onClose={() => setLogHive(null)}
           onError={onError}
           onSuccess={onSuccess}
+        />
+      )}
+
+      {scaleHive && (
+        <RegisterScaleModal
+          hiveLabel={scaleHive.label}
+          loading={scaleLoading}
+          onConfirm={handleRegisterScale}
+          onClose={() => setScaleHive(null)}
         />
       )}
     </div>

@@ -6,6 +6,7 @@ export interface Hive {
   color: string;
   queenAge: number;
   note: string | null;
+  scaleSerialNumber: string | null;
 }
 
 export interface HiveFormState {

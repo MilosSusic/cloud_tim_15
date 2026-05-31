@@ -7,6 +7,7 @@ namespace SmartApiary.Application.Features.Hives.Queries
         string Type,
         string Color,
         int QueenAge,
-        string? Note
+        string? Note,
+        string? ScaleSerialNumber
     );
 }
