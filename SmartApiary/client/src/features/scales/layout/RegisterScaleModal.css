@@ -1,0 +1,51 @@
+.register-scale-form {
+  max-width: 400px;
+}
+
+.register-scale-info {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: -5px;
+  margin-bottom: 15px;
+}
+
+.register-scale-highlight {
+  color: #f59e0b;
+}
+
+.scale-form-grid-block {
+  display: block;
+}
+
+.scale-form-group-margin {
+  margin-top: 15px;
+}
+
+.scale-label-optional-wrapper {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.scale-label-optional-text {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: normal;
+  margin-left: auto;
+}
+
+.scale-form-hint {
+  font-size: 11px;
+  color: #64748b;
+  display: block;
+  margin-top: 4px;
+}
+
+.scale-form-error-block {
+  display: block;
+  margin-top: 10px;
+}
+
+.scale-submit-btn {
+  margin-top: 15px;
+}

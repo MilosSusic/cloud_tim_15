@@ -42,5 +42,17 @@ namespace SmartApiary.Infrastructure.Repositories
         {
             return await dbContext.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
         }
+        public async Task<User?> GetOwnerByScaleIdAsync(Guid scaleId, CancellationToken ct = default)
+        {
+            var scale = await dbContext.SmartScales
+                .FirstOrDefaultAsync(s => s.Id == scaleId, ct);
+
+            if (scale == null) return null;
+
+            return await dbContext.Users
+                .FirstOrDefaultAsync(u => dbContext.Apiaries
+                    .Any(a => a.OwnerId == u.Id && dbContext.Hives
+                        .Any(h => h.Id == scale.HiveId && h.ApiaryId == a.Id)), ct);
+        }
     }
 }

@@ -51,7 +51,7 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
             SmartScale smartScale;
             try
             {
-                smartScale = SmartScale.Create(request.HiveId, request.SerialNumber);
+                smartScale = SmartScale.Create(request.HiveId, request.SerialNumber, request.WeightDropLimit);
             }
             catch (ArgumentException ex)
             {

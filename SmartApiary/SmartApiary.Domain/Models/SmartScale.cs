@@ -16,10 +16,11 @@ namespace SmartApiary.Domain.Models
         public Guid? HardwareId { get; private set; }
         public string? AccessToken { get; private set; }
         public SmartScaleStatus Status { get; private set; }
+        public double? WeightDropLimit { get; private set; }
 
         private static readonly Regex SerialNumberRegex = new(@"^SA-\d{4}-\d{5}$", RegexOptions.Compiled);
 
-        public static SmartScale Create(Guid hiveId, string serialNumber)
+        public static SmartScale Create(Guid hiveId, string serialNumber, double? weightDropLimit)
         {
             if (hiveId == Guid.Empty)
                 throw new ArgumentException("Hive id is required.", nameof(hiveId));
@@ -27,12 +28,16 @@ namespace SmartApiary.Domain.Models
             if (string.IsNullOrWhiteSpace(serialNumber) || !SerialNumberRegex.IsMatch(serialNumber))
                 throw new ArgumentException("Serial number must be in format SA-YYYY-XXXXX.", nameof(serialNumber));
 
+            if (weightDropLimit.HasValue && weightDropLimit.Value <= 0)
+                throw new ArgumentException("Weight drop limit must be greater than zero.", nameof(weightDropLimit));
+
             return new SmartScale
             {
                 Id = Guid.NewGuid(),
                 HiveId = hiveId,
                 SerialNumber = serialNumber,
-                Status = SmartScaleStatus.Unpaired
+                Status = SmartScaleStatus.Unpaired,
+                WeightDropLimit = weightDropLimit
             };
         }
 

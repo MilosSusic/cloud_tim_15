@@ -12,5 +12,6 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task<List<User>> GetAllAsync(CancellationToken ct = default);
         void Remove(User user); // Add this for physical delete
         Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default);
+        Task<User?> GetOwnerByScaleIdAsync(Guid scaleId, CancellationToken ct = default);
     }
 }

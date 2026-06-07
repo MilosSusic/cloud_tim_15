@@ -1,16 +1,20 @@
-using System.Text;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SmartApiary.Application.Common.Behaviors;
+using SmartApiary.Application.Interfaces.Email;
 using SmartApiary.Application.Interfaces.Security;
+using SmartApiary.Application.Interfaces.Services;
 using SmartApiary.Domain.Enums;
 using SmartApiary.Domain.Models;
 using SmartApiary.Infrastructure;
 using SmartApiary.Infrastructure.Persistence;
+using SmartApiary.Infrastructure.Services.Email;
+using SmartApiary.WebApi.Hubs;
 using SmartApiary.WebApi.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +76,10 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBeh
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddSignalR();
+builder.Services.AddScoped<IScaleNotificationService, ScaleNotificationService>();
+builder.Services.AddScoped<IScaleAlertEmailService, ScaleAlertEmailService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -129,5 +137,5 @@ app.UseCors("ReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
+app.MapHub<SmartScaleHub>("/smartScaleHub");
 app.Run();

@@ -20,9 +20,14 @@ import { CONFIG } from "../../../shared/config/config";
 export async function registerScale(
   hiveId: string,
   serialNumber: string,
+  weightDropLimit?: number,
 ): Promise<void> {
   try {
-    await axios.post(`${CONFIG.SCALES_URL}/register`, { hiveId, serialNumber });
+    await axios.post(`${CONFIG.SCALES_URL}/register`, {
+      hiveId,
+      serialNumber,
+      weightDropLimit,
+    });
   } catch (error: any) {
     console.log("Response podaci sa beka:", error.response?.data);
 

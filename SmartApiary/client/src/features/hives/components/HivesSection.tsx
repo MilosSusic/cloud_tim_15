@@ -67,11 +67,14 @@ const HivesSection: React.FC<Props> = ({ apiaryId, onError, onSuccess }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [apiaryId]);
 
-  const handleRegisterScale = async (serialNumber: string) => {
+  const handleRegisterScale = async (
+    serialNumber: string,
+    weightDropLimit?: number,
+  ) => {
     if (!scaleHive) return;
     setScaleLoading(true);
     try {
-      await registerScale(scaleHive.id, serialNumber);
+      await registerScale(scaleHive.id, serialNumber, weightDropLimit);
       onSuccess?.(
         `Scale ${serialNumber} successfully attached to hive ${scaleHive.label}.`,
       );

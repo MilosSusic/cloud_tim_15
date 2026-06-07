@@ -233,6 +233,9 @@ namespace SmartApiary.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<double?>("WeightDropLimit")
+                        .HasColumnType("float");
+
                     b.HasKey("Id");
 
                     b.ToTable("SmartScales");

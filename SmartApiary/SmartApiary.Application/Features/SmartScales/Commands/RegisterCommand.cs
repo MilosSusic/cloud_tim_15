@@ -10,6 +10,7 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
 {
     public record RegisterScaleCommand(
         Guid HiveId,
-        string SerialNumber
+        string SerialNumber,
+        double? WeightDropLimit
     ) : IRequest<Result<Guid>>;
 }

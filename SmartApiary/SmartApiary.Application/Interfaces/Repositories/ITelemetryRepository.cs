@@ -10,5 +10,6 @@ namespace SmartApiary.Application.Interfaces.Repositories
     public interface ITelemetryRepository
     {
         Task SaveAsync(Telemetry telemetry, CancellationToken ct);
+        Task<Telemetry?> GetLatestBeforeAsync(string scaleId, DateTimeOffset timestamp, CancellationToken ct);
     }
 }

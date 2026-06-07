@@ -53,5 +53,27 @@ namespace SmartApiary.Infrastructure.Persistence.AzureTable.Repositories
                 
             await _tableClient.AddEntityAsync(entity, cancellationToken: ct);
         }
+
+        public async Task<Telemetry?> GetLatestBeforeAsync(string scaleId, DateTimeOffset timestamp, CancellationToken ct)
+        {
+            string partitionKey = scaleId;
+
+            // Posto je tabela sortirana opadajuce (najnoviji na vrhu), starije merenje ima veci RowKey
+            string currentInvertedTicks = (DateTime.MaxValue.Ticks - timestamp.Ticks).ToString("d19");
+
+            string filter = TableClient.CreateQueryFilter($"PartitionKey eq {partitionKey} and RowKey gt {currentInvertedTicks}");
+
+            var queryPage = _tableClient.QueryAsync<TelemetryEntity>(filter, maxPerPage: 1, cancellationToken: ct);
+
+            await foreach (var entity in queryPage.WithCancellation(ct))
+            {
+                if (entity != null)
+                {
+                    return _mapper.ToDomain(entity);
+                }
+            }
+
+            return null; 
+        }
     }
 }
