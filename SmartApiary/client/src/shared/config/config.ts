@@ -16,6 +16,7 @@ const AUTH_RESET_PASSWORD_PATH = "/reset-password";
 const UPLOAD_PATH = "/api/upload-image";
 const NEARBY_FIELDS_WITH_CROPS_PATH = "/api/beekeeper/nearby-fields-with-crops";
 const SCALES_PATH = "/api/SmartScales";
+const SMART_SCALE_HUB_PATH = "/smartScaleHub";
 
 export const CONFIG = {
   APIARIES_URL: `${API_BASE_URL}${APIARIES_PATH}`,
@@ -34,4 +35,5 @@ export const CONFIG = {
   AUTH_RESET_PASSWORD_URL: `${API_BASE_URL}${AUTH_PATH}${AUTH_RESET_PASSWORD_PATH}`,
   NEARBY_FIELDS_WITH_CROPS_URL: `${API_BASE_URL}${NEARBY_FIELDS_WITH_CROPS_PATH}`,
   SCALES_URL: `${API_BASE_URL}${SCALES_PATH}`,
+  SIGNALR_HUB_URL: `${API_BASE_URL}${SMART_SCALE_HUB_PATH}`,
 };
