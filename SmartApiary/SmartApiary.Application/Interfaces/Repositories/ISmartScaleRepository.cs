@@ -17,5 +17,9 @@ namespace SmartApiary.Application.Interfaces.Repositories
         Task<bool> IsSerialNumberUniqueAsync(string serialNumber, CancellationToken ct = default);
         void Update(SmartScale device);
         Task SaveChangesAsync(CancellationToken ct = default);
+
+        Task<SmartScale?> GetByApiaryIdAsync(Guid apiaryId, CancellationToken ct = default);
+        Task<Guid> GetApiaryIdByHiveIdAsync(Guid hiveId, CancellationToken ct);
+        Task<SmartScale?> GetByIdAsync(Guid id, CancellationToken ct = default);
     }
 }

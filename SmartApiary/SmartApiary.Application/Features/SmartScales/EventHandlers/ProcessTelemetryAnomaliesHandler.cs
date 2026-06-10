@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using SmartApiary.Application.Features.SmartScales.Events;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Constants;
@@ -13,27 +14,47 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
     public class ProcessTelemetryAnomaliesHandler(
     IMediator mediator,
     ITelemetryRepository telemetryRepository,
-    ISmartScaleRepository scaleRepository) : INotificationHandler<TelemetryReceivedEvent>
+    ISmartScaleRepository scaleRepository,
+    ILogger<ProcessTelemetryAnomaliesHandler> logger) : INotificationHandler<TelemetryReceivedEvent>
     {
         public async Task Handle(TelemetryReceivedEvent notification, CancellationToken ct)
         {
             var current = notification.Telemetry;
-            var scaleIdGuid = Guid.Parse(current.SmartScaleId.ToString());
+            if (!Guid.TryParse(current.SmartScaleId.ToString(), out Guid scaleIdGuid))
+            {
+                logger.LogWarning("[ANOMALIES HANDLER] SmartScaleId '{Id}' is not in valid GUID format. I'm skipping anomalies.", current.SmartScaleId);
+                return;
+            }
 
-            var scale = await scaleRepository.GetByHiveIdAsync(scaleIdGuid, ct);
-            if (scale == null) scale = await scaleRepository.GetBySerialNumberAsync(current.SmartScaleId.ToString(), ct);
-            if (scale == null) return;
+            var scale = await scaleRepository.GetByIdAsync(scaleIdGuid, ct);
+
+            if (scale == null)
+            {
+                logger.LogWarning("[ANOMALIES HANDLER] The scale with ID {Id} was not found in the database.", scaleIdGuid);
+                return;
+            }
+
+            Guid apiaryId = await scaleRepository.GetApiaryIdByHiveIdAsync(scale.HiveId, ct);
+
+            if (apiaryId == Guid.Empty)
+            {
+                logger.LogWarning("[ANOMALIES HANDLER] No apiary found for hive {HiveId}.", scale.HiveId);
+                return;
+            }
 
             double activeThreshold = scale.WeightDropLimit ?? SmartScaleLimits.DefaultWeightDropLimit;
+            string currentRowKey = (DateTime.MaxValue.Ticks - current.Timestamp.Ticks).ToString("d19");
 
-            var previous = await telemetryRepository.GetLatestBeforeAsync(current.SmartScaleId.ToString(), current.Timestamp, ct);
-            if (previous != null)
+            var previous = await telemetryRepository.GetLatestBeforeAsync(current.SmartScaleId.ToString(), current.Timestamp, currentRowKey, ct);
+            if (previous != null && previous.Weight != null && current.Weight != null)
             {
                 double weightDifference = previous.Weight.Value - current.Weight.Value;
 
                 if (weightDifference >= activeThreshold)
                 {
+                    logger.LogWarning("[ANOMALIES HANDLER] WEIGHT DROP DETECTED! Difference: {Diff}kg", weightDifference);
                     await mediator.Publish(new ScaleAnomalyDetectedEvent(
+                        apiaryId,   
                         scale.Id,
                         "CriticalWeightDrop",
                         $"A sudden weight decrease of {weightDifference}kg has been detected. Potential hive theft or tipping.",
@@ -41,14 +62,29 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
                 }
             }
 
-            if (current.BatteryLevel.Value <= SmartScaleLimits.LowBatteryThreshold)
+            if (current.BatteryLevel != null && current.BatteryLevel.Value <= SmartScaleLimits.LowBatteryThreshold)
             {
-                await mediator.Publish(new ScaleAnomalyDetectedEvent(
-                    scale.Id,
-                    "LowBattery",
-                    $"Scale battery is critically low: {current.BatteryLevel.Value}%. Replacement required.",
-                    current.BatteryLevel.Value), ct);
+                bool isFirstTimeLow = previous == null ||
+                        previous.BatteryLevel == null ||
+                        previous.BatteryLevel.Value > SmartScaleLimits.LowBatteryThreshold;
+
+                if (isFirstTimeLow)
+                {
+                    logger.LogWarning("[ANOMALIES HANDLER] DETECTED BATTERY DROP FOR THE FIRST TIME! Current level: {BatteryLevel}%", current.BatteryLevel.Value);
+
+                    await mediator.Publish(new ScaleAnomalyDetectedEvent(
+                        apiaryId,
+                        scale.Id,
+                        "LowBattery",
+                        $"Scale battery is critically low: {current.BatteryLevel.Value}%. Replacement required.",
+                        current.BatteryLevel.Value), ct);
+                }
+                else
+                {
+                    logger.LogInformation("[ANOMALIES HANDLER] The battery is low ({BatteryLevel}%), a notification has already been sent before.", current.BatteryLevel.Value);
+                }
             }
+            
         }
     }
 }

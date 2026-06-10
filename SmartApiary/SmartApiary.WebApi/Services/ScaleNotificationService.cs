@@ -5,11 +5,11 @@ using SmartApiary.WebApi.Hubs;
 
 namespace SmartApiary.WebApi.Services
 {
-    public class ScaleNotificationService(IHubContext<SmartScaleHub> hubContext) : IScaleNotificationService
+    public class ScaleNotificationService(IHubContext<SmartScaleHub> hubContext, ILogger<ScaleNotificationService> _logger) : IScaleNotificationService
     {
-        public async Task SendRealtimeTelemetryAsync(Telemetry telemetry)
+        public async Task SendRealtimeTelemetryAsync(Guid apiaryId, Telemetry telemetry)
         {
-            await hubContext.Clients.All.SendAsync("ReceiveScaleTelemetry", new
+            await hubContext.Clients.Group(apiaryId.ToString()).SendAsync("ReceiveScaleTelemetry", new
             {
                 scaleId = telemetry.SmartScaleId.ToString(),
                 weight = telemetry.Weight.Value,
@@ -20,13 +20,14 @@ namespace SmartApiary.WebApi.Services
             });
         }
 
-        public async Task SendAnomalyNotificationAsync(Guid scaleId, string anomalyType, string message)
+        public async Task SendAnomalyNotificationAsync(Guid apiaryId, Guid scaleId, string anomalyType, string message)
         {
-            await hubContext.Clients.All.SendAsync("ReceiveScaleAnomaly", new
+            await hubContext.Clients.Group(apiaryId.ToString()).SendAsync("ReceiveScaleAnomaly", new
             {
-                scaleId,
+                scaleId = scaleId,
                 type = anomalyType,
-                message
+                message = message,
+                timestamp = DateTime.UtcNow
             });
         }
     }

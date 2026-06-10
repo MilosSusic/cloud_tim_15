@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using SmartApiary.Application.Features.SmartScales.Events;
 using SmartApiary.Application.Interfaces.Email;
 using SmartApiary.Application.Interfaces.Repositories;
@@ -18,7 +19,7 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
     {
         public async Task Handle(ScaleAnomalyDetectedEvent notification, CancellationToken ct)
         {
-            await notificationService.SendAnomalyNotificationAsync(notification.ScaleId, notification.AnomalyType, notification.Message);
+            await notificationService.SendAnomalyNotificationAsync(notification.ApiaryId, notification.ScaleId, notification.AnomalyType, notification.Message);
 
             var owner = await userRepository.GetOwnerByScaleIdAsync(notification.ScaleId, ct);
 

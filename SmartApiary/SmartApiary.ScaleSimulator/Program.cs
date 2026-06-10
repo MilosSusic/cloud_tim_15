@@ -84,13 +84,30 @@ namespace SmartApiary.ScaleSimulator
             var telemetryPublisher = new TelemetryPublisher(httpClient);
 
             double battery = 100.0;
-            int delayMs = 8000;
-
+            int delayMs = 10000;
+            //int delayMs = 3000;
+            bool isFirstLoop = true;
             while (true)
             {
                 var telemetryData = simulatorService.GenerateTelemetry(battery);
-                battery -= 0.05;
-                if (battery < 0) battery = 0;
+                //dodah
+                //telemetryData.Timestamp = simulatedTime;
+
+                //battery -= 0.5;
+                //if (battery < 0) battery = 0;
+                if (isFirstLoop)
+                {
+                    // Nakon sto smo generisali 100% za prvi krug, 
+                    // postavljamo vrednost na 16.0% za sledeci krug
+                    battery = 16.0;
+                    isFirstLoop = false;
+                }
+                else
+                {
+                    // Od drugog kruga prirodno skidamo po 0.5%
+                    battery -= 0.5;
+                    if (battery < 0) battery = 0;
+                }
 
                 var result = await telemetryPublisher.PublishAsync(telemetryData, accessToken);
 
@@ -106,6 +123,8 @@ namespace SmartApiary.ScaleSimulator
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Failed to publish: {result.ErrorMessage}");
                     Console.ResetColor();
                 }
+                //dodah
+                //simulatedTime = simulatedTime.AddHours(1);
 
                 await Task.Delay(delayMs);
             }

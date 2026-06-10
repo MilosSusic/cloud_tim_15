@@ -28,6 +28,9 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
                 return Result.Failure("Unauthorized device token.");
             }
 
+            Guid apiaryId = await scaleRepository.GetApiaryIdByHiveIdAsync(scale.HiveId, ct);
+            logger.LogInformation("[SIGNALR ROUTING] Scale HiveId: {HiveId} mapped to ApiaryId: {ApiaryId}", scale.HiveId, apiaryId);
+
             var telemetryResult = Telemetry.Create(
                 scale.Id.ToString(),
                 request.Weight,
@@ -48,7 +51,7 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
 
             logger.LogInformation("[TELEMETRY] Scale measurement successfully saved to Table Storage for Scale ID: {ScaleId}", scale.Id);
             
-            await mediator.Publish(new TelemetryReceivedEvent(telemetry), ct);
+            await mediator.Publish(new TelemetryReceivedEvent(telemetry, apiaryId), ct);
             return Result.Success();
         }
     }

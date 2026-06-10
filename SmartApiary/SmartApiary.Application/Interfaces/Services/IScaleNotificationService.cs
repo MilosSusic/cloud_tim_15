@@ -9,7 +9,7 @@ namespace SmartApiary.Application.Interfaces.Services
 {
     public interface IScaleNotificationService
     {
-        Task SendRealtimeTelemetryAsync(Telemetry telemetry);
-        Task SendAnomalyNotificationAsync(Guid scaleId, string anomalyType, string message);
+        Task SendRealtimeTelemetryAsync(Guid apiaryId, Telemetry telemetry);
+        Task SendAnomalyNotificationAsync(Guid apiaryId, Guid scaleId, string anomalyType, string message);
     }
 }

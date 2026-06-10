@@ -1,0 +1,117 @@
+.analytics-page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #101624 0%, #1a237e 100%);
+  color: #ffffff;
+  padding: 2rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.analytics-header h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.analytics-header p {
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-tabs-container {
+  display: flex;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.analytics-tab-button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.analytics-tab-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.analytics-tab-button.active {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.analytics-row {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.analytics-card {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.status-indicators-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  justify-content: center;
+}
+
+.indicator-item {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.indicator-item.weight {
+  border-left-color: #10b981;
+}
+.indicator-item.climate {
+  border-left-color: #f59e0b;
+}
+.indicator-item.battery {
+  border-left-color: #8b5cf6;
+}
+
+.indicator-label {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.indicator-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.indicator-subtext {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+/* Responzivnost za manje ekrane */
+@media (max-width: 1024px) {
+  .analytics-row {
+    grid-template-columns: 1fr; /* Na telefonima/tabletima ide jedno ispod drugog */
+  }
+}

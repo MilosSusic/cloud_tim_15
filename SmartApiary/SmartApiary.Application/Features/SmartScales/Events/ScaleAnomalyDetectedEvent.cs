@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace SmartApiary.Application.Features.SmartScales.Events
 {
     public record ScaleAnomalyDetectedEvent(
+    Guid ApiaryId,
     Guid ScaleId,
     string AnomalyType,
     string Message,

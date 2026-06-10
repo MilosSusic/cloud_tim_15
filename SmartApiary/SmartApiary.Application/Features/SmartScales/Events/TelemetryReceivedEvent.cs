@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.SmartScales.Events
 {
-    public record TelemetryReceivedEvent(Telemetry Telemetry) : INotification;
+    public record TelemetryReceivedEvent(Telemetry Telemetry, Guid ApiaryId) : INotification;
 }

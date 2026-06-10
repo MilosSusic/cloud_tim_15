@@ -45,7 +45,7 @@ namespace SmartApiary.Functions.Processing
                 Humidity = telemetryDto.Humidity,
                 Temperature = telemetryDto.Temperature,
                 BatteryLevel = telemetryDto.BatteryLevel,
-                Timestamp = DateTime.UtcNow 
+                Timestamp = DateTime.UtcNow
             };
 
             var result = await mediator.Send(command);
@@ -71,6 +71,7 @@ namespace SmartApiary.Functions.Processing
             public double Humidity { get; set; }
             public double Temperature { get; set; }
             public double BatteryLevel { get; set; }
+            //public DateTime? Timestamp { get; set; }
         }
     }
 }

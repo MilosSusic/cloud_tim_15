@@ -9,6 +9,6 @@ namespace SmartApiary.Domain.Constants
     public static class SmartScaleLimits
     {
         public const double DefaultWeightDropLimit = 10.0; 
-        public const double LowBatteryThreshold = 20.0;   
+        public const double LowBatteryThreshold = 15.0;   
     }
 }

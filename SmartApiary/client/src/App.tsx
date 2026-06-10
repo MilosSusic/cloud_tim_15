@@ -10,14 +10,18 @@ import { AuthProvider } from "./shared/auth/AuthContext";
 import { SignalRProvider } from "./shared/context/SignalRContext";
 
 import ApiaryPage from "./features/apiaries/pages/ApiaryPage";
-//import ApiaryAnalyticsPage from "./features/apiaries/pages/ApiaryAnalyticsPage";
+import { ApiaryAnalyticsPage } from "./features/apiaries/pages/ApiaryAnalyticsPage";
 import FieldPage from "./features/fields/pages/FieldPage";
 import SprayLogPage from "./features/spraySchedule/pages/SprayLogPage";
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <AuthProvider>
       <SignalRProvider>
+        <ToastContainer />
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -35,14 +39,14 @@ function App() {
               }
             />
 
-            {/* <Route
+            <Route
               path="/beekeeper/analytics"
               element={
                 <PrivateRoute requiredRole="Beekeeper">
                   <ApiaryAnalyticsPage />
                 </PrivateRoute>
               }
-            /> */}
+            />
 
             <Route
               path="/farmer/field"

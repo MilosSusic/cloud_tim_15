@@ -5,7 +5,9 @@ import {
   LogLevel,
 } from "@microsoft/signalr";
 import { useAuth } from "../auth/AuthContext";
-import { CONFIG } from "../config/config"; //
+import { CONFIG } from "../config/config";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface SignalRContextType {
   connection: HubConnection | null;
@@ -36,11 +38,43 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({
     // Prilagodi URL ka tvom backend SmartScaleHub-u
     const newConnection = new HubConnectionBuilder()
       .withUrl(CONFIG.SIGNALR_HUB_URL, {
-        accessTokenFactory: () => token, // Prosleđujemo JWT token automatski
+        accessTokenFactory: () => token, // Prosledjujemo JWT token automatski
       })
-      .withAutomaticReconnect() // Automatski pokušava ponovno povezivanje ako pukne net
+      .withAutomaticReconnect() // Automatski pokusava ponovno povezivanje ako pukne net
       .configureLogging(LogLevel.Information)
       .build();
+
+    newConnection.on(
+      "ReceiveScaleAnomaly",
+      (anomaly: { scaleId: string; type: string; message: string }) => {
+        const toastOptions = {
+          position: "top-right" as const,
+          autoClose: 8000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "dark" as const,
+        };
+
+        const typeLower = anomaly.type.toLowerCase();
+
+        if (
+          typeLower.includes("krađa") ||
+          typeLower.includes("theft") ||
+          typeLower.includes("drop")
+        ) {
+          toast.error(`🚨 CRITICAL: ${anomaly.message}`, toastOptions);
+        } else if (
+          typeLower.includes("baterija") ||
+          typeLower.includes("battery")
+        ) {
+          toast.warning(`⚠️ WARNING: ${anomaly.message}`, toastOptions);
+        } else {
+          toast.info(`ℹ️ INFO: ${anomaly.message}`, toastOptions);
+        }
+      },
+    );
 
     newConnection
       .start()

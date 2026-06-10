@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartApiary.Application.Features.SmartScales.Commands;
+using SmartApiary.Application.Features.SmartScales.Queries;
 
 namespace SmartApiary.WebApi.Controllers
 {
@@ -28,6 +29,19 @@ namespace SmartApiary.WebApi.Controllers
             }
 
             return Ok(new { Message = "Scale successfully registered with status: 'Unpaired'.", ScaleId = result.Value });
+        }
+
+        [HttpGet("analytics/apiary/{apiaryId:guid}")]
+        public async Task<IActionResult> GetApiaryAnalytics(Guid apiaryId, [FromQuery] int days = 7, CancellationToken ct = default)
+        {
+            var result = await _mediator.Send(new GetApiaryAnalyticsQuery(apiaryId, days), ct);
+
+            if (result.IsFailure)
+            {
+                return BadRequest(result.Error);
+            }
+
+            return Ok(result.Value);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using SmartApiary.Application.Features.SmartScales.Events;
 using SmartApiary.Application.Interfaces.Services;
 using System;
@@ -13,7 +14,9 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
     {
         public async Task Handle(TelemetryReceivedEvent notification, CancellationToken ct)
         {
-            await notificationService.SendRealtimeTelemetryAsync(notification.Telemetry);
+            
+            await notificationService.SendRealtimeTelemetryAsync(notification.ApiaryId, notification.Telemetry);
+
         }
     }
 }

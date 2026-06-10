@@ -57,5 +57,33 @@ namespace SmartApiary.Infrastructure.Persistence.AzureSql.Repositories
         {
             _dbContext.SmartScales.Update(device);
         }
+
+        public async Task<SmartScale?> GetByApiaryIdAsync(Guid apiaryId, CancellationToken ct = default)
+        {
+            return await _dbContext.SmartScales
+                .Join(
+                    _dbContext.Hives,
+                    scale => scale.HiveId,
+                    hive => hive.Id,
+                    (scale, hive) => new { Scale = scale, Hive = hive }
+                )
+                .Where(joined => joined.Hive.ApiaryId == apiaryId && !joined.Hive.IsDeleted)
+                .Select(joined => joined.Scale)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        public async Task<Guid> GetApiaryIdByHiveIdAsync(Guid hiveId, CancellationToken ct)
+        {
+            return await _dbContext.Hives
+                .Where(h => h.Id == hiveId)
+                .Select(h => h.ApiaryId)
+                .FirstOrDefaultAsync(ct);
+        }
+
+        public async Task<SmartScale?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            return await _dbContext.SmartScales
+                .FirstOrDefaultAsync(s => s.Id == id, ct);
+        }
     }
 }

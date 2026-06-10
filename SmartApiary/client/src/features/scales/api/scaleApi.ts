@@ -16,6 +16,7 @@
 // }
 import axios from "axios";
 import { CONFIG } from "../../../shared/config/config";
+import type { ApiaryAnalyticsResponse } from "../types/analytics";
 
 export async function registerScale(
   hiveId: string,
@@ -55,5 +56,21 @@ export async function registerScale(
     throw new Error(
       "Failed to register scale. Device might be already paired.",
     );
+  }
+}
+
+export async function getApiaryAnalytics(
+  apiaryId: string,
+  days: number = 7,
+): Promise<ApiaryAnalyticsResponse> {
+  try {
+    const response = await axios.get<ApiaryAnalyticsResponse>(
+      `${CONFIG.SCALES_URL}/analytics/apiary/${apiaryId}`,
+      { params: { days } },
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Greška pri povlačenju analitike sa bekenda:", error);
+    throw new Error(error.response?.data || "Failed to load apiary analytics.");
   }
 }
