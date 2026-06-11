@@ -56,7 +56,7 @@ export const StatusIndicators: React.FC<StatusIndicatorsProps> = ({
         <div className="indicator-value">{latestTelemetry.batteryLevel}%</div>
         <div className="indicator-subtext">
           Status:{" "}
-          {latestTelemetry.batteryLevel < 20 ? "🚨 Critical" : "🔋 Normal "}
+          {latestTelemetry.batteryLevel <= 15 ? "🚨 Critical" : "🔋 Normal "}
         </div>
       </div>
     </div>

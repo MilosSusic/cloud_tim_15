@@ -13,4 +13,6 @@ export interface ApiaryAnalyticsResponse {
   } | null;
   yieldHistory: DailyYieldData[];
   climateHistory: ClimateData[];
+  yieldLog?: DailyYieldData[];
+  climateLog?: ClimateData[];
 }

@@ -12,6 +12,6 @@ namespace SmartApiary.ScaleSimulator.Models
         public double Humidity { get; set; }
         public double Temperature { get; set; }
         public double BatteryLevel { get; set; }
-        //public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

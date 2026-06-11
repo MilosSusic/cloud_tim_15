@@ -3,11 +3,6 @@ using Microsoft.Extensions.Logging;
 using SmartApiary.Application.Features.SmartScales.Events;
 using SmartApiary.Application.Interfaces.Repositories;
 using SmartApiary.Domain.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Application.Features.SmartScales.EventHandlers
 {
@@ -43,9 +38,7 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
             }
 
             double activeThreshold = scale.WeightDropLimit ?? SmartScaleLimits.DefaultWeightDropLimit;
-            string currentRowKey = (DateTime.MaxValue.Ticks - current.Timestamp.Ticks).ToString("d19");
-
-            var previous = await telemetryRepository.GetLatestBeforeAsync(current.SmartScaleId.ToString(), current.Timestamp, currentRowKey, ct);
+            var previous = await telemetryRepository.GetLatestBeforeAsync(current, ct);
             if (previous != null && previous.Weight != null && current.Weight != null)
             {
                 double weightDifference = previous.Weight.Value - current.Weight.Value;
@@ -54,7 +47,7 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
                 {
                     logger.LogWarning("[ANOMALIES HANDLER] WEIGHT DROP DETECTED! Difference: {Diff}kg", weightDifference);
                     await mediator.Publish(new ScaleAnomalyDetectedEvent(
-                        apiaryId,   
+                        apiaryId,
                         scale.Id,
                         "CriticalWeightDrop",
                         $"A sudden weight decrease of {weightDifference}kg has been detected. Potential hive theft or tipping.",
@@ -84,7 +77,6 @@ namespace SmartApiary.Application.Features.SmartScales.EventHandlers
                     logger.LogInformation("[ANOMALIES HANDLER] The battery is low ({BatteryLevel}%), a notification has already been sent before.", current.BatteryLevel.Value);
                 }
             }
-            
         }
     }
 }

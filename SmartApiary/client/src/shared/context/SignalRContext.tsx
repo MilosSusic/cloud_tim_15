@@ -38,7 +38,9 @@ export const SignalRProvider: React.FC<{ children: React.ReactNode }> = ({
     // Prilagodi URL ka tvom backend SmartScaleHub-u
     const newConnection = new HubConnectionBuilder()
       .withUrl(CONFIG.SIGNALR_HUB_URL, {
-        accessTokenFactory: () => token, // Prosledjujemo JWT token automatski
+        accessTokenFactory: () => token,
+        skipNegotiation: true,
+        transport: 1, // HttpTransportType.WebSockets = 1
       })
       .withAutomaticReconnect() // Automatski pokusava ponovno povezivanje ako pukne net
       .configureLogging(LogLevel.Information)

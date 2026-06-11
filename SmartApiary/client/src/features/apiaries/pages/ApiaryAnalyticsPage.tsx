@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSignalR } from "../../../shared/context/SignalRContext";
 import { getApiaries } from "../../apiaries/api/apiaryApi";
 import { AnalyticsTabs } from "../components/ApiaryAnalytics/AnalyticsTabs";
@@ -12,20 +13,25 @@ import "../layout/ApiaryAnalyticsPage.css";
 import { NectarYieldChart } from "../components/ApiaryAnalytics/NectarYieldChart";
 import { StatusIndicators } from "../components/ApiaryAnalytics/StatusIndicators";
 import { ClimateTrendChart } from "../components/ApiaryAnalytics/ClimateTrendChart";
-import { getApiaryAnalytics } from "../../scales/api/scaleApi";
+import { getApiaryAnalytics, saveYieldRecord } from "../../scales/api/scaleApi";
 
 export const ApiaryAnalyticsPage: React.FC = () => {
+  const navigate = useNavigate();
   const { connection } = useSignalR();
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [activeApiaryId, setActiveApiaryId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null); // Za prikaz eventualne greške
+  const [error, setError] = useState<string | null>(null);
 
   const [latestTelemetry, setLatestTelemetry] = useState<TelemetryData | null>(
     null,
   );
   const [yieldChartData, setYieldChartData] = useState<DailyYieldData[]>([]);
   const [climateChartData, setClimateChartData] = useState<ClimateData[]>([]);
+
+  const measurementBufferRef = useRef<Map<string, { weight: number; timestamp: string }[]>>(new Map());
+  const periodCounterRef = useRef<Map<string, number>>(new Map());
+  const blockCounterRef = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -47,61 +53,35 @@ export const ApiaryAnalyticsPage: React.FC = () => {
 
   useEffect(() => {
     if (!activeApiaryId) return;
-    const loadAnalyticsHistory = async () => {
-      try {
-        // Povlacimo stvarne podatke za poslednjih 7 dana
-        const analytics = await getApiaryAnalytics(activeApiaryId, 7);
 
-        // setYieldChartData(analytics.yieldHistory || []);
-        // setClimateChartData(analytics.climateHistory || []);
-        // Mapiranje Yield istorije (Grafik 1)
-        const mappedYield = (analytics.yieldHistory || []).map((item: any) => ({
-          date: item.date || item.Date,
-          delta: item.netYieldKg ?? item.NetYieldKg ?? item.delta ?? item.Delta,
-        }));
-
-        // Mapiranje Climate istorije (Grafik 2)
-        const mappedClimate = (analytics.climateHistory || []).map(
-          (item: any) => ({
-            time: item.time || item.Time,
-            temperature: item.temperature ?? item.Temperature,
-            humidity: item.humidity ?? item.Humidity,
-          }),
-        );
-
-        setYieldChartData(mappedYield);
-        setClimateChartData(mappedClimate);
-
-        setLatestTelemetry(analytics.latestTelemetry);
-        setError(null);
-      } catch (err: any) {
-        console.error("Greška pri učitavanju istorije:", err);
-        setError(
-          "There is no historical data available for this apiary or the scale is not matched.",
-        );
-        setYieldChartData([]);
-        setClimateChartData([]);
-        setLatestTelemetry(null);
-      }
-    };
-
-    loadAnalyticsHistory();
+    measurementBufferRef.current.clear();
+    periodCounterRef.current.clear();
+    blockCounterRef.current.clear();
+    setError(null);
   }, [activeApiaryId]);
 
-  // Smena tabova
   useEffect(() => {
     if (!connection || !activeApiaryId) return;
 
-    // Prijava u sobu pcelinjaka
+    if (connection.state !== "Connected") {
+      console.log("[SignalR] Waiting for connection to be established...");
+      return;
+    }
+
+    measurementBufferRef.current.clear();
+    periodCounterRef.current.clear();
+    blockCounterRef.current.clear();
+
     connection
       .invoke("JoinApiaryGroup", activeApiaryId)
       .then(() => console.log(`Prijavljen na grupu: ${activeApiaryId}`))
       .catch((err) => console.error("Greška pri prijavi na grupu:", err));
 
-    // Otkucaji u realnom vremenu: Slusamo dogadjaj sa bekenda
     connection.on("ReceiveScaleTelemetry", (data: any) => {
       console.log("Stigao novi podatak sa vage preko SignalR-a:", data);
 
+      const scaleId = data.scaleId;
+      
       const newTelemetry: TelemetryData = {
         weight: data.weight,
         temperature: data.temperature,
@@ -110,14 +90,13 @@ export const ApiaryAnalyticsPage: React.FC = () => {
         timestamp: data.timestamp,
       };
 
-      // Azuriramo desne kartice istog trenutka
       setLatestTelemetry(newTelemetry);
 
-      // Azuriramo linijski grafikon klime (dodajemo novu tacku na kraj)
       const dateObj = new Date(data.timestamp);
       const timeStr = dateObj.toLocaleTimeString("sr-RS", {
         hour: "2-digit",
         minute: "2-digit",
+        second: "2-digit",
       });
 
       setClimateChartData((prev) =>
@@ -129,12 +108,80 @@ export const ApiaryAnalyticsPage: React.FC = () => {
             humidity: data.humidity ?? data.Humidity,
           },
         ].slice(-10),
-      ); // Drzi samo poslednjih 10 merenja na grafiku da ne pukne ekran
+      );
+
+      // Inicijalizuj buffer za ovu vagu ako ne postoji
+      if (!measurementBufferRef.current.has(scaleId)) {
+        measurementBufferRef.current.set(scaleId, []);
+        periodCounterRef.current.set(scaleId, 0);
+        blockCounterRef.current.set(scaleId, 0);
+      }
+
+      const buffer = measurementBufferRef.current.get(scaleId)!;
+      buffer.push({
+        weight: data.weight,
+        timestamp: data.timestamp,
+      });
+
+      console.log(
+        `[BUFFER] Scale ${scaleId}: Measurement added. Current count: ${buffer.length}/12`,
+      );
+
+      if (buffer.length === 12) {
+        const blockCounter = blockCounterRef.current.get(scaleId)!;
+        blockCounterRef.current.set(scaleId, blockCounter + 1);
+        const newBlockCounter = blockCounterRef.current.get(scaleId)!;
+
+        if (newBlockCounter % 2 === 1) {
+          const firstWeight = buffer[0].weight;
+          const lastWeight = buffer[11].weight;
+          const delta = Number((lastWeight - firstWeight).toFixed(2));
+
+          const periodCounter = periodCounterRef.current.get(scaleId)!;
+          periodCounterRef.current.set(scaleId, periodCounter + 1);
+          const newPeriodCounter = periodCounterRef.current.get(scaleId)!;
+
+          const firstTimestamp = new Date(buffer[0].timestamp);
+          const endTimestamp = new Date(buffer[11].timestamp);
+          const timeLabel = endTimestamp.toLocaleTimeString("sr-RS", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+
+          const durationMs = endTimestamp.getTime() - firstTimestamp.getTime();
+          const durationSec = durationMs / 1000;
+
+          console.log(
+            `[YIELD] Scale ${scaleId} Period ${newPeriodCounter}: ${firstWeight}kg → ${lastWeight}kg = ${delta}kg`,
+          );
+          console.log(`[YIELD] Time range: ${firstTimestamp.toLocaleTimeString("sr-RS", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })} → ${timeLabel}`);
+          console.log(`[YIELD] Duration of 12 measurements: ${durationSec} seconds`);
+
+          setYieldChartData((prev) => [...prev, { date: timeLabel, delta }].slice(-10));
+
+          saveYieldRecord({
+            scaleId: scaleId,
+            deltaKg: delta,
+            recordedAt: endTimestamp.toISOString(),
+          }).catch((err) => console.error("[YIELD RECORD] Failed to save:", err));
+        } else {
+          console.log(
+            `[BUFFER] Scale ${scaleId}: Block ${newBlockCounter} skipped (night period)`,
+          );
+        }
+
+        measurementBufferRef.current.set(scaleId, []);
+        console.log(`[BUFFER] Scale ${scaleId}: Buffer reset. Ready for next period.`);
+      }
     });
 
-    // CLEANUP: Kada korisnik klikne na drugi tab, prvo se odjavi sa stare grupe i ugasi slušalac
     return () => {
-      if (connection) {
+      if (connection && connection.state === "Connected") {
         connection.off("ReceiveScaleTelemetry");
         connection
           .invoke("LeaveApiaryGroup", activeApiaryId)
@@ -144,6 +191,46 @@ export const ApiaryAnalyticsPage: React.FC = () => {
     };
   }, [activeApiaryId, connection]);
 
+  useEffect(() => {
+    if (!activeApiaryId) return;
+
+    const loadInitialData = async () => {
+      try {
+        setError(null);
+
+        // Učitaj historiju iz Table Storage-a
+        const analytics = await getApiaryAnalytics(activeApiaryId, 1);
+
+        console.log("[INIT] Full analytics response:", analytics);
+
+        // Postavi yield historiju (zadnjih 10)
+        const yieldData = (analytics.yieldLog || analytics.yieldHistory || []).slice(-10);
+        console.log("[INIT] Yield data after slice:", yieldData);
+        setYieldChartData(yieldData);
+
+        // Postavi climate historiju (zadnjih 10)
+        const climateData = (analytics.climateLog || analytics.climateHistory || []).slice(-10);
+        console.log("[INIT] Climate data after slice:", climateData);
+        setClimateChartData(climateData);
+
+        // Postavi latest telemetry ako postoji
+        if (analytics.latestTelemetry) {
+          console.log("[INIT] Latest telemetry:", analytics.latestTelemetry);
+          setLatestTelemetry(analytics.latestTelemetry);
+        }
+
+        console.log(`[INIT] Loaded ${yieldData.length} yield periods and ${climateData.length} climate measurements`);
+      } catch (err: any) {
+        console.error("Greška pri učitavanju historije:", err);
+        console.error("[INIT] Error details:", err.message);
+        setYieldChartData([]);
+        setClimateChartData([]);
+      }
+    };
+
+    loadInitialData();
+  }, [activeApiaryId]);
+
   if (loading) {
     return <div className="analytics-page-container">Loading analytics...</div>;
   }
@@ -151,7 +238,21 @@ export const ApiaryAnalyticsPage: React.FC = () => {
   return (
     <div className="analytics-page-container">
       <div className="analytics-header">
-        <h2>Smart Apiary / Analytics</h2>
+        <div className="analytics-header-top">
+          <h2 className="analytics-title">
+            Smart Apiary
+            <span className="analytics-title-separator"> / </span>
+            <span className="analytics-title-accent">Analytics</span>
+          </h2>
+          <button
+            type="button"
+            className="analytics-back-button"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+          >
+            ← Back
+          </button>
+        </div>
         <p>Monitor honey yield and climate conditions in real time.</p>
         {error && (
           <p style={{ color: "#ef4444", fontWeight: "bold" }}>⚠️ {error}</p>

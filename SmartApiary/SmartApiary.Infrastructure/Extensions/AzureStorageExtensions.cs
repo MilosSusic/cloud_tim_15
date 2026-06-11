@@ -66,6 +66,23 @@ namespace SmartApiary.Infrastructure.Extensions
                 return new TelemetryRepository(connectionString, tableName, keyProvider, mapper);
             });
 
+            // YieldRecord registracija
+            services.AddScoped<ITableKeyProvider<YieldRecord>, YieldRecordKeyProvider>();
+            services.AddScoped<ITableMapper<YieldRecord, YieldRecordEntity>, YieldRecordMapper>();
+
+            services.AddScoped<IYieldRecordRepository, YieldRecordRepository>(sp =>
+            {
+                var connectionString = configuration["AzureTable:ConnectionString"]
+                    ?? "UseDevelopmentStorage=true";
+
+                var tableName = "YieldRecords";
+
+                var keyProvider = sp.GetRequiredService<ITableKeyProvider<YieldRecord>>();
+                var mapper = sp.GetRequiredService<ITableMapper<YieldRecord, YieldRecordEntity>>();
+
+                return new YieldRecordRepository(connectionString, tableName, keyProvider, mapper);
+            });
+
             // Azure Queue Storage registracija
             var queueConnectionString = configuration["AzureQueueOptions:ConnectionString"]
                 ?? configuration["AzureWebJobsStorage"];

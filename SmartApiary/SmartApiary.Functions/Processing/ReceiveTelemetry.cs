@@ -3,13 +3,8 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using SmartApiary.Application.Features.SmartScales.Commands;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Functions.Processing
 {
@@ -45,7 +40,7 @@ namespace SmartApiary.Functions.Processing
                 Humidity = telemetryDto.Humidity,
                 Temperature = telemetryDto.Temperature,
                 BatteryLevel = telemetryDto.BatteryLevel,
-                Timestamp = DateTime.UtcNow
+                Timestamp = telemetryDto.Timestamp?.ToUniversalTime() ?? DateTime.UtcNow
             };
 
             var result = await mediator.Send(command);
@@ -71,7 +66,7 @@ namespace SmartApiary.Functions.Processing
             public double Humidity { get; set; }
             public double Temperature { get; set; }
             public double BatteryLevel { get; set; }
-            //public DateTime? Timestamp { get; set; }
+            public DateTime? Timestamp { get; set; }
         }
     }
 }

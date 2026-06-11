@@ -14,13 +14,14 @@ namespace SmartApiary.Application.Features.SmartScales.Queries
     {
         public List<DailyYieldDto> YieldLog { get; set; } = new();
         public List<ClimateTrendDto> ClimateLog { get; set; } = new();
+        public dynamic? LatestTelemetry { get; set; }
     }
 
     // DTO za prvi grafik: Razlika u tezini (20h - 08h) za pcelinjak
     public class DailyYieldDto
     {
         public string Date { get; set; } = string.Empty; 
-        public double NetYieldKg { get; set; }           // Rezultat racuna
+        public double Delta { get; set; }
     }
 
     // DTO za drugi grafik: Kretanje temp. i vazduha kroz vreme

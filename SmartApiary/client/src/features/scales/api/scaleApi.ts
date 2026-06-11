@@ -74,3 +74,23 @@ export async function getApiaryAnalytics(
     throw new Error(error.response?.data || "Failed to load apiary analytics.");
   }
 }
+
+export async function saveYieldRecord(payload: {
+  scaleId: string;
+  deltaKg: number;
+  recordedAt: string;
+}): Promise<void> {
+  try {
+    console.log("[API] Sending YieldRecord:", payload);
+    const response = await axios.post(
+      `${CONFIG.SCALES_URL.replace("/SmartScales", "")}/yieldrecords/save`,
+      payload,
+    );
+    console.log("[API] YieldRecord saved successfully:", response.data);
+  } catch (error: any) {
+    console.error("[API] Greška pri spravljanju yield record-a:", error);
+    console.error("[API] Response status:", error.response?.status);
+    console.error("[API] Response data:", error.response?.data);
+    throw new Error(error.response?.data || "Failed to save yield record.");
+  }
+}

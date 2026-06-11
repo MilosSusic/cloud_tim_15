@@ -30,13 +30,14 @@ var app = builder.Build();
 
 await app.SeedDatabaseAsync();
 
+app.UseCors("ReactApp");
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseCors("ReactApp");
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 

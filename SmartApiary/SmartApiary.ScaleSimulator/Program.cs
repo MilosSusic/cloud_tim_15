@@ -1,14 +1,13 @@
-﻿using SmartApiary.ScaleSimulator.Services;
-using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
+using SmartApiary.ScaleSimulator.Models;
 using SmartApiary.ScaleSimulator.Services;
 
 namespace SmartApiary.ScaleSimulator
 {
     internal class Program
     {
+        private const string StateFileNameTemplate = "simulation-state-{0}.json";
+
         static async Task Main(string[] args)
         {
             Console.WriteLine("==================================================");
@@ -76,45 +75,40 @@ namespace SmartApiary.ScaleSimulator
                 return;
             }
 
-            // --- TELEMETRIJSKI MOD ---
             Console.WriteLine($"[STORAGE] Secure Device Access Token: {accessToken}");
-            Console.WriteLine("\n[SYSTEM] Entering telemetry mode. Sending data every 8 seconds...\n");
+            Console.WriteLine("[SIMULATION] Real-time telemetry mode enabled.");
+            Console.WriteLine("[SIMULATION] Measurements use current real time.");
+            Console.WriteLine("[SIMULATION] Battery drops continuously and resets at 2.5%.");
+            Console.WriteLine("[SIMULATION] Virtual state is persisted between restarts.\n");
 
             var simulatorService = new ScaleSimulatorService();
             var telemetryPublisher = new TelemetryPublisher(httpClient);
 
-            double battery = 100.0;
-            int delayMs = 10000;
-            //int delayMs = 3000;
-            bool isFirstLoop = true;
+            const int delayMs = 5000;
+            const double batteryResetThreshold = 2.5;
+            const double initialBattery = 100.0;
+            const double batteryDropPerMeasurement = 7.5;
+
+            var stateFilePath = Path.Combine(AppContext.BaseDirectory, string.Format(StateFileNameTemplate, serialNumber));
+            var state = LoadState(stateFilePath, initialBattery);
+
+            double battery = Math.Clamp(state.Battery, 0, initialBattery);
+
+            SaveState(stateFilePath, battery);
+
             while (true)
             {
+                var currentTime = DateTime.UtcNow;
                 var telemetryData = simulatorService.GenerateTelemetry(battery);
-                //dodah
-                //telemetryData.Timestamp = simulatedTime;
-
-                //battery -= 0.5;
-                //if (battery < 0) battery = 0;
-                if (isFirstLoop)
-                {
-                    // Nakon sto smo generisali 100% za prvi krug, 
-                    // postavljamo vrednost na 16.0% za sledeci krug
-                    battery = 16.0;
-                    isFirstLoop = false;
-                }
-                else
-                {
-                    // Od drugog kruga prirodno skidamo po 0.5%
-                    battery -= 0.5;
-                    if (battery < 0) battery = 0;
-                }
+                telemetryData.Timestamp = currentTime;
 
                 var result = await telemetryPublisher.PublishAsync(telemetryData, accessToken);
 
                 if (result.Success)
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Telemetry Published -> Weight: {telemetryData.Weight}kg | Temp: {telemetryData.Temperature}°C | Battery: {telemetryData.BatteryLevel}%");
+                    Console.WriteLine(
+                        $"[{DateTime.Now:HH:mm:ss}] Telemetry Published -> Real Time: {currentTime:dd.MM.yyyy HH:mm:ss} | Weight: {telemetryData.Weight}kg | Temp: {telemetryData.Temperature}°C | Battery: {telemetryData.BatteryLevel}%");
                     Console.ResetColor();
                 }
                 else
@@ -123,11 +117,64 @@ namespace SmartApiary.ScaleSimulator
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Failed to publish: {result.ErrorMessage}");
                     Console.ResetColor();
                 }
-                //dodah
-                //simulatedTime = simulatedTime.AddHours(1);
+
+                battery = Math.Max(batteryResetThreshold, Math.Round(battery - batteryDropPerMeasurement, 1));
+
+                if (battery <= batteryResetThreshold)
+                {
+                    battery = initialBattery;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine($"[BATTERY] Battery reset to 100% at {currentTime:dd.MM.yyyy HH:mm:ss}");
+                    Console.ResetColor();
+                }
+
+                SaveState(stateFilePath, battery);
 
                 await Task.Delay(delayMs);
             }
+        }
+
+        private static SimulationState LoadState(string stateFilePath, double fallbackBattery)
+        {
+            try
+            {
+                if (!File.Exists(stateFilePath))
+                {
+                    return new SimulationState
+                    {
+                        SimulatedLocalTime = DateTime.UtcNow,
+                        Battery = fallbackBattery
+                    };
+                }
+
+                var json = File.ReadAllText(stateFilePath);
+                var state = JsonSerializer.Deserialize<SimulationState>(json);
+                return state ?? new SimulationState
+                {
+                    SimulatedLocalTime = DateTime.UtcNow,
+                    Battery = fallbackBattery
+                };
+            }
+            catch
+            {
+                return new SimulationState
+                {
+                    SimulatedLocalTime = DateTime.UtcNow,
+                    Battery = fallbackBattery
+                };
+            }
+        }
+
+        private static void SaveState(string stateFilePath, double battery)
+        {
+            var state = new SimulationState
+            {
+                SimulatedLocalTime = DateTime.UtcNow,
+                Battery = battery
+            };
+
+            var json = JsonSerializer.Serialize(state);
+            File.WriteAllText(stateFilePath, json);
         }
     }
 }
