@@ -1,4 +1,5 @@
-﻿using SmartApiary.Domain.Enums;
+﻿using SmartApiary.Domain.Common;
+using SmartApiary.Domain.Enums;
 
 namespace SmartApiary.Domain.Models
 {
@@ -12,12 +13,17 @@ namespace SmartApiary.Domain.Models
         public string? Description { get; private set; }
         public bool IsDeleted { get; private set; }
 
-        public static Crop Create(Guid fieldId, CropType cropName, string? description, DateTime floweringPeriodStart, DateTime floweringPeriodEnd)
+        public static Result<Crop> Create(Guid fieldId, CropType cropName, string? description, DateTime floweringPeriodStart, DateTime floweringPeriodEnd)
         {
-            ValidateFieldId(fieldId);
-            ValidateDetails(cropName, description, floweringPeriodStart, floweringPeriodEnd);
+            var fieldValidation = ValidateFieldId(fieldId);
+            if (fieldValidation.IsFailure)
+                return Result<Crop>.Failure(fieldValidation.Error!);
 
-            return new Crop
+            var detailsValidation = ValidateDetails(cropName, description, floweringPeriodStart, floweringPeriodEnd);
+            if (detailsValidation.IsFailure)
+                return Result<Crop>.Failure(detailsValidation.Error!);
+
+            return Result<Crop>.Success(new Crop
             {
                 Id = Guid.NewGuid(),
                 FieldId = fieldId,
@@ -26,17 +32,21 @@ namespace SmartApiary.Domain.Models
                 FloweringPeriodStart = floweringPeriodStart,
                 FloweringPeriodEnd = floweringPeriodEnd,
                 IsDeleted = false
-            };
+            });
         }
 
-        public void Update(CropType cropName, string? description, DateTime floweringPeriodStart, DateTime floweringPeriodEnd)
+        public Result Update(CropType cropName, string? description, DateTime floweringPeriodStart, DateTime floweringPeriodEnd)
         {
-            ValidateDetails(cropName, description, floweringPeriodStart, floweringPeriodEnd);
+            var detailsValidation = ValidateDetails(cropName, description, floweringPeriodStart, floweringPeriodEnd);
+            if (detailsValidation.IsFailure)
+                return detailsValidation;
 
             CropName = cropName;
             Description = description;
             FloweringPeriodStart = floweringPeriodStart;
             FloweringPeriodEnd = floweringPeriodEnd;
+
+            return Result.Success();
         }
 
         public void MarkAsDeleted()
@@ -44,28 +54,32 @@ namespace SmartApiary.Domain.Models
             IsDeleted = true;
         }
 
-        private static void ValidateFieldId(Guid fieldId)
+        private static Result ValidateFieldId(Guid fieldId)
         {
             if (fieldId == Guid.Empty)
-                throw new ArgumentException("Field id is required.", nameof(fieldId));
+                return Result.Failure("Field id is required.");
+
+            return Result.Success();
         }
 
-        private static void ValidateDetails(
+        private static Result ValidateDetails(
             CropType cropName,
             string? description,
             DateTime floweringPeriodStart,
             DateTime floweringPeriodEnd)
         {
             if (!Enum.IsDefined(typeof(CropType), cropName))
-                throw new ArgumentException("Invalid crop type.", nameof(cropName));
+                return Result.Failure("Invalid crop type.");
             if (!string.IsNullOrWhiteSpace(description) && description.Length > 512)
-                throw new ArgumentException("Description must not exceed 512 characters.", nameof(description));
+                return Result.Failure("Description must not exceed 512 characters.");
             if (floweringPeriodStart == default)
-                throw new ArgumentException("Flowering period start is required.", nameof(floweringPeriodStart));
+                return Result.Failure("Flowering period start is required.");
             if (floweringPeriodEnd == default)
-                throw new ArgumentException("Flowering period end is required.", nameof(floweringPeriodEnd));
+                return Result.Failure("Flowering period end is required.");
             if (floweringPeriodStart > floweringPeriodEnd)
-                throw new ArgumentException("Flowering period start must be before end.", nameof(floweringPeriodStart));
+                return Result.Failure("Flowering period start must be before end.");
+
+            return Result.Success();
         }
     }
 }

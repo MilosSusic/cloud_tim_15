@@ -1,4 +1,5 @@
 using System;
+using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Domain.Models
 {
@@ -15,7 +16,7 @@ namespace SmartApiary.Domain.Models
         public bool QueenPresent { get; private set; }
         public string? Note { get; private set; }
 
-        public static HiveLogEntry Create(
+        public static Result<HiveLogEntry> Create(
             Guid hiveId,
             DateTime reviewDate,
             string reviewType,
@@ -26,10 +27,15 @@ namespace SmartApiary.Domain.Models
             bool queenPresent,
             string? note)
         {
-            ValidateHiveId(hiveId);
-            ValidateDetails(reviewDate, reviewType, bottomBoardColor, honeyFrames, honeyAmountKg, broodFrames, note);
+            var hiveValidation = ValidateHiveId(hiveId);
+            if (hiveValidation.IsFailure)
+                return Result<HiveLogEntry>.Failure(hiveValidation.Error!);
 
-            return new HiveLogEntry
+            var detailsValidation = ValidateDetails(reviewDate, reviewType, bottomBoardColor, honeyFrames, honeyAmountKg, broodFrames, note);
+            if (detailsValidation.IsFailure)
+                return Result<HiveLogEntry>.Failure(detailsValidation.Error!);
+
+            return Result<HiveLogEntry>.Success(new HiveLogEntry
             {
                 Id = Guid.NewGuid(),
                 HiveId = hiveId,
@@ -41,10 +47,10 @@ namespace SmartApiary.Domain.Models
                 BroodFrames = broodFrames,
                 QueenPresent = queenPresent,
                 Note = note
-            };
+            });
         }
 
-        public void UpdateDetails(
+        public Result UpdateDetails(
             DateTime reviewDate,
             string reviewType,
             string bottomBoardColor,
@@ -54,7 +60,9 @@ namespace SmartApiary.Domain.Models
             bool queenPresent,
             string? note)
         {
-            ValidateDetails(reviewDate, reviewType, bottomBoardColor, honeyFrames, honeyAmountKg, broodFrames, note);
+            var detailsValidation = ValidateDetails(reviewDate, reviewType, bottomBoardColor, honeyFrames, honeyAmountKg, broodFrames, note);
+            if (detailsValidation.IsFailure)
+                return detailsValidation;
 
             ReviewDate = reviewDate;
             ReviewType = reviewType;
@@ -64,15 +72,19 @@ namespace SmartApiary.Domain.Models
             BroodFrames = broodFrames;
             QueenPresent = queenPresent;
             Note = note;
+
+            return Result.Success();
         }
 
-        private static void ValidateHiveId(Guid hiveId)
+        private static Result ValidateHiveId(Guid hiveId)
         {
             if (hiveId == Guid.Empty)
-                throw new ArgumentException("Hive id is required.", nameof(hiveId));
+                return Result.Failure("Hive id is required.");
+
+            return Result.Success();
         }
 
-        private static void ValidateDetails(
+        private static Result ValidateDetails(
             DateTime reviewDate,
             string reviewType,
             string bottomBoardColor,
@@ -82,23 +94,25 @@ namespace SmartApiary.Domain.Models
             string? note)
         {
             if (reviewDate == default)
-                throw new ArgumentException("Review date is required.", nameof(reviewDate));
+                return Result.Failure("Review date is required.");
             if (reviewDate > DateTime.UtcNow.AddMinutes(5))
-                throw new ArgumentException("Review date cannot be in the future.", nameof(reviewDate));
+                return Result.Failure("Review date cannot be in the future.");
             if (string.IsNullOrWhiteSpace(reviewType))
-                throw new ArgumentException("Review type is required.", nameof(reviewType));
+                return Result.Failure("Review type is required.");
             if (reviewType.Length > 100)
-                throw new ArgumentException("Review type must not exceed 100 characters.", nameof(reviewType));
+                return Result.Failure("Review type must not exceed 100 characters.");
             if (!string.IsNullOrWhiteSpace(bottomBoardColor) && bottomBoardColor.Length > 50)
-                throw new ArgumentException("Bottom board color must not exceed 50 characters.", nameof(bottomBoardColor));
+                return Result.Failure("Bottom board color must not exceed 50 characters.");
             if (honeyFrames < 0)
-                throw new ArgumentException("Honey frames must be zero or greater.", nameof(honeyFrames));
+                return Result.Failure("Honey frames must be zero or greater.");
             if (honeyAmountKg < 0)
-                throw new ArgumentException("Honey amount must be zero or greater.", nameof(honeyAmountKg));
+                return Result.Failure("Honey amount must be zero or greater.");
             if (broodFrames < 0)
-                throw new ArgumentException("Brood frames must be zero or greater.", nameof(broodFrames));
+                return Result.Failure("Brood frames must be zero or greater.");
             if (!string.IsNullOrWhiteSpace(note) && note.Length > 512)
-                throw new ArgumentException("Note must not exceed 512 characters.", nameof(note));
+                return Result.Failure("Note must not exceed 512 characters.");
+
+            return Result.Success();
         }
     }
 }

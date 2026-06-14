@@ -31,20 +31,16 @@ namespace SmartApiary.Application.Features.Apiaries.Commands
             if (apiary.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this apiary.");
 
-            try
-            {
-                apiary.UpdateDetails(
-                    request.Name,
-                    request.Description,
-                    request.Latitude,
-                    request.Longitude,
-                    request.ImageUrl,
-                    request.ThumbnailUrl);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result.Failure(ex.Message);
-            }
+            var updateResult = apiary.UpdateDetails(
+                request.Name,
+                request.Description,
+                request.Latitude,
+                request.Longitude,
+                request.ImageUrl,
+                request.ThumbnailUrl);
+
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.Error!);
 
             _apiaryRepository.Update(apiary);
             await _apiaryRepository.SaveChangesAsync(cancellationToken);

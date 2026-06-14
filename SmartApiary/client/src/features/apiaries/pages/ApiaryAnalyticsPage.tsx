@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSignalR } from "../../../shared/context/SignalRContext";
+import { useAuth } from "../../../shared/auth/AuthContext";
 import { getApiaries } from "../../apiaries/api/apiaryApi";
 import { AnalyticsTabs } from "../components/ApiaryAnalytics/AnalyticsTabs";
 import type { Apiary } from "../types/Apiary";
@@ -18,6 +19,7 @@ import { getApiaryAnalytics, saveYieldRecord } from "../../scales/api/scaleApi";
 export const ApiaryAnalyticsPage: React.FC = () => {
   const navigate = useNavigate();
   const { connection } = useSignalR();
+  const { logout } = useAuth();
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [activeApiaryId, setActiveApiaryId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -231,6 +233,11 @@ export const ApiaryAnalyticsPage: React.FC = () => {
     loadInitialData();
   }, [activeApiaryId]);
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   if (loading) {
     return <div className="analytics-page-container">Loading analytics...</div>;
   }
@@ -244,14 +251,28 @@ export const ApiaryAnalyticsPage: React.FC = () => {
             <span className="analytics-title-separator"> / </span>
             <span className="analytics-title-accent">Analytics</span>
           </h2>
-          <button
-            type="button"
-            className="analytics-back-button"
-            onClick={() => navigate(-1)}
-            aria-label="Go back"
-          >
-            ← Back
-          </button>
+          <div style={{ display: "flex", gap: "0.75rem" }}>
+            <button
+              type="button"
+              className="analytics-back-button"
+              onClick={() => navigate(-1)}
+              aria-label="Go back"
+            >
+              ← Back
+            </button>
+            <button
+              type="button"
+              className="analytics-back-button"
+              style={{
+                background: "rgba(255,80,80,0.1)",
+                border: "1px solid rgba(255,80,80,0.35)",
+                color: "#ff6b6b",
+              }}
+              onClick={handleLogout}
+            >
+              ⎋ Logout
+            </button>
+          </div>
         </div>
         <p>Monitor honey yield and climate conditions in real time.</p>
         {error && (

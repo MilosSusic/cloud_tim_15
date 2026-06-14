@@ -118,14 +118,16 @@ namespace SmartApiary.ScaleSimulator
                     Console.ResetColor();
                 }
 
-                battery = Math.Max(batteryResetThreshold, Math.Round(battery - batteryDropPerMeasurement, 1));
-
                 if (battery <= batteryResetThreshold)
                 {
                     battery = initialBattery;
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine($"[BATTERY] Battery reset to 100% at {currentTime:dd.MM.yyyy HH:mm:ss}");
                     Console.ResetColor();
+                }
+                else
+                {
+                    battery = Math.Max(batteryResetThreshold, Math.Round(battery - batteryDropPerMeasurement, 1));
                 }
 
                 SaveState(stateFilePath, battery);

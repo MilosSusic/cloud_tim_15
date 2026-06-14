@@ -1,4 +1,6 @@
-﻿namespace SmartApiary.Domain.Models
+﻿using SmartApiary.Domain.Common;
+
+namespace SmartApiary.Domain.Models
 {
     public class SprayLog
     {
@@ -15,7 +17,7 @@
         public double? Temperature { get; private set; }
         public string? WeatherDescription { get; private set; }
 
-        public static SprayLog Create(
+        public static Result<SprayLog> Create(
             Guid sprayScheduleId,
             Guid fieldId,
             string fieldName,
@@ -27,7 +29,7 @@
             double? temperature,
             string? weatherDescription)
         {
-            Validate(
+            var validation = Validate(
                 sprayScheduleId,
                 fieldId,
                 fieldName,
@@ -37,7 +39,10 @@
                 pesticideType,
                 weatherDescription);
 
-            return new SprayLog
+            if (validation.IsFailure)
+                return Result<SprayLog>.Failure(validation.Error!);
+
+            return Result<SprayLog>.Success(new SprayLog
             {
                 Id = Guid.NewGuid(),
                 SprayScheduleId = sprayScheduleId,
@@ -50,10 +55,10 @@
                 WindSpeed = windSpeed,
                 Temperature = temperature,
                 WeatherDescription = weatherDescription
-            };
+            });
         }
 
-        private static void Validate(
+        private static Result Validate(
             Guid sprayScheduleId,
             Guid fieldId,
             string fieldName,
@@ -64,25 +69,27 @@
             string? weatherDescription)
         {
             if (sprayScheduleId == Guid.Empty)
-                throw new ArgumentException("Spray schedule id is required.", nameof(sprayScheduleId));
+                return Result.Failure("Spray schedule id is required.");
             if (fieldId == Guid.Empty)
-                throw new ArgumentException("Field id is required.", nameof(fieldId));
+                return Result.Failure("Field id is required.");
             if (string.IsNullOrWhiteSpace(fieldName))
-                throw new ArgumentException("Field name is required.", nameof(fieldName));
+                return Result.Failure("Field name is required.");
             if (fieldName.Length > 100)
-                throw new ArgumentException("Field name must not exceed 100 characters.", nameof(fieldName));
+                return Result.Failure("Field name must not exceed 100 characters.");
             if (!string.IsNullOrWhiteSpace(cropName) && cropName.Length > 100)
-                throw new ArgumentException("Crop name must not exceed 100 characters.", nameof(cropName));
+                return Result.Failure("Crop name must not exceed 100 characters.");
             if (startDateTime == default)
-                throw new ArgumentException("Start date is required.", nameof(startDateTime));
+                return Result.Failure("Start date is required.");
             if (endDateTime == default)
-                throw new ArgumentException("End date is required.", nameof(endDateTime));
+                return Result.Failure("End date is required.");
             if (endDateTime < startDateTime)
-                throw new ArgumentException("End date must be after start date.", nameof(endDateTime));
+                return Result.Failure("End date must be after start date.");
             if (!string.IsNullOrWhiteSpace(pesticideType) && pesticideType.Length > 100)
-                throw new ArgumentException("Pesticide type must not exceed 100 characters.", nameof(pesticideType));
+                return Result.Failure("Pesticide type must not exceed 100 characters.");
             if (!string.IsNullOrWhiteSpace(weatherDescription) && weatherDescription.Length > 256)
-                throw new ArgumentException("Weather description must not exceed 256 characters.", nameof(weatherDescription));
+                return Result.Failure("Weather description must not exceed 256 characters.");
+
+            return Result.Success();
         }
     }
 }

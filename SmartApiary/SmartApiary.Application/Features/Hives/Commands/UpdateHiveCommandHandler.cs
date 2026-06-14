@@ -35,19 +35,15 @@ namespace SmartApiary.Application.Features.Hives.Commands
             if (apiary is null || apiary.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this hive.");
 
-            try
-            {
-                hive.UpdateDetails(
-                    request.Label,
-                    request.Type,
-                    request.Color,
-                    request.QueenAge,
-                    request.Note);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result.Failure(ex.Message);
-            }
+            var updateResult = hive.UpdateDetails(
+                request.Label,
+                request.Type,
+                request.Color,
+                request.QueenAge,
+                request.Note);
+
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.Error!);
 
             _hiveRepository.Update(hive);
             await _hiveRepository.SaveChangesAsync(cancellationToken);

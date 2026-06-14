@@ -39,24 +39,21 @@ namespace SmartApiary.Application.Features.HiveLogEntries.Commands
             if (apiary is null || apiary.OwnerId != userId.Value)
                 return Result<Guid>.Failure("You do not have access to this hive.");
 
-            HiveLogEntry entry;
-            try
-            {
-                entry = HiveLogEntry.Create(
-                    request.HiveId,
-                    request.ReviewDate,
-                    request.ReviewType,
-                    request.BottomBoardColor,
-                    request.HoneyFrames,
-                    request.HoneyAmountKg,
-                    request.BroodFrames,
-                    request.QueenPresent,
-                    request.Note);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result<Guid>.Failure(ex.Message);
-            }
+            var entryResult = HiveLogEntry.Create(
+                request.HiveId,
+                request.ReviewDate,
+                request.ReviewType,
+                request.BottomBoardColor,
+                request.HoneyFrames,
+                request.HoneyAmountKg,
+                request.BroodFrames,
+                request.QueenPresent,
+                request.Note);
+
+            if (entryResult.IsFailure)
+                return Result<Guid>.Failure(entryResult.Error!);
+
+            var entry = entryResult.Value!;
 
             await _logRepository.AddAsync(entry, cancellationToken);
             await _logRepository.SaveChangesAsync(cancellationToken);

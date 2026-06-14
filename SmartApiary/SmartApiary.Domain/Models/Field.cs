@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Domain.Models
 {
@@ -18,12 +16,25 @@ namespace SmartApiary.Domain.Models
         public string? ThumbnailUrl { get; private set; }
         public List<Crop> Crops { get; private set; } = new();
         public List<SpraySchedule> SpraySchedules { get; private set; } = new();
-        public static Field Create(Guid ownerId, string fieldName, string? description, double latitude, double longitude, string? imageUrl, string? thumbnailUrl)
-        {
-            ValidateOwnerId(ownerId);
-            ValidateDetails(fieldName, description, latitude, longitude, imageUrl, thumbnailUrl);
 
-            return new Field
+        public static Result<Field> Create(
+            Guid ownerId,
+            string fieldName,
+            string? description,
+            double latitude,
+            double longitude,
+            string? imageUrl,
+            string? thumbnailUrl)
+        {
+            var ownerValidation = ValidateOwnerId(ownerId);
+            if (ownerValidation.IsFailure)
+                return Result<Field>.Failure(ownerValidation.Error!);
+
+            var detailsValidation = ValidateDetails(fieldName, description, latitude, longitude, imageUrl, thumbnailUrl);
+            if (detailsValidation.IsFailure)
+                return Result<Field>.Failure(detailsValidation.Error!);
+
+            return Result<Field>.Success(new Field
             {
                 Id = Guid.NewGuid(),
                 OwnerId = ownerId,
@@ -33,11 +44,20 @@ namespace SmartApiary.Domain.Models
                 Longitude = longitude,
                 ImageUrl = imageUrl,
                 ThumbnailUrl = thumbnailUrl
-            };
+            });
         }
-        public void Update(string fieldName, string? description, double latitude, double longitude, string? imageUrl, string? thumbnailUrl)
+
+        public Result Update(
+            string fieldName,
+            string? description,
+            double latitude,
+            double longitude,
+            string? imageUrl,
+            string? thumbnailUrl)
         {
-            ValidateDetails(fieldName, description, latitude, longitude, imageUrl, thumbnailUrl);
+            var detailsValidation = ValidateDetails(fieldName, description, latitude, longitude, imageUrl, thumbnailUrl);
+            if (detailsValidation.IsFailure)
+                return detailsValidation;
 
             FieldName = fieldName;
             Description = description;
@@ -49,15 +69,19 @@ namespace SmartApiary.Domain.Models
 
             if (!string.IsNullOrWhiteSpace(thumbnailUrl))
                 ThumbnailUrl = thumbnailUrl;
+
+            return Result.Success();
         }
 
-        private static void ValidateOwnerId(Guid ownerId)
+        private static Result ValidateOwnerId(Guid ownerId)
         {
             if (ownerId == Guid.Empty)
-                throw new ArgumentException("Owner id is required.", nameof(ownerId));
+                return Result.Failure("Owner id is required.");
+
+            return Result.Success();
         }
 
-        private static void ValidateDetails(
+        private static Result ValidateDetails(
             string fieldName,
             string? description,
             double latitude,
@@ -66,19 +90,21 @@ namespace SmartApiary.Domain.Models
             string? thumbnailUrl)
         {
             if (string.IsNullOrWhiteSpace(fieldName))
-                throw new ArgumentException("Field name is required.", nameof(fieldName));
+                return Result.Failure("Field name is required.");
             if (fieldName.Length > 100)
-                throw new ArgumentException("Field name must not exceed 100 characters.", nameof(fieldName));
+                return Result.Failure("Field name must not exceed 100 characters.");
             if (!string.IsNullOrWhiteSpace(description) && description.Length > 512)
-                throw new ArgumentException("Description must not exceed 512 characters.", nameof(description));
+                return Result.Failure("Description must not exceed 512 characters.");
             if (latitude < -90 || latitude > 90)
-                throw new ArgumentException("Latitude must be between -90 and 90.", nameof(latitude));
+                return Result.Failure("Latitude must be between -90 and 90.");
             if (longitude < -180 || longitude > 180)
-                throw new ArgumentException("Longitude must be between -180 and 180.", nameof(longitude));
+                return Result.Failure("Longitude must be between -180 and 180.");
             if (!string.IsNullOrWhiteSpace(imageUrl) && imageUrl.Length > 512)
-                throw new ArgumentException("ImageUrl must not exceed 512 characters.", nameof(imageUrl));
+                return Result.Failure("ImageUrl must not exceed 512 characters.");
             if (!string.IsNullOrWhiteSpace(thumbnailUrl) && thumbnailUrl.Length > 512)
-                throw new ArgumentException("ThumbnailUrl must not exceed 512 characters.", nameof(thumbnailUrl));
+                return Result.Failure("ThumbnailUrl must not exceed 512 characters.");
+
+            return Result.Success();
         }
     }
 }

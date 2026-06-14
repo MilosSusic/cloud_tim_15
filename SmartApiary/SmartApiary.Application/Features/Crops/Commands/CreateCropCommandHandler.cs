@@ -15,20 +15,17 @@ namespace SmartApiary.Application.Features.Crops.Commands
 
         public async Task<Result<Guid>> Handle(CreateCropCommand request, CancellationToken cancellationToken)
         {
-            Crop crop;
-            try
-            {
-                crop = Crop.Create(
-                    request.FieldId,
-                    request.CropName,
-                    request.Description,
-                    request.FloweringPeriodStart,
-                    request.FloweringPeriodEnd);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result<Guid>.Failure(ex.Message);
-            }
+            var cropResult = Crop.Create(
+                request.FieldId,
+                request.CropName,
+                request.Description,
+                request.FloweringPeriodStart,
+                request.FloweringPeriodEnd);
+
+            if (cropResult.IsFailure)
+                return Result<Guid>.Failure(cropResult.Error!);
+
+            var crop = cropResult.Value!;
 
             await _ropsRepository.AddAsync(crop, cancellationToken);
             await _ropsRepository.SaveChangesAsync(cancellationToken);

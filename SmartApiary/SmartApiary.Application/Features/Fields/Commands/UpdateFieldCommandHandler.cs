@@ -31,19 +31,15 @@ namespace SmartApiary.Application.Features.Fields.Commands
             if (field.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this field.");
 
-            try
-            {
-                field.Update(request.FieldName,
-                            request.Description,
-                            request.Latitude,
-                            request.Longitude,
-                            request.ImageUrl,
-                            request.ThumbnailUrl);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result.Failure(ex.Message);
-            }
+            var updateResult = field.Update(request.FieldName,
+                                            request.Description,
+                                            request.Latitude,
+                                            request.Longitude,
+                                            request.ImageUrl,
+                                            request.ThumbnailUrl);
+
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.Error!);
 
             _fieldRepository.Update(field);
             await _fieldRepository.SaveChangesAsync(cancellationToken);

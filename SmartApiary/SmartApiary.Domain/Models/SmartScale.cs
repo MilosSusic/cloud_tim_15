@@ -1,10 +1,7 @@
-﻿using SmartApiary.Domain.Enums;
+﻿using SmartApiary.Domain.Common;
+using SmartApiary.Domain.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace SmartApiary.Domain.Models
 {
@@ -20,41 +17,61 @@ namespace SmartApiary.Domain.Models
 
         private static readonly Regex SerialNumberRegex = new(@"^SA-\d{4}-\d{5}$", RegexOptions.Compiled);
 
-        public static SmartScale Create(Guid hiveId, string serialNumber, double? weightDropLimit)
+        public static Result<SmartScale> Create(Guid hiveId, string serialNumber, double? weightDropLimit)
         {
-            if (hiveId == Guid.Empty)
-                throw new ArgumentException("Hive id is required.", nameof(hiveId));
+            var validation = ValidateCreate(hiveId, serialNumber, weightDropLimit);
+            if (validation.IsFailure)
+                return Result<SmartScale>.Failure(validation.Error!);
 
-            if (string.IsNullOrWhiteSpace(serialNumber) || !SerialNumberRegex.IsMatch(serialNumber))
-                throw new ArgumentException("Serial number must be in format SA-YYYY-XXXXX.", nameof(serialNumber));
-
-            if (weightDropLimit.HasValue && weightDropLimit.Value <= 0)
-                throw new ArgumentException("Weight drop limit must be greater than zero.", nameof(weightDropLimit));
-
-            return new SmartScale
+            return Result<SmartScale>.Success(new SmartScale
             {
                 Id = Guid.NewGuid(),
                 HiveId = hiveId,
                 SerialNumber = serialNumber,
                 Status = SmartScaleStatus.Unpaired,
                 WeightDropLimit = weightDropLimit
-            };
+            });
         }
 
-        public void Activate(Guid hardwareId, string accessToken)
+        public Result Activate(Guid hardwareId, string accessToken)
         {
-            if (Status == SmartScaleStatus.Paired)
-                throw new InvalidOperationException("Device is already paired.");
-
-            if (hardwareId == Guid.Empty)
-                throw new ArgumentException("Hardware id (UUID) is required.", nameof(hardwareId));
-
-            if (string.IsNullOrWhiteSpace(accessToken))
-                throw new ArgumentException("Access token is required.", nameof(accessToken));
+            var validation = ValidateActivation(hardwareId, accessToken);
+            if (validation.IsFailure)
+                return validation;
 
             HardwareId = hardwareId;
             AccessToken = accessToken;
             Status = SmartScaleStatus.Paired;
+
+            return Result.Success();
+        }
+
+        private static Result ValidateCreate(Guid hiveId, string serialNumber, double? weightDropLimit)
+        {
+            if (hiveId == Guid.Empty)
+                return Result.Failure("Hive id is required.");
+
+            if (string.IsNullOrWhiteSpace(serialNumber) || !SerialNumberRegex.IsMatch(serialNumber))
+                return Result.Failure("Serial number must be in format SA-YYYY-XXXXX.");
+
+            if (weightDropLimit.HasValue && weightDropLimit.Value <= 0)
+                return Result.Failure("Weight drop limit must be greater than zero.");
+
+            return Result.Success();
+        }
+
+        private Result ValidateActivation(Guid hardwareId, string accessToken)
+        {
+            if (Status == SmartScaleStatus.Paired)
+                return Result.Failure("Device is already paired.");
+
+            if (hardwareId == Guid.Empty)
+                return Result.Failure("Hardware id (UUID) is required.");
+
+            if (string.IsNullOrWhiteSpace(accessToken))
+                return Result.Failure("Access token is required.");
+
+            return Result.Success();
         }
     }
 }

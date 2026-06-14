@@ -29,6 +29,7 @@ import CropDetails from "../../crops/components/CropDetails";
 import SprayDetails from "../../spraySchedule/components/SprayDetails";
 import { useNavigate } from 'react-router-dom';
 import EditFieldModal from "../components/EditFieldModal";
+import { useAuth } from '../../../shared/auth/AuthContext';
 
 const cropNames: Record<number, string> = {
   1: "Wheat",
@@ -62,6 +63,7 @@ const FieldPage: React.FC = () => {
   const [selectedCrop, setSelectedCrop] = useState<Crop | null>(null);
   const [selectedSpray, setSelectedSpray] = useState<SpraySchedule | null>(null);
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [showEditFieldModal, setShowEditFieldModal] = useState(false);
   const [newSprayId, setNewSprayId] = useState<string | null>(null);
   const [newSprayNotifiedCount, setNewSprayNotifiedCount] = useState<number | null>(null);
@@ -344,6 +346,11 @@ const FieldPage: React.FC = () => {
         new Date(right.startDateTime).getTime() - new Date(left.startDateTime).getTime()
     );
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="field-page">
       <div className="field-header">
@@ -357,6 +364,9 @@ const FieldPage: React.FC = () => {
           </button>
           <button className="action-btn" onClick={() => setShowFieldModal(true)}>
             + Add Field
+          </button>
+          <button className="logout-btn" onClick={handleLogout}>
+            ⎋ Logout
           </button>
         </div>
       </div>

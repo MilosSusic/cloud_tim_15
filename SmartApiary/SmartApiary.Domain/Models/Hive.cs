@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Domain.Models
 {
@@ -15,7 +16,7 @@ namespace SmartApiary.Domain.Models
         public bool IsDeleted { get; private set; }
         public List<HiveLogEntry> LogEntries { get; private set; } = new();
 
-        public static Hive Create(
+        public static Result<Hive> Create(
             Guid apiaryId,
             string label,
             string type,
@@ -23,10 +24,15 @@ namespace SmartApiary.Domain.Models
             int queenAge,
             string? note)
         {
-            ValidateApiaryId(apiaryId);
-            ValidateDetails(label, type, color, queenAge, note);
+            var apiaryValidation = ValidateApiaryId(apiaryId);
+            if (apiaryValidation.IsFailure)
+                return Result<Hive>.Failure(apiaryValidation.Error!);
 
-            return new Hive
+            var detailsValidation = ValidateDetails(label, type, color, queenAge, note);
+            if (detailsValidation.IsFailure)
+                return Result<Hive>.Failure(detailsValidation.Error!);
+
+            return Result<Hive>.Success(new Hive
             {
                 Id = Guid.NewGuid(),
                 ApiaryId = apiaryId,
@@ -36,23 +42,27 @@ namespace SmartApiary.Domain.Models
                 QueenAge = queenAge,
                 Note = note,
                 IsDeleted = false
-            };
+            });
         }
 
-        public void UpdateDetails(
+        public Result UpdateDetails(
             string label,
             string type,
             string color,
             int queenAge,
             string? note)
         {
-            ValidateDetails(label, type, color, queenAge, note);
+            var detailsValidation = ValidateDetails(label, type, color, queenAge, note);
+            if (detailsValidation.IsFailure)
+                return detailsValidation;
 
             Label = label;
             Type = type;
             Color = color;
             QueenAge = queenAge;
             Note = note;
+
+            return Result.Success();
         }
 
         public void MarkAsDeleted()
@@ -60,13 +70,15 @@ namespace SmartApiary.Domain.Models
             IsDeleted = true;
         }
 
-        private static void ValidateApiaryId(Guid apiaryId)
+        private static Result ValidateApiaryId(Guid apiaryId)
         {
             if (apiaryId == Guid.Empty)
-                throw new ArgumentException("Apiary id is required.", nameof(apiaryId));
+                return Result.Failure("Apiary id is required.");
+
+            return Result.Success();
         }
 
-        private static void ValidateDetails(
+        private static Result ValidateDetails(
             string label,
             string type,
             string color,
@@ -74,21 +86,23 @@ namespace SmartApiary.Domain.Models
             string? note)
         {
             if (string.IsNullOrWhiteSpace(label))
-                throw new ArgumentException("Hive label is required.", nameof(label));
+                return Result.Failure("Hive label is required.");
             if (label.Length > 50)
-                throw new ArgumentException("Hive label must not exceed 50 characters.", nameof(label));
+                return Result.Failure("Hive label must not exceed 50 characters.");
             if (string.IsNullOrWhiteSpace(type))
-                throw new ArgumentException("Hive type is required.", nameof(type));
+                return Result.Failure("Hive type is required.");
             if (type.Length > 50)
-                throw new ArgumentException("Hive type must not exceed 50 characters.", nameof(type));
+                return Result.Failure("Hive type must not exceed 50 characters.");
             if (string.IsNullOrWhiteSpace(color))
-                throw new ArgumentException("Hive color is required.", nameof(color));
+                return Result.Failure("Hive color is required.");
             if (color.Length > 50)
-                throw new ArgumentException("Hive color must not exceed 50 characters.", nameof(color));
+                return Result.Failure("Hive color must not exceed 50 characters.");
             if (queenAge < 0 || queenAge > 10)
-                throw new ArgumentException("Queen age must be between 0 and 10.", nameof(queenAge));
+                return Result.Failure("Queen age must be between 0 and 10.");
             if (!string.IsNullOrWhiteSpace(note) && note.Length > 512)
-                throw new ArgumentException("Note must not exceed 512 characters.", nameof(note));
+                return Result.Failure("Note must not exceed 512 characters.");
+
+            return Result.Success();
         }
     }
 }

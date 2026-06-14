@@ -10,9 +10,11 @@ import ApiaryInfoPanel from "../components/ApiaryInfoPanel";
 import "../layout/ApiaryPage.css";
 import type { Apiary } from "../types/Apiary";
 import type { NearbyField } from "../types/NearbyField";
+import { useAuth } from "../../../shared/auth/AuthContext";
 
 const ApiaryPage: React.FC = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [nearbyFields, setNearbyFields] = useState<NearbyField[]>([]);
@@ -232,6 +234,11 @@ const ApiaryPage: React.FC = () => {
     setLoading(false);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="apiary-page">
       <div className="apiary-header">
@@ -248,6 +255,9 @@ const ApiaryPage: React.FC = () => {
           </button>
           <button onClick={openCreate} className="add-btn">
             + Add Apiary
+          </button>
+          <button onClick={handleLogout} className="logout-btn">
+            ⎋ Logout
           </button>
         </div>
       </div>

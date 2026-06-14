@@ -3,6 +3,8 @@ import { getFields } from "../../fields/api/fieldApi";
 import { getSprayLogs } from "../api/sprayScheduleApi";
 import type { Field } from "../../fields/types/Field";
 import "../layout/SprayLog.css";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../shared/auth/AuthContext";
 
 interface SprayLog {
   id: string;
@@ -25,6 +27,8 @@ const SprayLogPage: React.FC = () => {
   const [to, setTo] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     getFields().then(setFields).catch(console.error);
@@ -86,6 +90,11 @@ const SprayLogPage: React.FC = () => {
     doc.save("spray-log.pdf");
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="spray-log-page">
       <div className="spray-log-header">
@@ -93,6 +102,9 @@ const SprayLogPage: React.FC = () => {
           <div className="spray-log-eyebrow">Smart Agriculture</div>
           <h2>Spray Treatment Log</h2>
         </div>
+        <button className="spray-log-logout-btn" onClick={handleLogout}>
+          ⎋ Logout
+        </button>
       </div>
 
       <div className="spray-log-filters">

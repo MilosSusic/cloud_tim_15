@@ -64,25 +64,22 @@ namespace SmartApiary.Application.Features.SpraySchedule.Commands
 
                 var activeCrop = field?.Crops?.FirstOrDefault(c => !c.IsDeleted);
 
-                SprayLog sprayLog;
-                try
-                {
-                    sprayLog = SprayLog.Create(
-                        spraySchedule.Id,
-                        spraySchedule.FieldId,
-                        field?.FieldName ?? string.Empty,
-                        activeCrop?.CropName.ToString(),
-                        spraySchedule.StartDateTime,
-                        spraySchedule.StartDateTime.AddHours(spraySchedule.DurationHours),
-                        spraySchedule.PesticideType,
-                        weather.WindSpeed,
-                        weather.Temperature,
-                        weather.Description);
-                }
-                catch (ArgumentException ex)
-                {
-                    return Result.Failure(ex.Message);
-                }
+                var sprayLogResult = SprayLog.Create(
+                    spraySchedule.Id,
+                    spraySchedule.FieldId,
+                    field?.FieldName ?? string.Empty,
+                    activeCrop?.CropName.ToString(),
+                    spraySchedule.StartDateTime,
+                    spraySchedule.StartDateTime.AddHours(spraySchedule.DurationHours),
+                    spraySchedule.PesticideType,
+                    weather.WindSpeed,
+                    weather.Temperature,
+                    weather.Description);
+
+                if (sprayLogResult.IsFailure)
+                    return Result.Failure(sprayLogResult.Error!);
+
+                var sprayLog = sprayLogResult.Value!;
 
                 await _sprayLogRepository.AddAsync(sprayLog, cancellationToken);
                 await _sprayLogRepository.SaveChangesAsync(cancellationToken);

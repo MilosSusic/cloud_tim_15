@@ -42,22 +42,18 @@ namespace SmartApiary.Application.Features.HiveLogEntries.Commands
             if (apiary is null || apiary.OwnerId != userId.Value)
                 return Result.Failure("You do not have access to this log entry.");
 
-            try
-            {
-                entry.UpdateDetails(
-                    request.ReviewDate,
-                    request.ReviewType,
-                    request.BottomBoardColor,
-                    request.HoneyFrames,
-                    request.HoneyAmountKg,
-                    request.BroodFrames,
-                    request.QueenPresent,
-                    request.Note);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result.Failure(ex.Message);
-            }
+            var updateResult = entry.UpdateDetails(
+                request.ReviewDate,
+                request.ReviewType,
+                request.BottomBoardColor,
+                request.HoneyFrames,
+                request.HoneyAmountKg,
+                request.BroodFrames,
+                request.QueenPresent,
+                request.Note);
+
+            if (updateResult.IsFailure)
+                return Result.Failure(updateResult.Error!);
 
             _logRepository.Update(entry);
             await _logRepository.SaveChangesAsync(cancellationToken);

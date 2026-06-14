@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using SmartApiary.Domain.Common;
 
 namespace SmartApiary.Domain.Models
 {
@@ -15,7 +16,7 @@ namespace SmartApiary.Domain.Models
         public Guid OwnerId { get; private set; }
         public List<Hive> Hives { get; private set; } = new();
 
-        public static Apiary Create(
+        public static Result<Apiary> Create(
             Guid ownerId,
             string name,
             string? description,
@@ -24,10 +25,15 @@ namespace SmartApiary.Domain.Models
             string? imageUrl,
             string? thumbnailUrl)
         {
-            ValidateOwnerId(ownerId);
-            ValidateDetails(name, description, latitude, longitude, imageUrl, thumbnailUrl);
+            var ownerValidation = ValidateOwnerId(ownerId);
+            if (ownerValidation.IsFailure)
+                return Result<Apiary>.Failure(ownerValidation.Error!);
 
-            return new Apiary
+            var detailsValidation = ValidateDetails(name, description, latitude, longitude, imageUrl, thumbnailUrl);
+            if (detailsValidation.IsFailure)
+                return Result<Apiary>.Failure(detailsValidation.Error!);
+
+            return Result<Apiary>.Success(new Apiary
             {
                 Id = Guid.NewGuid(),
                 OwnerId = ownerId,
@@ -37,10 +43,10 @@ namespace SmartApiary.Domain.Models
                 Longitude = longitude,
                 ImageUrl = imageUrl,
                 ThumbnailUrl = thumbnailUrl
-            };
+            });
         }
 
-        public void UpdateDetails(
+        public Result UpdateDetails(
             string name,
             string? description,
             double latitude,
@@ -48,7 +54,9 @@ namespace SmartApiary.Domain.Models
             string? imageUrl,
             string? thumbnailUrl)
         {
-            ValidateDetails(name, description, latitude, longitude, imageUrl, thumbnailUrl);
+            var detailsValidation = ValidateDetails(name, description, latitude, longitude, imageUrl, thumbnailUrl);
+            if (detailsValidation.IsFailure)
+                return detailsValidation;
 
             Name = name;
             Description = description;
@@ -60,15 +68,19 @@ namespace SmartApiary.Domain.Models
 
             if (!string.IsNullOrWhiteSpace(thumbnailUrl))
                 ThumbnailUrl = thumbnailUrl;
+
+            return Result.Success();
         }
 
-        private static void ValidateOwnerId(Guid ownerId)
+        private static Result ValidateOwnerId(Guid ownerId)
         {
             if (ownerId == Guid.Empty)
-                throw new ArgumentException("Owner id is required.", nameof(ownerId));
+                return Result.Failure("Owner id is required.");
+
+            return Result.Success();
         }
 
-        private static void ValidateDetails(
+        private static Result ValidateDetails(
             string name,
             string? description,
             double latitude,
@@ -77,19 +89,21 @@ namespace SmartApiary.Domain.Models
             string? thumbnailUrl)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Apiary name is required.", nameof(name));
+                return Result.Failure("Apiary name is required.");
             if (name.Length > 100)
-                throw new ArgumentException("Apiary name must not exceed 100 characters.", nameof(name));
+                return Result.Failure("Apiary name must not exceed 100 characters.");
             if (!string.IsNullOrWhiteSpace(description) && description.Length > 512)
-                throw new ArgumentException("Description must not exceed 512 characters.", nameof(description));
+                return Result.Failure("Description must not exceed 512 characters.");
             if (latitude < -90 || latitude > 90)
-                throw new ArgumentException("Latitude must be between -90 and 90.", nameof(latitude));
+                return Result.Failure("Latitude must be between -90 and 90.");
             if (longitude < -180 || longitude > 180)
-                throw new ArgumentException("Longitude must be between -180 and 180.", nameof(longitude));
+                return Result.Failure("Longitude must be between -180 and 180.");
             if (!string.IsNullOrWhiteSpace(imageUrl) && imageUrl.Length > 512)
-                throw new ArgumentException("ImageUrl must not exceed 512 characters.", nameof(imageUrl));
+                return Result.Failure("ImageUrl must not exceed 512 characters.");
             if (!string.IsNullOrWhiteSpace(thumbnailUrl) && thumbnailUrl.Length > 512)
-                throw new ArgumentException("ThumbnailUrl must not exceed 512 characters.", nameof(thumbnailUrl));
+                return Result.Failure("ThumbnailUrl must not exceed 512 characters.");
+
+            return Result.Success();
         }
     }
 }

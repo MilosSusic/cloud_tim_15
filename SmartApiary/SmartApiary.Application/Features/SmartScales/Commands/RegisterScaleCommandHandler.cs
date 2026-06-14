@@ -48,15 +48,11 @@ namespace SmartApiary.Application.Features.SmartScales.Commands
             if (!isUnique)
                 return Result<Guid>.Failure("A scale with this serial number is already registered.");
 
-            SmartScale smartScale;
-            try
-            {
-                smartScale = SmartScale.Create(request.HiveId, request.SerialNumber, request.WeightDropLimit);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result<Guid>.Failure(ex.Message);
-            }
+            var smartScaleResult = SmartScale.Create(request.HiveId, request.SerialNumber, request.WeightDropLimit);
+            if (smartScaleResult.IsFailure)
+                return Result<Guid>.Failure(smartScaleResult.Error!);
+
+            var smartScale = smartScaleResult.Value!;
 
             await _smartScaleRepository.AddAsync(smartScale, cancellationToken);
             await _smartScaleRepository.SaveChangesAsync(cancellationToken);
