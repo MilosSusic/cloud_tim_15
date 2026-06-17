@@ -1,3 +1,4 @@
+using SmartApiary.Application.Common.Dtos;
 using SmartApiary.Application.Interfaces.Email;
 using SmartApiary.Application.Interfaces.Messaging;
 using SmartApiary.Application.Interfaces.Repositories;
@@ -22,41 +23,31 @@ namespace SmartApiary.Infrastructure.Services.Email
 
             foreach (var recipient in recipientsByField.Recipients)
             {
+                // Kreiramo DTO za svakog primaoca
+                var dto = new SprayNotificationDto(
+                    payload.SprayScheduleId,
+                    payload.FieldId,
+                    payload.NotificationType,
+                    payload.StartDateTime,
+                    payload.DurationHours,
+                    payload.PesticideType,
+                    recipient.Email,
+                    recipient.FirstName,
+                    recipient.LastName,
+                    recipient.NearbyApiaryCount
+                );
+
                 if (payload.NotificationType == "Scheduled")
                 {
-                    await sprayNotificationEmailService.SendScheduledAsync(
-                        recipient.Email,
-                        recipient.FirstName,
-                        recipient.LastName,
-                        recipientsByField.FieldName,
-                        payload.StartDateTime,
-                        payload.DurationHours,
-                        payload.PesticideType,
-                        recipient.NearbyApiaryCount);
+                    await sprayNotificationEmailService.SendScheduledAsync(dto);
                 }
                 else if (payload.NotificationType == "Rescheduled")
                 {
-                    await sprayNotificationEmailService.SendRescheduledAsync(
-                        recipient.Email,
-                        recipient.FirstName,
-                        recipient.LastName,
-                        recipientsByField.FieldName,
-                        payload.StartDateTime,
-                        payload.DurationHours,
-                        payload.PesticideType,
-                        recipient.NearbyApiaryCount);
+                    await sprayNotificationEmailService.SendRescheduledAsync(dto);
                 }
                 else if (payload.NotificationType == "Cancelled")
                 {
-                    await sprayNotificationEmailService.SendCancelledAsync(
-                        recipient.Email,
-                        recipient.FirstName,
-                        recipient.LastName,
-                        recipientsByField.FieldName,
-                        payload.StartDateTime,
-                        payload.DurationHours,
-                        payload.PesticideType,
-                        recipient.NearbyApiaryCount);
+                    await sprayNotificationEmailService.SendCancelledAsync(dto);
                 }
             }
 

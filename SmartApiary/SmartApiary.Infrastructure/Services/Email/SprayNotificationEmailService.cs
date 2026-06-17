@@ -1,67 +1,33 @@
 using SmartApiary.Application.Interfaces.Email;
+using SmartApiary.Application.Common.Dtos;
 using System.Text;
 
 namespace SmartApiary.Infrastructure.Services.Email
 {
     public class SprayNotificationEmailService(IEmailService emailService) : ISprayNotificationEmailService
     {
-        public async Task SendScheduledAsync(string to, string firstName, string lastName, string fieldName, DateTime startDateTime, int durationHours, string? pesticideType, int nearbyApiaryCount)
+        public async Task SendScheduledAsync(SprayNotificationDto dto)
         {
-            var (subject, body) = BuildEmail(
-                "Scheduled",
-                firstName,
-                lastName,
-                fieldName,
-                startDateTime,
-                durationHours,
-                pesticideType,
-                nearbyApiaryCount);
-
-            await emailService.SendEmailAsync(to, subject, body);
+            var (subject, body) = BuildEmail("Scheduled", dto);
+            await emailService.SendEmailAsync(dto.To, subject, body);
         }
 
-        public async Task SendRescheduledAsync(string to, string firstName, string lastName, string fieldName, DateTime startDateTime, int durationHours, string? pesticideType, int nearbyApiaryCount)
+        public async Task SendRescheduledAsync(SprayNotificationDto dto)
         {
-            var (subject, body) = BuildEmail(
-                "Rescheduled",
-                firstName,
-                lastName,
-                fieldName,
-                startDateTime,
-                durationHours,
-                pesticideType,
-                nearbyApiaryCount);
-
-            await emailService.SendEmailAsync(to, subject, body);
+            var (subject, body) = BuildEmail("Rescheduled", dto);
+            await emailService.SendEmailAsync(dto.To, subject, body);
         }
 
-        public async Task SendCancelledAsync(string to, string firstName, string lastName, string fieldName, DateTime startDateTime, int durationHours, string? pesticideType, int nearbyApiaryCount)
+        public async Task SendCancelledAsync(SprayNotificationDto dto)
         {
-            var (subject, body) = BuildEmail(
-                "Cancelled",
-                firstName,
-                lastName,
-                fieldName,
-                startDateTime,
-                durationHours,
-                pesticideType,
-                nearbyApiaryCount);
-
-            await emailService.SendEmailAsync(to, subject, body);
+            var (subject, body) = BuildEmail("Cancelled", dto);
+            await emailService.SendEmailAsync(dto.To, subject, body);
         }
 
-        private static (string Subject, string Body) BuildEmail(
-            string notificationType,
-            string firstName,
-            string lastName,
-            string fieldName,
-            DateTime startDateTime,
-            int durationHours,
-            string? pesticideType,
-            int nearbyApiaryCount)
+        private static (string Subject, string Body) BuildEmail(string notificationType, SprayNotificationDto dto)
         {
-            var date = startDateTime.ToString("dd.MM.yyyy HH:mm");
-            var pesticide = string.IsNullOrWhiteSpace(pesticideType) ? "N/A" : pesticideType;
+            var date = dto.StartDateTime.ToString("dd.MM.yyyy HH:mm");
+            var pesticide = string.IsNullOrWhiteSpace(dto.PesticideType) ? "N/A" : dto.PesticideType;
 
             var actionText = notificationType switch
             {
@@ -80,13 +46,13 @@ namespace SmartApiary.Infrastructure.Services.Email
             };
 
             var sb = new StringBuilder();
-            sb.AppendLine($"<h3>Hello {firstName} {lastName},</h3>");
+            sb.AppendLine($"<h3>Hello {dto.FirstName} {dto.LastName},</h3>");
             sb.AppendLine($"<p>{actionText} near your apiary/apiaries.</p>");
-            sb.AppendLine($"<p><strong>Field:</strong> {fieldName}</p>");
+            sb.AppendLine($"<p><strong>Field:</strong> {dto.FieldId}</p>");
             sb.AppendLine($"<p><strong>Planned start:</strong> {date}</p>");
-            sb.AppendLine($"<p><strong>Duration:</strong> {durationHours}h</p>");
+            sb.AppendLine($"<p><strong>Duration:</strong> {dto.DurationHours}h</p>");
             sb.AppendLine($"<p><strong>Pesticide:</strong> {pesticide}</p>");
-            sb.AppendLine($"<p><strong>Your nearby apiaries in radius:</strong> {nearbyApiaryCount}</p>");
+            sb.AppendLine($"<p><strong>Your nearby apiaries in radius:</strong> {dto.NearbyApiaryCount}</p>");
             sb.AppendLine("<br/>");
             sb.AppendLine("<p>SmartApiary Team</p>");
 
