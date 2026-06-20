@@ -5,8 +5,8 @@ using System;
 namespace SmartApiary.Domain.Models
 {
     /// <summary>
-    /// Predstavlja zabilježen prinos (razlika težine izme?u dva mjerenja).
-    /// Sprema se u Table Storage za brze pretraživanja bez potrebe da se ra?una iz Telemetrije.
+    /// Predstavlja zabelezen prinos
+    /// Sprema se u Table Storage za brze pretrazivanje bez potrebe da se racuna iz Telemetrije
     /// </summary>
     public class YieldRecord
     {
@@ -30,8 +30,8 @@ namespace SmartApiary.Domain.Models
         #region Factory Methods
 
         /// <summary>
-        /// Kreira novi YieldRecord kada se završi period od 12 mjerenja.
-        /// Koristi se na frontu da se proslje?uje backendi-u.
+        /// Kreira novi YieldRecord kada se zavrsi period od 12 merenja
+        /// Koristi se na frontu da se prosledjuje backend-u
         /// </summary>
         public static Result<YieldRecord> Create(
             string smartScaleId,
@@ -54,8 +54,8 @@ namespace SmartApiary.Domain.Models
         }
 
         /// <summary>
-        /// U?itava YieldRecord iz Table Storage-a.
-        /// Koristi se u Mapper-u.
+        /// Ucitava YieldRecord iz Table Storage-a
+        /// Koristi se u Mapper-u
         /// </summary>
         public static Result<YieldRecord> Load(
             string id,

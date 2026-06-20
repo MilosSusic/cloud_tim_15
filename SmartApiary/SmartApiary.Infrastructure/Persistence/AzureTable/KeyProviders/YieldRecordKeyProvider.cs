@@ -2,7 +2,7 @@ using SmartApiary.Domain.Models;
 using SmartApiary.Domain.ValueObjects;
 using SmartApiary.Infrastructure.Persistence.AzureTable.Common;
 
-namespace SmartApiary.Infrastructure.Persistence.AzureTable.Common
+namespace SmartApiary.Infrastructure.Persistence.AzureTable.KeyProviders
 {
     internal class YieldRecordKeyProvider : ITableKeyProvider<YieldRecord>
     {
