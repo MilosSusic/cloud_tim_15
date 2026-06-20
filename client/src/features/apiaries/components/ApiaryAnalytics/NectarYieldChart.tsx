@@ -56,7 +56,7 @@ export const NectarYieldChart: React.FC<NectarYieldChartProps> = ({ data }) => {
       <h3
         style={{ margin: "0 0 1.5rem 0", fontSize: "1.2rem", fontWeight: 600 }}
       >
-        Daily nectar yield ($\Delta$ Scale Weight)
+        Daily nectar yield
       </h3>
 
       <ResponsiveContainer width="100%" height="90%">
