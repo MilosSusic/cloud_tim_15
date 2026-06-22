@@ -30,5 +30,17 @@ namespace SmartApiary.WebApi.Services
                 timestamp = DateTime.UtcNow
             });
         }
+
+        public async Task SendYieldDeltaNotificationAsync(Guid apiaryId, string scaleId, double deltaKg, DateTime recordedAt)
+        {
+            _logger.LogInformation("[SignalR Hub] Broadcasting ReceiveScaleYield to group {ApiaryId} for scale {ScaleId}", apiaryId, scaleId);
+
+            await hubContext.Clients.Group(apiaryId.ToString()).SendAsync("ReceiveScaleYield", new
+            {
+                scaleId = scaleId,
+                delta = deltaKg,
+                timestamp = recordedAt
+            });
+        }
     }
 }

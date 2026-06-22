@@ -50,5 +50,19 @@ namespace SmartApiary.Functions.Services
             var response = await _httpClient.PostAsJsonAsync("api/internal/notifications/anomaly", payload);
             response.EnsureSuccessStatusCode();            
         }
+
+        public async Task SendYieldDeltaNotificationAsync(Guid apiaryId, string scaleId, double deltaKg, DateTime recordedAt)
+        {
+            var payload = new
+            {
+                ApiaryId = apiaryId,
+                ScaleId = scaleId,
+                DeltaKg = deltaKg,
+                RecordedAt = recordedAt
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("api/internal/notifications/yield", payload);
+            response.EnsureSuccessStatusCode();
+        }
     }
 }

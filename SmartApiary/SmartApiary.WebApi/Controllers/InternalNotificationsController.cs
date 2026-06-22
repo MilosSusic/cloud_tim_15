@@ -43,5 +43,13 @@ namespace SmartApiary.WebApi.Controllers
             await notificationService.SendAnomalyNotificationAsync(payload.ApiaryId, payload.ScaleId, payload.AnomalyType, payload.Message);
             return Ok();
         }
+
+        [HttpPost("yield")]
+        public async Task<IActionResult> HandleYieldDelta([FromBody] InternalYieldPayload payload)
+        {
+            await notificationService.SendYieldDeltaNotificationAsync(payload.ApiaryId, payload.ScaleId, payload.DeltaKg, payload.RecordedAt);
+            return Ok();
+        }
+        
     }
 }

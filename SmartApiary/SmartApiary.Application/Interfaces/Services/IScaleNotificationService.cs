@@ -11,5 +11,7 @@ namespace SmartApiary.Application.Interfaces.Services
     {
         Task SendRealtimeTelemetryAsync(Guid apiaryId, Telemetry telemetry);
         Task SendAnomalyNotificationAsync(Guid apiaryId, Guid scaleId, string anomalyType, string message);
+
+        Task SendYieldDeltaNotificationAsync(Guid apiaryId, string scaleId, double deltaKg, DateTime recordedAt);
     }
 }

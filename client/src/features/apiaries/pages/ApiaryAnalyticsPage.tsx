@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSignalR } from "../../../shared/context/SignalRContext";
 import { useAuth } from "../../../shared/auth/AuthContext";
@@ -14,7 +14,11 @@ import "../layout/ApiaryAnalyticsPage.css";
 import { NectarYieldChart } from "../components/ApiaryAnalytics/NectarYieldChart";
 import { StatusIndicators } from "../components/ApiaryAnalytics/StatusIndicators";
 import { ClimateTrendChart } from "../components/ApiaryAnalytics/ClimateTrendChart";
-import { getApiaryAnalytics, saveYieldRecord } from "../../scales/api/scaleApi";
+import { getApiaryAnalytics } from "../../scales/api/scaleApi";
+
+interface ExtendedTelemetryData extends TelemetryData {
+  scaleId?: string;
+}
 
 export const ApiaryAnalyticsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,15 +29,10 @@ export const ApiaryAnalyticsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [latestTelemetry, setLatestTelemetry] = useState<TelemetryData | null>(
-    null,
-  );
+  const [latestTelemetry, setLatestTelemetry] =
+    useState<ExtendedTelemetryData | null>(null);
   const [yieldChartData, setYieldChartData] = useState<DailyYieldData[]>([]);
   const [climateChartData, setClimateChartData] = useState<ClimateData[]>([]);
-
-  const measurementBufferRef = useRef<Map<string, { weight: number; timestamp: string }[]>>(new Map());
-  const periodCounterRef = useRef<Map<string, number>>(new Map());
-  const blockCounterRef = useRef<Map<string, number>>(new Map());
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -55,10 +54,6 @@ export const ApiaryAnalyticsPage: React.FC = () => {
 
   useEffect(() => {
     if (!activeApiaryId) return;
-
-    measurementBufferRef.current.clear();
-    periodCounterRef.current.clear();
-    blockCounterRef.current.clear();
     setError(null);
   }, [activeApiaryId]);
 
@@ -70,10 +65,6 @@ export const ApiaryAnalyticsPage: React.FC = () => {
       return;
     }
 
-    measurementBufferRef.current.clear();
-    periodCounterRef.current.clear();
-    blockCounterRef.current.clear();
-
     connection
       .invoke("JoinApiaryGroup", activeApiaryId)
       .then(() => console.log(`Prijavljen na grupu: ${activeApiaryId}`))
@@ -82,17 +73,15 @@ export const ApiaryAnalyticsPage: React.FC = () => {
     connection.on("ReceiveScaleTelemetry", (data: any) => {
       console.log("Stigao novi podatak sa vage preko SignalR-a:", data);
 
-      const scaleId = data.scaleId;
-      
-      const newTelemetry: TelemetryData = {
+      const scaleId = data.scaleId || data.smartScaleId;
+      setLatestTelemetry({
         weight: data.weight,
         temperature: data.temperature,
         humidity: data.humidity,
         batteryLevel: data.batteryLevel,
         timestamp: data.timestamp,
-      };
-
-      setLatestTelemetry(newTelemetry);
+        scaleId: scaleId,
+      });
 
       const dateObj = new Date(data.timestamp);
       const timeStr = dateObj.toLocaleTimeString("sr-RS", {
@@ -111,80 +100,25 @@ export const ApiaryAnalyticsPage: React.FC = () => {
           },
         ].slice(-10),
       );
+    });
+    // LISTENER 2: Slusanje gotovih delti sa BEKENDA za Gornji Grafik (Prinos)
+    connection.on("ReceiveScaleYield", (data: any) => {
+      console.log("[PRINOS UŽIVO] Backend izračunao novu deltu:", data);
 
-      // Inicijalizuj buffer za ovu vagu ako ne postoji
-      if (!measurementBufferRef.current.has(scaleId)) {
-        measurementBufferRef.current.set(scaleId, []);
-        periodCounterRef.current.set(scaleId, 0);
-        blockCounterRef.current.set(scaleId, 0);
-      }
-
-      const buffer = measurementBufferRef.current.get(scaleId)!;
-      buffer.push({
-        weight: data.weight,
-        timestamp: data.timestamp,
+      const timeLabel = new Date(data.timestamp).toLocaleTimeString("sr-RS", {
+        hour: "2-digit",
+        minute: "2-digit",
       });
 
-      console.log(
-        `[BUFFER] Scale ${scaleId}: Measurement added. Current count: ${buffer.length}/12`,
+      setYieldChartData((prev) =>
+        [...prev, { date: timeLabel, delta: data.delta }].slice(-10),
       );
-
-      if (buffer.length === 12) {
-        const blockCounter = blockCounterRef.current.get(scaleId)!;
-        blockCounterRef.current.set(scaleId, blockCounter + 1);
-        const newBlockCounter = blockCounterRef.current.get(scaleId)!;
-
-        if (newBlockCounter % 2 === 1) {
-          const firstWeight = buffer[0].weight;
-          const lastWeight = buffer[11].weight;
-          const delta = Number((lastWeight - firstWeight).toFixed(2));
-
-          const periodCounter = periodCounterRef.current.get(scaleId)!;
-          periodCounterRef.current.set(scaleId, periodCounter + 1);
-          const newPeriodCounter = periodCounterRef.current.get(scaleId)!;
-
-          const firstTimestamp = new Date(buffer[0].timestamp);
-          const endTimestamp = new Date(buffer[11].timestamp);
-          const timeLabel = endTimestamp.toLocaleTimeString("sr-RS", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          });
-
-          const durationMs = endTimestamp.getTime() - firstTimestamp.getTime();
-          const durationSec = durationMs / 1000;
-
-          console.log(
-            `[YIELD] Scale ${scaleId} Period ${newPeriodCounter}: ${firstWeight}kg → ${lastWeight}kg = ${delta}kg`,
-          );
-          console.log(`[YIELD] Time range: ${firstTimestamp.toLocaleTimeString("sr-RS", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          })} → ${timeLabel}`);
-          console.log(`[YIELD] Duration of 12 measurements: ${durationSec} seconds`);
-
-          setYieldChartData((prev) => [...prev, { date: timeLabel, delta }].slice(-10));
-
-          saveYieldRecord({
-            scaleId: scaleId,
-            deltaKg: delta,
-            recordedAt: endTimestamp.toISOString(),
-          }).catch((err) => console.error("[YIELD RECORD] Failed to save:", err));
-        } else {
-          console.log(
-            `[BUFFER] Scale ${scaleId}: Block ${newBlockCounter} skipped (night period)`,
-          );
-        }
-
-        measurementBufferRef.current.set(scaleId, []);
-        console.log(`[BUFFER] Scale ${scaleId}: Buffer reset. Ready for next period.`);
-      }
     });
 
     return () => {
       if (connection && connection.state === "Connected") {
         connection.off("ReceiveScaleTelemetry");
+        connection.off("ReceiveScaleYield");
         connection
           .invoke("LeaveApiaryGroup", activeApiaryId)
           .then(() => console.log(`Odjavljen sa grupe: ${activeApiaryId}`))
@@ -200,33 +134,53 @@ export const ApiaryAnalyticsPage: React.FC = () => {
       try {
         setError(null);
 
-        // Učitaj historiju iz Table Storage-a
+        // Ucitaj istoriju iz Table Storage-a
         const analytics = await getApiaryAnalytics(activeApiaryId, 1);
 
         console.log("[INIT] Full analytics response:", analytics);
 
-        // Postavi yield historiju (zadnjih 10)
-        const yieldData = (analytics.yieldLog || analytics.yieldHistory || []).slice(-10);
+        // Postavi yield istoriju (zadnjih 10)
+        const yieldData = (
+          analytics.yieldLog ||
+          analytics.yieldHistory ||
+          []
+        ).slice(-10);
         console.log("[INIT] Yield data after slice:", yieldData);
         setYieldChartData(yieldData);
 
-        // Postavi climate historiju (zadnjih 10)
-        const climateData = (analytics.climateLog || analytics.climateHistory || []).slice(-10);
+        // Postavi climate istoriju (zadnjih 10)
+        const climateData = (
+          analytics.climateLog ||
+          analytics.climateHistory ||
+          []
+        ).slice(-10);
         console.log("[INIT] Climate data after slice:", climateData);
         setClimateChartData(climateData);
 
-        // Postavi latest telemetry ako postoji
         if (analytics.latestTelemetry) {
-          console.log("[INIT] Latest telemetry:", analytics.latestTelemetry);
-          setLatestTelemetry(analytics.latestTelemetry);
+          setLatestTelemetry({
+            weight: analytics.latestTelemetry.weight,
+            temperature: analytics.latestTelemetry.temperature,
+            humidity: analytics.latestTelemetry.humidity,
+            batteryLevel: analytics.latestTelemetry.batteryLevel,
+            timestamp: analytics.latestTelemetry.timestamp,
+            scaleId:
+              analytics.latestTelemetry.scaleId ||
+              analytics.latestTelemetry.smartScaleId,
+          });
+        } else {
+          setLatestTelemetry(null);
         }
 
-        console.log(`[INIT] Loaded ${yieldData.length} yield periods and ${climateData.length} climate measurements`);
+        console.log(
+          `[INIT] Loaded ${yieldData.length} yield periods and ${climateData.length} climate measurements`,
+        );
       } catch (err: any) {
         console.error("Greška pri učitavanju historije:", err);
         console.error("[INIT] Error details:", err.message);
         setYieldChartData([]);
         setClimateChartData([]);
+        setLatestTelemetry(null);
       }
     };
 
