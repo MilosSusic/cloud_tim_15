@@ -9,7 +9,7 @@
     "AzureQueueOptions:ResetPasswordQueue": "reset-password-queue",
     "AzureQueueOptions:ActivationQueue": "activation-queue",
     "AzureQueueOptions:SprayNotificationQueue": "spray-notification-queue",
-    "SendGrid:ApiKey": "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",
+    "SendGrid:ApiKey": "YOUR_SENDGRID_KEY",
     "SendGrid:FromEmail": "bozanabojan@gmail.com",
     "SendGrid:FromName": "SmartApiary",
     "AzureBlob:ConnectionString": "UseDevelopmentStorage=true",
@@ -18,7 +18,7 @@
     "AzureBlob:FieldContainer": "field-images",
     "AzureTable:ConnectionString": "UseDevelopmentStorage=true",
     "AzureTable:ScaleMeasurementsTable": "ScaleMeasurements",
-    "OpenWeather:ApiKey": "19249504011865ab4acf094df66ad8f6",
+    "OpenWeather:ApiKey": "YOUR_OPENWEATHER_KEY",
     "OpenWeather:BaseUrl": "https://api.openweathermap.org/data/2.5"
   },
   "Host": {
